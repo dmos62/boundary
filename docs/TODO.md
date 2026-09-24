@@ -11,11 +11,14 @@ The supported downstream lifecycle, immutable lock schema, generated-source prov
 Current verification baseline:
 
 - native contract check passes with 15 contracts;
-- consumer tests pass with 10 tests, of which the two published-archive tests are skipped;
-- the release proof remains unavailable because two suitable published immutable Boundary revisions have not yet been established;
-- active documentation now describes the native Boundary architecture only, while concise migration history is isolated under `docs/history/`.
+- Git history contains candidate revisions `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e` and `b43741a19ce12cc408fd493c25df17541e5a46c9`;
+- anonymous access to the configured GitHub repository/archive currently returns HTTP 404, so those revisions do not yet satisfy P10's publicly retrievable archive requirement;
+- exact release archive SHA-256 values therefore cannot yet be established;
+- release fixtures remain uncommitted and the release-proof test remains pending;
+- migration-only Change Boundary, validation, verification, and workflow test suites have been removed from the active test surface;
+- Spec Kit distribution tests use the current `integration/speckit*` source layout and native contracts rather than a compatibility fixture.
 
-Work in the order below. P10 remains first priority, but its remaining work is externally publication-blocked; see `HUMAN-REQUEST.md`. While that evidence is unavailable, continue P11 cleanup that does not alter release-proof semantics. Return to P10 as soon as the release-candidate harness reports two usable archives.
+Work in the order below. P10 remains first priority. `HUMAN-REQUEST.md` now requests public anonymous publication of the two genuine implementation revisions. While that external publication requirement remains unresolved, continue P11 cleanup without changing release-proof semantics.
 
 ## P10 — Define the reproducible downstream Boundary experience
 
@@ -23,15 +26,20 @@ The local checksum-verified archive lifecycle already covers fresh-clone install
 
 Release-proof coverage is implemented in `tests/test_consumer_release.py` and enabled with `BOUNDARY_RELEASE_ARCHIVE_TESTS=1`.
 
+Candidate identities:
+
+- initial: `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e`;
+- upgrade: `b43741a19ce12cc408fd493c25df17541e5a46c9`.
+
 Remaining work:
 
-- [ ] Commit `tests/fixtures/consumer-release/boundary.lock.json` and `boundary-upgrade.lock.json` using two distinct, publicly retrievable immutable Boundary commit archives and their exact SHA-256 values.
-- [ ] Run the fresh-clone release lifecycle matrix against those committed real archive fixtures.
-- [ ] Delete `HUMAN-REQUEST.md` after the two published archive identities are established and verified.
+- [ ] Make both candidate revisions anonymously retrievable as immutable GitHub commit archives from the intended public source.
+- [ ] Obtain the exact SHA-256 of the downloaded archive bytes for both published candidates.
+- [ ] Commit `tests/fixtures/consumer-release/boundary.lock.json` and `boundary-upgrade.lock.json` using those exact revisions, URLs, and SHA-256 values.
+- [ ] Run the fresh-clone release lifecycle matrix against the committed real archive fixtures.
+- [ ] Delete `HUMAN-REQUEST.md` after both archives have been downloaded anonymously and the release fixtures verify.
 
-`dev-scripts.include` fetches published refs and reports release candidates. A candidate is usable only when the required downstream source and release-proof implementation are present and the exact anonymous GitHub commit archive can be downloaded and checksummed.
-
-Do not substitute unpublished revisions, mutable branch or tag archives, authenticated-only downloads, synthetic archives, or fabricated checksums.
+Do not substitute authenticated-only downloads, unpublished revisions, mutable branch or tag archives, synthetic archives, or fabricated checksums.
 
 Done when:
   A fresh clone can reconstruct the same Boundary tooling and agent capabilities from the committed lock while carrying only native project contracts as persistent Boundary semantics.
@@ -40,10 +48,12 @@ Done when:
 
 Current documentation cleanup removed the obsolete provider bootstrap from the agent instruction surface, removed duplicate migration-era guides, and archived only concise historical context.
 
+The compatibility-only test surface that exercised persisted Change Boundaries, legacy authority projection, the removed validation phase, legacy verification evidence, and migration workflow controls has been removed. Current distribution fixtures exercise native Boundary contracts through the Spec Kit adapter.
+
 Remaining work:
 
-- [ ] Remove compatibility-only tests/helpers and shrink `files.include` again after that cleanup. The obsolete native-contract migration test that imported the removed compatibility adapter has already been deleted.
-- [ ] Keep all canonical code and documentation files below 250 lines.
+- [ ] Remove any remaining compatibility-only production helpers, fixtures, and stale source-path terminology revealed by the supported test matrix.
+- [ ] Keep all code and documentation files below 250 lines. Current known oversized implementation files include `src/boundary/authorization/record.py`, `scripts/consumer.py`, and `scripts/consumer_lock.py`; `tests/test_native_contract_cli.py` also remains above the limit.
 - [ ] Run the complete supported bootstrap, native contract, authorization, adapter, packaging, and fresh-clone test matrix.
 
 Done when:

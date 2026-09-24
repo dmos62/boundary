@@ -1,36 +1,44 @@
-# Published Boundary archive evidence needed
+# Public Boundary archive publication still needed
 
-P10 requires two distinct, publicly retrievable immutable Boundary commit archives. Repository code cannot manufacture valid publication evidence for revisions that have not been published.
+The two candidate commits exist in Git history, but they are not currently usable P10 publication evidence.
 
-The configured origin is:
+Anonymous GitHub access to the configured repository/archive returned HTTP 404:
 
-    https://github.com/dmos62/speckit-specdd.git
+    https://github.com/dmos62/speckit-specdd
+    https://github.com/dmos62/speckit-specdd/archive/b43741a19ce12cc408fd493c25df17541e5a46c9.tar.gz
 
-The latest captured remote state did not contain two published commits with the complete downstream consumer and release-proof implementation.
+P10 requires anonymously retrievable immutable commit archives. A commit reachable through an authenticated Git remote is not sufficient.
 
-Publish the current branch to the intended origin branch according to the repository's normal policy. The resulting published history must contain at least two distinct genuine commits that include the current downstream consumer and `tests/test_consumer_release.py`.
+Please publish both required commits through a public GitHub repository according to the repository's normal policy. The intended revisions remain:
 
-Suggested bash checks:
+    ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e
+    b43741a19ce12cc408fd493c25df17541e5a46c9
 
-    git status --short
-    git branch --show-current
-    git push origin HEAD
-    git fetch --prune origin
-    git branch -r --contains HEAD
-    git ls-remote origin HEAD 'refs/heads/*'
+If `https://github.com/dmos62/speckit-specdd` is intended to be the public source, make that repository anonymously readable and confirm both commits remain reachable there.
 
-After publication, rerun the harness. `dev-scripts.include` will search published history, anonymously download the two newest usable GitHub commit archives, and report their exact revisions, URLs, and SHA-256 values.
+Then verify from an unauthenticated shell:
 
-If the harness still reports fewer than two usable published candidates, another genuine implementation revision must be published before P10 can complete.
+    set -euo pipefail
+    repo=https://github.com/dmos62/speckit-specdd
 
-Do not create release lock fixtures from unpublished commits, mutable branch or tag archives, authenticated-only archive downloads, synthetic archive bytes, fabricated checksums, or empty evidence-only commits.
+    curl -fL "$repo" -o /dev/null
 
-Delete this file once two usable published archive identities have been obtained and the release fixtures can be committed.
+    for commit in \
+      ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e \
+      b43741a19ce12cc408fd493c25df17541e5a46c9
+    do
+      archive=$(mktemp)
+      curl -fL --retry 3 \
+        "$repo/archive/$commit.tar.gz" \
+        -o "$archive"
+      printf '%s  %s\n' \
+        "$(sha256sum "$archive" | awk '{print $1}')" \
+        "$commit"
+      rm -f "$archive"
+    done
 
-------------
+Return the two printed SHA-256 values after the anonymous downloads succeed.
 
-Response:
+If the repository must remain private, publish these genuine implementation revisions to another public GitHub repository and return that repository URL instead. Do not use authenticated-only downloads, mutable branch/tag archives, synthetic archive bytes, or fabricated checksums.
 
-pushed to origin:
-
-commit b43741a19ce12cc408fd493c25df17541e5a46c9 (HEAD -> main, origin/main, origin/HEAD)
+Once anonymous publication succeeds, the next iteration can create the release fixtures, run the release-proof matrix, and delete this file.

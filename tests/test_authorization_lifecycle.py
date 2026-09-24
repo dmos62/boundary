@@ -53,14 +53,7 @@ def write_contract(root: Path) -> None:
 def change(*paths: str) -> ChangeWriteSet:
     return ChangeWriteSet(
         "001-change",
-        (
-            TaskWriteSet(
-                0,
-                "T001",
-                "US1",
-                tuple(paths),
-            ),
-        ),
+        (TaskWriteSet(0, "T001", "US1", tuple(paths)),),
     )
 
 
@@ -83,63 +76,40 @@ class AuthorizationLifecycleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            (root / "src" / "a.py").write_text(
-                "VALUE = 'dirty'\n",
-                encoding="utf-8",
-            )
+            (root / "src" / "a.py").write_text("VALUE = 'dirty'\n", encoding="utf-8")
 
             with self.assertRaisesRegex(
                 AuthorizationError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
-                authorize_implementation_operation(
-                    root,
-                    change("src/a.py"),
-                )
+                authorize_implementation_operation(root, change("src/a.py"))
 
     def test_requires_verification_before_reauthorization(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            authorize_implementation_operation(root, change("src/a.py"))
 
             with self.assertRaisesRegex(
                 AuthorizationError,
                 "OPERATION_NOT_VERIFIED",
             ):
-                authorize_implementation_operation(
-                    root,
-                    change("src/b.py"),
-                )
+                authorize_implementation_operation(root, change("src/b.py"))
 
     def test_scope_expansion_carries_verified_output_and_archives_predecessor(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            first = authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
-            (root / "src" / "a.py").write_text(
-                "VALUE = 'first'\n",
-                encoding="utf-8",
-            )
+            first = authorize_implementation_operation(root, change("src/a.py"))
+            (root / "src" / "a.py").write_text("VALUE = 'first'\n", encoding="utf-8")
             verified = finalize_operation_verification(
-                root,
-                operation_id=first.operation_id,
+                root, operation_id=first.operation_id
             )
-            archive = operation_archive_path(
-                root,
-                first.operation_id,
-            )
+            archive = operation_archive_path(root, first.operation_id)
             self.assertFalse(archive.exists())
 
             second = authorize_implementation_operation(
-                root,
-                change("src/a.py", "src/b.py"),
+                root, change("src/a.py", "src/b.py")
             )
 
             self.assertTrue(archive.is_file())
@@ -157,32 +127,19 @@ class AuthorizationLifecycleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            first = authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            first = authorize_implementation_operation(root, change("src/a.py"))
             finalize_operation_verification(root)
-
-            authorize_implementation_operation(
-                root,
-                change("src/b.py"),
-            )
+            authorize_implementation_operation(root, change("src/b.py"))
 
             self.assertFalse(
-                operation_archive_path(
-                    root,
-                    first.operation_id,
-                ).exists()
+                operation_archive_path(root, first.operation_id).exists()
             )
 
     def test_rejects_dirty_state_changed_after_predecessor_verification(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            authorize_implementation_operation(root, change("src/a.py"))
             path = root / "src" / "a.py"
             path.write_text("VALUE = 'verified'\n", encoding="utf-8")
             finalize_operation_verification(root)
@@ -192,26 +149,16 @@ class AuthorizationLifecycleTests(unittest.TestCase):
                 AuthorizationError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
-                authorize_implementation_operation(
-                    root,
-                    change("src/a.py"),
-                )
+                authorize_implementation_operation(root, change("src/a.py"))
 
     def test_deleted_verified_output_can_be_carried_forward(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            authorize_implementation_operation(root, change("src/a.py"))
             (root / "src" / "a.py").unlink()
             verified = finalize_operation_verification(root)
-
-            successor = authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            successor = authorize_implementation_operation(root, change("src/a.py"))
 
             self.assertEqual(
                 verified.verification_final_states[0].state,
@@ -222,42 +169,25 @@ class AuthorizationLifecycleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
+            authorize_implementation_operation(root, change("src/a.py"))
             path = root / "src" / "a.py"
             path.write_text("VALUE = 'staged'\n", encoding="utf-8")
             run_git(root, "add", "src/a.py")
             finalize_operation_verification(root)
-
             run_git(root, "reset", "HEAD", "--", "src/a.py")
 
             with self.assertRaisesRegex(
                 AuthorizationError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
-                authorize_implementation_operation(
-                    root,
-                    change("src/a.py"),
-                )
+                authorize_implementation_operation(root, change("src/a.py"))
 
     def test_head_change_blocks_verification_closure(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                change("src/a.py"),
-            )
-            run_git(
-                root,
-                "commit",
-                "--allow-empty",
-                "-q",
-                "-m",
-                "move head",
-            )
+            authorize_implementation_operation(root, change("src/a.py"))
+            run_git(root, "commit", "--allow-empty", "-q", "-m", "move head")
 
             with self.assertRaisesRegex(
                 VerificationError,

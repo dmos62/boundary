@@ -2,105 +2,43 @@ import unittest
 
 from preset_test_support import (
     BOOTSTRAP_PATH,
-    BOOTSTRAP_PROVIDER_PATH,
     EXTENSION_ROOT,
     INSTALLER_PATH,
     INSTALL_SOURCE_PATH,
     PRESET_ROOT,
-    SPECDD_PROVIDER_VERSION,
-    SPECDD_UPSTREAM_CLI_VERSION,
     SPECKIT_VERSION,
     WORKFLOW_OVERLAY_PATH,
 )
 
 
 class PresetSourceTests(unittest.TestCase):
-    def test_manifests_preserve_pinned_composition_contract(self):
-        extension = (
-            EXTENSION_ROOT
-            / "extension.yml"
-        ).read_text(encoding="utf-8")
-        preset = (
-            PRESET_ROOT
-            / "preset.yml"
-        ).read_text(encoding="utf-8")
-        bootstrap = BOOTSTRAP_PATH.read_text(
-            encoding="utf-8"
-        )
+    def test_manifests_preserve_pinned_spec_kit_composition(self):
+        extension = (EXTENSION_ROOT / "extension.yml").read_text(encoding="utf-8")
+        preset = (PRESET_ROOT / "preset.yml").read_text(encoding="utf-8")
 
         self.assertIn(
             f'speckit_version: "=={SPECKIT_VERSION}"',
-            extension,
-        )
-        self.assertNotIn(
-            'name: specdd',
             extension,
         )
         self.assertIn(
             f'speckit_version: "=={SPECKIT_VERSION}"',
             preset,
         )
-        self.assertIn(
-            'version: "==0.1.0"',
-            preset,
-        )
-        self.assertEqual(
-            1,
-            preset.count('strategy: "append"'),
-        )
-        self.assertIn(
-            'name: "speckit.tasks"',
-            preset,
-        )
-        self.assertNotIn(
-            'name: "speckit.plan"',
-            preset,
-        )
-        self.assertNotIn(
-            'name: "speckit.converge"',
-            preset,
-        )
-
-        for declaration in (
-            f'readonly SPECKIT_VERSION="{SPECKIT_VERSION}"',
-            'readonly SPECKIT_TAG="v${SPECKIT_VERSION}"',
-            (
-                "readonly SPECDD_UPSTREAM_CLI_VERSION="
-                f'"{SPECDD_UPSTREAM_CLI_VERSION}"'
-            ),
-            (
-                "readonly SPECDD_COMPAT_CLI_VERSION="
-                f'"{SPECDD_PROVIDER_VERSION}"'
-            ),
-        ):
-            self.assertIn(
-                declaration,
-                bootstrap,
-            )
+        self.assertIn('version: "==0.1.0"', preset)
+        self.assertEqual(1, preset.count('strategy: "append"'))
+        self.assertIn('name: "speckit.tasks"', preset)
+        self.assertNotIn('name: "speckit.plan"', preset)
+        self.assertNotIn('name: "speckit.converge"', preset)
 
     def test_adapter_uses_boundary_public_identities(self):
-        extension = (
-            EXTENSION_ROOT
-            / "extension.yml"
-        ).read_text(encoding="utf-8")
-        preset = (
-            PRESET_ROOT
-            / "preset.yml"
-        ).read_text(encoding="utf-8")
-        overlay = WORKFLOW_OVERLAY_PATH.read_text(
-            encoding="utf-8"
-        )
-        installer = INSTALLER_PATH.read_text(
-            encoding="utf-8"
-        )
-        bootstrap = BOOTSTRAP_PATH.read_text(
-            encoding="utf-8"
-        )
+        extension = (EXTENSION_ROOT / "extension.yml").read_text(encoding="utf-8")
+        preset = (PRESET_ROOT / "preset.yml").read_text(encoding="utf-8")
+        overlay = WORKFLOW_OVERLAY_PATH.read_text(encoding="utf-8")
+        installer = INSTALLER_PATH.read_text(encoding="utf-8")
+        bootstrap = BOOTSTRAP_PATH.read_text(encoding="utf-8")
 
         self.assertIn("id: boundary", extension)
         self.assertIn('name: "Boundary Spec Kit Adapter"', extension)
-        self.assertNotIn("homepage: https://specdd.ai", extension)
-
         self.assertIn('id: "boundary"', preset)
         self.assertIn("- id: boundary", preset)
         self.assertIn('id: "boundary"', overlay)
@@ -119,19 +57,8 @@ class PresetSourceTests(unittest.TestCase):
         ):
             self.assertIn(declaration, bootstrap)
 
-        for stale in (
-            "id: specdd\n",
-            'id: "specdd-bridge"',
-        ):
-            self.assertNotIn(stale, extension)
-            self.assertNotIn(stale, preset)
-            self.assertNotIn(stale, overlay)
-
     def test_extension_exposes_only_boundary_adapter_transitions(self):
-        manifest = (
-            EXTENSION_ROOT
-            / "extension.yml"
-        ).read_text(encoding="utf-8")
+        manifest = (EXTENSION_ROOT / "extension.yml").read_text(encoding="utf-8")
 
         for command in (
             "speckit.boundary.authorize",
@@ -139,80 +66,39 @@ class PresetSourceTests(unittest.TestCase):
         ):
             self.assertIn(command, manifest)
 
-        for obsolete in (
-            "speckit.specdd.context",
-            "speckit.specdd.validate",
-            "speckit.specdd.authorize",
-            "speckit.specdd.verify",
-            "hooks:",
+        self.assertNotIn("hooks:", manifest)
+        for hook in (
             "after_plan:",
             "after_tasks:",
             "before_implement:",
             "after_implement:",
         ):
-            self.assertNotIn(obsolete, manifest)
+            self.assertNotIn(hook, manifest)
 
-    def test_bootstrap_uses_shared_codex_installer(self):
-        content = BOOTSTRAP_PATH.read_text(
-            encoding="utf-8"
-        )
+    def test_bootstrap_uses_codex_and_local_boundary_source(self):
+        content = BOOTSTRAP_PATH.read_text(encoding="utf-8")
 
         for marker in (
             'readonly ACTIVE_INTEGRATION="codex"',
             'readonly ACTIVE_COMMANDS_DIR=".agents/skills"',
-            'source "$BOOTSTRAP_SCRIPT_DIR/bootstrap-provider.sh"',
             'specify integration switch "$ACTIVE_INTEGRATION" --script ps',
             "bash scripts/install.sh --source .",
         ):
-            self.assertIn(
-                marker,
-                content,
-            )
+            self.assertIn(marker, content)
 
-        for obsolete in (
-            "specify extension add integration/specdd --dev --force",
-            "specify preset add --dev integration/specdd-preset --priority 10",
-            "specify workflow overlay add integration/specdd/workflow-overlay.yml",
-            "--integration generic",
-        ):
-            self.assertNotIn(
-                obsolete,
-                content,
-            )
+        self.assertNotIn("--integration generic", content)
 
-    def test_bootstrap_does_not_require_specdd_framework_bootstrap(self):
-        content = BOOTSTRAP_PATH.read_text(
-            encoding="utf-8"
-        )
-
-        for obsolete in (
-            "SPECDD_FRAMEWORK_VERSION",
-            "specdd_framework_version",
-            "specdd init",
-            ".specdd/bootstrap.md",
-        ):
-            self.assertNotIn(
-                obsolete,
-                content,
-            )
-
-    def test_installer_materializes_native_runtime_without_specdd_requirement(self):
-        installer = INSTALLER_PATH.read_text(
-            encoding="utf-8"
-        )
-        source_helper = INSTALL_SOURCE_PATH.read_text(
-            encoding="utf-8"
-        )
+    def test_installer_materializes_native_runtime(self):
+        installer = INSTALLER_PATH.read_text(encoding="utf-8")
+        source_helper = INSTALL_SOURCE_PATH.read_text(encoding="utf-8")
         content = installer + "\n" + source_helper
 
         for marker in (
-            'readonly SPECKIT_VERSION="1.0.10"',
+            f'readonly SPECKIT_VERSION="{SPECKIT_VERSION}"',
             'readonly ACTIVE_INTEGRATION="codex"',
             'readonly CODEX_SKILL_ADAPTER="adapters/codex/materialize.py"',
             'readonly BOUNDARY_RUNTIME_DIR=".specify/boundary-runtime"',
             'source "$INSTALL_SCRIPT_DIR/install-source.sh"',
-            "archive/refs/tags/",
-            "releases/download/",
             "specify extension add",
             "specify preset add",
             "specify workflow overlay add",
@@ -222,27 +108,18 @@ class PresetSourceTests(unittest.TestCase):
             "materialize_boundary_skills",
             "src/boundary/__init__.py",
         ):
-            self.assertIn(
-                marker,
-                content,
-            )
+            self.assertIn(marker, content)
 
         for forbidden in (
-            "require_command specdd",
-            "specdd resolve --help",
             "npm install",
             "pip install",
             "specify bundle install",
         ):
-            self.assertNotIn(
-                forbidden,
-                installer,
-            )
+            self.assertNotIn(forbidden, installer)
 
-    def test_split_shell_sources_remain_small(self):
+    def test_shell_sources_remain_small(self):
         for path in (
             BOOTSTRAP_PATH,
-            BOOTSTRAP_PROVIDER_PATH,
             INSTALLER_PATH,
             INSTALL_SOURCE_PATH,
         ):
@@ -253,11 +130,7 @@ class PresetSourceTests(unittest.TestCase):
                 )
 
     def test_task_augmentation_uses_on_demand_inspection_and_exact_writes(self):
-        tasks = (
-            PRESET_ROOT
-            / "commands"
-            / "tasks.md"
-        ).read_text(encoding="utf-8")
+        tasks = (PRESET_ROOT / "commands" / "tasks.md").read_text(encoding="utf-8")
 
         for marker in (
             "## Boundary Write Scope",
@@ -269,9 +142,6 @@ class PresetSourceTests(unittest.TestCase):
         ):
             self.assertIn(marker, tasks)
 
-        for obsolete in (
-            "speckit.specdd.context",
-            "speckit.specdd.validate",
-            "SPECDD_AUTHORITY:",
-        ):
-            self.assertNotIn(obsolete, tasks)
+
+if __name__ == "__main__":
+    unittest.main()

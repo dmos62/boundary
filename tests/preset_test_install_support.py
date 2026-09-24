@@ -82,9 +82,7 @@ def initialize_codex_project(testcase, root: Path) -> dict[str, str]:
         ),
     )
     return {
-        command: skill_body(
-            skill_file(root, command).read_text(encoding="utf-8")
-        )
+        command: skill_body(skill_file(root, command).read_text(encoding="utf-8"))
         for command in COMPOSED_EXPECTATIONS
     }
 
@@ -104,30 +102,18 @@ def install_workflow_overlay(testcase, root: Path) -> None:
         ),
     )
     overlay_list = run_command(
-        root,
-        "specify",
-        "workflow",
-        "overlay",
-        "list",
-        "speckit",
+        root, "specify", "workflow", "overlay", "list", "speckit"
     )
     require_success(testcase, overlay_list)
     testcase.assertIn("boundary", overlay_list.stdout)
-    resolved = run_command(
-        root,
-        "specify",
-        "workflow",
-        "resolve",
-        "speckit",
-    )
+
+    resolved = run_command(root, "specify", "workflow", "resolve", "speckit")
     require_success(testcase, resolved)
     assert_resolved_workflow(testcase, resolved.stdout)
+
     overlay_text = installed_overlay_text(root)
     testcase.assertIn(str(INSTALLED_RUNTIME_PATH), overlay_text)
-    testcase.assertNotIn(
-        "integration/specdd/scripts/adapter_gate.py",
-        overlay_text,
-    )
+    testcase.assertNotIn("integration/speckit/scripts/adapter_gate.py", overlay_text)
 
 
 def install_extension(testcase, root: Path) -> None:
@@ -144,28 +130,14 @@ def install_extension(testcase, root: Path) -> None:
         ),
     )
     testcase.assertTrue((root / INSTALLED_RUNTIME_PATH).is_file())
-    extension_list = run_command(
-        root,
-        "specify",
-        "extension",
-        "list",
-        "--json",
-    )
+
+    extension_list = run_command(root, "specify", "extension", "list", "--json")
     require_success(testcase, extension_list)
-    installed = {
-        item["id"]: item
-        for item in json.loads(extension_list.stdout)
-    }
+    installed = {item["id"]: item for item in json.loads(extension_list.stdout)}
     testcase.assertIn("boundary", installed)
     testcase.assertTrue(installed["boundary"]["enabled"])
-    testcase.assertEqual(
-        2,
-        installed["boundary"]["provides"]["commands"],
-    )
-    testcase.assertEqual(
-        0,
-        installed["boundary"]["provides"].get("hooks", 0),
-    )
+    testcase.assertEqual(2, installed["boundary"]["provides"]["commands"])
+    testcase.assertEqual(0, installed["boundary"]["provides"].get("hooks", 0))
     for command in ADAPTER_COMMANDS:
         testcase.assertTrue(skill_file(root, command).is_file())
 
@@ -195,10 +167,7 @@ def install_preset(testcase, root: Path) -> Path:
         for content in contents:
             testcase.assertIn(upstream, content)
             testcase.assertIn(augmentation, content)
-            testcase.assertLess(
-                content.index(upstream),
-                content.index(augmentation),
-            )
+            testcase.assertLess(content.index(upstream), content.index(augmentation))
     return preset_dir
 
 
@@ -214,22 +183,13 @@ def remove_preset(
 ) -> None:
     require_success(
         testcase,
-        run_command(
-            root,
-            "specify",
-            "preset",
-            "remove",
-            "boundary",
-        ),
+        run_command(root, "specify", "preset", "remove", "boundary"),
     )
     testcase.assertFalse(preset_dir.exists())
     for command, baseline_body in baseline_bodies.items():
         restored = skill_file(root, command).read_text(encoding="utf-8")
         testcase.assertEqual(baseline_body, skill_body(restored))
-        testcase.assertNotIn(
-            COMPOSED_EXPECTATIONS[command][2],
-            restored,
-        )
+        testcase.assertNotIn(COMPOSED_EXPECTATIONS[command][2], restored)
 
 
 def remove_extension(testcase, root: Path) -> None:
@@ -245,18 +205,9 @@ def remove_extension(testcase, root: Path) -> None:
         ),
     )
     testcase.assertFalse((root / INSTALLED_RUNTIME_PATH).exists())
-    extension_list = run_command(
-        root,
-        "specify",
-        "extension",
-        "list",
-        "--json",
-    )
+    extension_list = run_command(root, "specify", "extension", "list", "--json")
     require_success(testcase, extension_list)
-    remaining = {
-        item["id"]
-        for item in json.loads(extension_list.stdout)
-    }
+    remaining = {item["id"] for item in json.loads(extension_list.stdout)}
     testcase.assertNotIn("boundary", remaining)
     for command in ADAPTER_COMMANDS:
         testcase.assertFalse(skill_file(root, command).exists())
@@ -276,12 +227,7 @@ def remove_workflow_overlay(testcase, root: Path) -> None:
         ),
     )
     overlay_list = run_command(
-        root,
-        "specify",
-        "workflow",
-        "overlay",
-        "list",
-        "speckit",
+        root, "specify", "workflow", "overlay", "list", "speckit"
     )
     require_success(testcase, overlay_list)
     testcase.assertNotIn("boundary", overlay_list.stdout)
