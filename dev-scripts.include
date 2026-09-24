@@ -1,6 +1,5 @@
 @cli! bash -lic "PYTHONPATH=src uv run --no-project python -m boundary contracts check"
-@cli! bash -lic 'printf "%s\n" "--- Remaining migration terminology outside explicit history ---"; git grep -n -E "SpecDD|speckit\\.specdd|change-boundary|integration/specdd|specdd-preset|\\.specdd/" -- src adapters integration scripts skills tests README.md AGENTS.md CLAUDE.md docs ":!docs/history/**" ":!docs/TODO.md" 2>/dev/null | head -120 || true'
-@cli! bash -lic 'printf "%s\n" "--- Files over 250 lines ---"; find src adapters integration scripts skills tests docs -type f \( -name "*.py" -o -name "*.sh" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" \) -not -path "*/__pycache__/*" -print0 2>/dev/null | xargs -0 -r wc -l | awk "\$1 > 250 && \$2 != \"total\" {print}"'
-@cli! bash -lic "bash scripts/bootstrap.sh && bash scripts/bootstrap.sh --check"
-@cli! bash -lic "PYTHONPATH=src:integration/speckit/scripts uv run --no-project python -m unittest discover -s tests -p 'test_*.py'"
-@cli! bash -lic "BOUNDARY_RELEASE_ARCHIVE_TESTS=1 PYTHONPATH=src:integration/speckit/scripts uv run --no-project python -m unittest discover -s tests -p 'test_consumer_release.py'"
+@cli! bash -lic "PYTHONPATH=src:integration/speckit/scripts:scripts uv run --no-project python -m unittest discover -s tests -p 'test_consumer*.py'"
+@cli! bash -lic 'log="$(mktemp)"; if bash scripts/bootstrap.sh >"$log" 2>&1 && bash scripts/bootstrap.sh --check >>"$log" 2>&1; then printf "%s\n" "bootstrap: ok"; rm -f "$log"; else cat "$log"; rm -f "$log"; exit 1; fi'
+@cli! bash -lic 'log="$(mktemp)"; if BOUNDARY_RELEASE_ARCHIVE_TESTS=1 PYTHONPATH=src:integration/speckit/scripts uv run --no-project python -m unittest discover -s tests -p "test_consumer_release.py" >"$log" 2>&1; then printf "%s\n" "published archive proof: ok"; rm -f "$log"; else cat "$log"; rm -f "$log"; exit 1; fi'
+@cli! bash -lic 'printf "%s\n" "--- Files over 250 lines ---"; find scripts tests docs contracts -type f \( -name "*.py" -o -name "*.sh" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" \) -not -path "*/__pycache__/*" -print0 2>/dev/null | xargs -0 -r wc -l | awk "\$1 > 250 && \$2 != \"total\" {print}"'

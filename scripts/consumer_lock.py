@@ -29,6 +29,7 @@ _REQUIRED_SOURCE_PATHS = (
     "scripts/install-source.sh",
     "scripts/consumer.py",
     "scripts/consumer_lock.py",
+    "scripts/consumer_state.py",
     "src/boundary/__init__.py",
     "skills/scope/SKILL.md",
     "skills/implement/SKILL.md",

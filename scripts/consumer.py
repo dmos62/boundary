@@ -18,7 +18,6 @@ from consumer_lock import (
     write_lock,
 )
 from consumer_state import (
-    GENERATED_EXCLUDES as _GENERATED_EXCLUDES,
     ConsumerStateError,
     require_local_excludes as _require_local_excludes,
     require_provenance as _require_provenance,
