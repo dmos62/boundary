@@ -9,7 +9,7 @@ Boundary provides durable project contracts, effective target context, explicit 
 
 Boundary is independent of the systems used to describe and execute an individual change.
 
-The repository originated with Spec Kit as its change workflow, SpecDD as migration-era persistent-contract infrastructure, and Codex as its first agent runtime. The current Boundary runtime no longer uses SpecDD. Spec Kit and agent-runtime integrations remain adapters rather than product identities.
+Spec Kit and agent-runtime integrations are adapters rather than product identities.
 
 The core relationship is:
 
@@ -49,7 +49,7 @@ The Boundary lock identifies implementation source but does not duplicate Bounda
 
 ## Native persistent contracts
 
-Boundary defines a native contract format rather than standardizing legacy provider semantics.
+Boundary defines a native contract format.
 
 Contract files:
 
@@ -62,7 +62,7 @@ Contract files:
 
 Contract file placement has no semantic effect.
 
-The native model does not use `.specdd/bootstrap.md`, directory walking, nearest-file replacement, or a global catch-all project contract.
+The native model does not use directory walking, nearest-file replacement, or a global catch-all project contract.
 
 Detailed contract semantics are defined in [spec-contracts.md](spec-contracts.md).
 
@@ -153,8 +153,8 @@ Boundary does not:
 
 - replace a product requirements or feature-specification system;
 - require Spec Kit as its permanent change system;
-- preserve SpecDD semantics merely for compatibility;
-- require `.sdd` files or `.specdd/` state downstream;
+- preserve migration-provider semantics merely for compatibility;
+- require legacy provider state downstream;
 - maintain a second compiled persistent copy of project contracts;
 - authorize writes from prose path mentions;
 - formalize all architectural prose into executable rules;
@@ -176,9 +176,8 @@ The design is split by responsibility:
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation, and convergence.
 - [spec-distribution.md](spec-distribution.md): immutable downstream source locks, reconstruction, generated state, and upgrades.
-- [change-boundary.md](change-boundary.md): legacy documentation retained temporarily for migration history.
 
-Historical v0.1 acceptance material describes how the original bridge established its baseline; it is not the current product architecture.
+Historical migration material is isolated under [history/](history/) and is not part of the current product architecture.
 
 ## Migration status
 
@@ -189,13 +188,13 @@ The supported runtime no longer depends on:
 - persisted feature Change Boundaries;
 - refresh-time context fingerprint sidecars;
 - a separate public validation lifecycle stage;
-- `SPECDD_AUTHORITY:` operation identity;
+- synthetic task authority identities;
 - mixed implementation/specification authorization;
-- three-file authorization evidence;
-- SpecDD bootstrap injection;
+- split authorization evidence;
+- project-wide provider bootstrap injection;
 - duplicated extension-hook and workflow-overlay enforcement.
 
-Remaining cleanup is documentation, historical-material, compatibility-test, and release-packaging work rather than runtime semantic migration.
+Remaining work is release evidence, compatibility cleanup, and final verification rather than runtime semantic migration.
 
 ## Summary invariant
 

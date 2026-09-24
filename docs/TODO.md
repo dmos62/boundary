@@ -2,7 +2,7 @@
 
 Boundary's target architecture is defined in the focused `docs/spec*.md` documents.
 
-Native contracts under `contracts/` are the only persistent Boundary contract source. Boundary no longer installs, invokes, or requires SpecDD for normal operation. Authorization and verification use fresh native contract state, exact structured writes, Git baselines, atomic operation records, verified authorization epochs, and exact dirty-state carry-forward provenance.
+Native contracts under `contracts/` are the only persistent Boundary contract source. Boundary authorization and verification use fresh native contract state, exact structured writes, Git baselines, atomic operation records, verified authorization epochs, and exact dirty-state carry-forward provenance.
 
 Canonical Boundary procedure is materialized from `skills/*/SKILL.md` into concrete Codex and Claude Code discovery state. The Spec Kit integration is a change-system adapter only: structured task `Writes:` metadata is projected into native Boundary authorization at implementation entry, and actual Git writes are verified at implementation exit.
 
@@ -12,7 +12,8 @@ Current verification baseline:
 
 - native contract check passes with 15 contracts;
 - consumer tests pass with 10 tests, of which the two published-archive tests are skipped;
-- the release proof remains unavailable because two suitable published immutable Boundary revisions have not yet been established.
+- the release proof remains unavailable because two suitable published immutable Boundary revisions have not yet been established;
+- active documentation now describes the native Boundary architecture only, while concise migration history is isolated under `docs/history/`.
 
 Work in the order below. P10 remains first priority, but its remaining work is externally publication-blocked; see `HUMAN-REQUEST.md`. While that evidence is unavailable, continue P11 cleanup that does not alter release-proof semantics. Return to P10 as soon as the release-candidate harness reports two usable archives.
 
@@ -37,12 +38,13 @@ Done when:
 
 ## P11 — Final migration cleanup
 
-- [ ] Remove obsolete Spec Kit × SpecDD product terminology from non-historical documentation.
-- [ ] Mark or archive historical v0.1 material.
-- [ ] Delete the legacy `change-boundary.md` guide after no supported runtime uses that model.
-- [ ] Remove compatibility-only tests/helpers and shrink `files.include` accordingly. The obsolete native-contract migration test that imported the removed SpecDD adapter has already been deleted.
-- [ ] Keep all code and documentation files below 250 lines.
+Current documentation cleanup removed the obsolete provider bootstrap from the agent instruction surface, removed duplicate migration-era guides, and archived only concise historical context.
+
+Remaining work:
+
+- [ ] Remove compatibility-only tests/helpers and shrink `files.include` again after that cleanup. The obsolete native-contract migration test that imported the removed compatibility adapter has already been deleted.
+- [ ] Keep all canonical code and documentation files below 250 lines.
 - [ ] Run the complete supported bootstrap, native contract, authorization, adapter, packaging, and fresh-clone test matrix.
 
 Done when:
-  Current documentation describes one Boundary architecture, legacy providers survive only in explicit history if retained at all, and no downstream workflow depends on Spec Kit or SpecDD as product concepts.
+  Current documentation describes one Boundary architecture, legacy providers survive only in explicit history if retained at all, and no downstream workflow depends on migration-era product concepts.

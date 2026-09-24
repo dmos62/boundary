@@ -1,182 +1,165 @@
 # Boundary
 
-Boundary is an integration lab evolving into a standalone persistent-contract and operation-authorization layer for coding agents.
+Boundary is a persistent-contract and operation-authorization layer for coding agents.
 
-Boundary is not a Spec Kit product and is not a SpecDD product.
+It separates durable project architecture from the systems used to plan changes and from the agent runtimes used to execute them.
 
-The current repository uses:
+The core relationship is:
 
-- Spec Kit as the first change-system adapter because its specification, planning, task, implementation, and convergence workflow is explicit and extensible;
-- SpecDD as a temporary persistent-contract compatibility provider while Boundary's native contract model is implemented;
-- Codex as the first agent-runtime adapter.
+> A change system owns feature intent and execution state. Boundary owns persistent system contracts and operation authority. Agent adapters deliver the smallest relevant procedure and effective context needed for current work.
 
-Those integrations are implementation choices. Boundary's durable product concepts are persistent project contracts, scoped applicability, ownership, explicit write scope, operation authorization, progressive agent context, contract evolution, and verification of actual writes.
+Boundary's durable concepts are:
 
-The target architecture must remain usable if Spec Kit, SpecDD, or Codex is replaced.
+- persistent project contracts;
+- explicit path ownership;
+- additive scoped applicability;
+- effective target context;
+- exact implementation write scope;
+- operation authorization;
+- historical operation evidence;
+- persistent-contract evolution;
+- actual-write verification;
+- progressive agent instruction disclosure;
+- immutable downstream source reconstruction.
 
-## Target model
-
-The intended relationship is:
-
-> The change system owns feature intent and execution state. Boundary owns persistent system contracts and operation authority. Agent adapters deliver the smallest relevant instructions and contract context needed for the current work.
-
-Boundary's target downstream state contains native project contracts such as:
-
-    contracts/auth.contract.md
-    contracts/users.contract.md
-
-and one immutable Boundary installation/source pin.
-
-A downstream project must not require:
-
-    .specdd/
-    .specdd/bootstrap.md
-    specdd
-    canonical Boundary implementation source
-
-SpecDD `.sdd` files and `.specdd/` bootstrap state are transitional implementation dependencies in this repository, not part of the target Boundary product.
+These concepts are independent of any one change system or agent runtime.
 
 ## Native contracts
 
-Native Boundary contracts use explicit machine-readable scope plus concise human-readable semantics.
+Canonical project contracts live under:
 
-A contract may own an exact path or subtree and may apply additional constraints to explicitly scoped paths. Contract location in the repository does not determine its meaning.
+    contracts/**/*.contract.md
 
-Applicable constraints are additive.
+Contract location has no semantic meaning.
 
-A more specific owned subcomponent may become the primary owner of its paths, but broader matching contracts continue to apply. A child contract therefore cannot silently escape a parent contract merely by existing.
+Each contract declares explicit ownership and applicability scopes. All matching contracts apply additively. When ownership is nested, the most-specific matching owner is primary while broader matching contracts continue to contribute constraints.
 
 Boundary v1 deliberately avoids:
 
+- filesystem-dependent contract meaning;
 - nearest-contract-wins behavior;
-- filesystem-dependent path meaning;
 - implicit directory inheritance;
-- override or exception semantics;
-- a global catch-all cross-contract contract;
+- contract override or exception semantics;
+- a global catch-all project contract;
 - a second persistent compiled copy of project contracts.
 
 Detailed semantics are in [docs/spec-contracts.md](docs/spec-contracts.md).
 
 ## Agent instruction model
 
-Boundary does not inject a framework bootstrap or the full project contract set into normal agent context.
+Boundary uses progressive disclosure.
 
-Stable procedure is delivered through small skills:
+Stable procedure lives in small canonical skills:
 
-- scope discovery and explicit write declaration;
-- implementation under an authorized operation;
-- persistent-contract evolution.
+- `boundary-scope` for planning and explicit write declaration;
+- `boundary-implement` for implementation under an active authorization;
+- `boundary-contracts` for deliberate persistent-contract evolution.
 
-Operation-specific facts are queried on demand. For a target, Boundary derives the effective contract context from all matching scoped contracts and relevant interfaces, preserving source provenance.
+Operation-specific facts are queried on demand. For a target, Boundary derives ownership, applicable contracts, relevant semantic sections, dependency interfaces, and source provenance.
 
-Project contract prose is therefore progressively disclosed instead of being permanently loaded.
+Project contracts are therefore loaded because they are relevant to current work rather than injected wholesale into every agent interaction.
 
 See [docs/spec-agent-instructions.md](docs/spec-agent-instructions.md).
 
 ## Authorization model
 
-Authorization uses explicit write declarations from the active change system. Path mentions in planning or task prose are not implementation authority.
+Implementation authority comes from exact structured write declarations, not path-looking prose.
 
 At authorization Boundary:
 
-1. reads the exact declared write set;
+1. reads the current explicit write set from the change-system adapter;
 2. builds the native contract graph fresh;
-3. resolves ownership and applicable contracts;
-4. validates operation type and Git starting state;
+3. resolves ownership and effective context;
+4. validates operation kind and Git starting state;
 5. records one atomic operation document in current-worktree Git metadata.
 
-Implementation and contract evolution are separate operation kinds.
+Verification compares actual post-authorization Git changes with that historical evidence.
 
-Verification compares actual post-authorization Git changes with historical operation evidence. Current planning state cannot retroactively widen an operation.
+Current planning state cannot retroactively widen an operation.
 
 See [docs/spec-authorization.md](docs/spec-authorization.md).
 
 ## Lifecycle
 
-Boundary's mandatory implementation lifecycle is intentionally small:
+The mandatory implementation lifecycle is:
 
     authorize → implement → verify
 
-Planning and task generation may inspect effective contract context and use Boundary skills, but they do not create authorization state.
+Planning and task generation may inspect effective contract context but do not create implementation authority.
 
-A change-system adapter maps its own workflow onto those transitions. The initial Spec Kit adapter is expected to place authorization immediately before implementation and verification immediately after it.
+If implementation discovers another required target, the current operation must be verified and closed before a fresh write set is authorized.
 
-Contract evolution is a separate operation followed by fresh implementation authorization.
+Persistent-contract evolution is a separate operation and must be followed by fresh dependent implementation authorization.
 
 See [docs/spec-lifecycle.md](docs/spec-lifecycle.md).
 
-## Current implementation status
+## Adapters
 
-The checked-in runtime has not yet completed this migration.
+Boundary currently integrates with Spec Kit as a change-system adapter.
 
-The current implementation still uses:
+The adapter provides:
 
-    integration/specdd/
-    integration/specdd-preset/
-    .specify/extensions/specdd/
-    specs/*/.specdd/boundary.json
-    <git-dir>/specdd/
+- active change identity;
+- stable task identities;
+- exact structured implementation writes;
+- host-owned path classification;
+- implementation entry and exit integration.
 
-and public commands such as:
+Boundary core does not depend on Spec Kit workflow terminology or feature-file structure.
 
-    /speckit.specdd.context
-    /speckit.specdd.validate
-    /speckit.specdd.authorize
-    /speckit.specdd.verify
+Codex and Claude Code are concrete agent-runtime integrations. They materialize the same canonical Boundary skills into their respective discovery locations without changing the canonical procedure.
 
-These names and state layouts are transitional. They describe the current executable baseline only and are not the target Boundary architecture.
+See [docs/spec-change-adapter.md](docs/spec-change-adapter.md) and [docs/spec-architecture.md](docs/spec-architecture.md).
 
-The active migration plan is in [docs/TODO.md](docs/TODO.md).
+## Downstream reconstruction
 
-## Current compatibility baseline
+A downstream project commits:
 
-Until the native migration removes these dependencies, the tested development baseline remains:
+- its native contracts;
+- its change-system artifacts;
+- one `boundary.lock.json`.
 
-| Component | Current requirement |
-| --- | --- |
-| Node.js | 22+ |
-| Spec Kit | `1.0.10` |
-| Spec Kit integration | `codex` |
-| Stable upstream SpecDD CLI comparison baseline | `1.1.1` |
-| Temporary resolver provider | `specdd` package reporting `1.2.0` from `dmos62/specdd-cli` branch `feature/resolve-intended-targets` |
-| SpecDD framework | `1.5` |
+The lock identifies an exact Boundary Git commit archive and the SHA-256 of those exact archive bytes.
 
-The stable baseline was re-checked on 2026-09-23.
+Generated runtime copies, installed adapter state, materialized skills, caches, provenance records, and operation evidence are not canonical project semantics.
 
-The temporary SpecDD provider exists only because the current bridge implementation needs typed intended-target resolution. The native Boundary contract engine will remove that dependency rather than standardizing it as a product requirement.
+A fresh clone reconstructs tooling from the committed immutable lock.
 
-## Current development setup
+See [docs/spec-distribution.md](docs/spec-distribution.md) and [docs/setup-downstream.md](docs/setup-downstream.md).
 
-From this repository checkout:
+## Development
+
+Bootstrap the Boundary source repository with:
 
     bash scripts/bootstrap.sh
 
-Verify the current adapter implementation without intentionally changing repository state:
+Check an existing development installation without intentionally changing canonical source with:
 
     bash scripts/bootstrap.sh --check
 
-The bootstrap and installer remain development/migration mechanisms until the Boundary-native downstream workflow is implemented.
+Validate native contracts with:
 
-Current development and packaging procedures are in [docs/development.md](docs/development.md).
+    PYTHONPATH=src uv run --no-project python -m boundary contracts check
+
+Additional development and test commands are documented in [docs/setup-development.md](docs/setup-development.md).
 
 ## Design documentation
 
-The target architecture is split by responsibility:
+The current architecture is split by responsibility:
 
-- [docs/spec.md](docs/spec.md): Boundary product model and invariants.
-- [docs/spec-architecture.md](docs/spec-architecture.md): core, adapters, transient projections, and implementation boundaries.
-- [docs/spec-contracts.md](docs/spec-contracts.md): native contract format, ownership, and additive scoped applicability.
-- [docs/spec-agent-instructions.md](docs/spec-agent-instructions.md): skills, progressive disclosure, and cache-friendly agent context.
-- [docs/spec-authorization.md](docs/spec-authorization.md): explicit writes, operation evidence, Git baselines, verification, and authorization epochs.
-- [docs/spec-lifecycle.md](docs/spec-lifecycle.md): change-system integration, implementation lifecycle, contract evolution, and convergence.
-- [docs/change-boundary.md](docs/change-boundary.md): legacy reference for the currently implemented SpecDD-backed Change Boundary model.
-- [docs/TODO.md](docs/TODO.md): ordered migration work.
-- [docs/TECH-DEBT.md](docs/TECH-DEBT.md): unresolved risks in the current implementation.
-
-The exploratory source that motivated this architecture remains historical guidance rather than an implementation contract.
+- [docs/spec.md](docs/spec.md): product model and invariants.
+- [docs/spec-architecture.md](docs/spec-architecture.md): core structures and adapter boundaries.
+- [docs/spec-contracts.md](docs/spec-contracts.md): native contract format and applicability.
+- [docs/spec-agent-instructions.md](docs/spec-agent-instructions.md): progressive agent instruction delivery.
+- [docs/spec-authorization.md](docs/spec-authorization.md): operation evidence, Git baselines, and verification.
+- [docs/spec-change-adapter.md](docs/spec-change-adapter.md): provider-neutral change-system integration.
+- [docs/spec-lifecycle.md](docs/spec-lifecycle.md): authorization, implementation, verification, and contract evolution.
+- [docs/spec-distribution.md](docs/spec-distribution.md): immutable downstream locks and reconstruction.
+- [docs/TODO.md](docs/TODO.md): remaining implementation and release work.
+- [docs/history/README.md](docs/history/README.md): explicitly historical migration material.
 
 ## Summary invariant
 
-Boundary is correctly designed while this remains true:
+Boundary remains coherent while:
 
-> Persistent system constraints are independent of any one change system, contract engine, or agent runtime; agents receive only relevant procedure and effective context; deterministic authorization and verification do not depend on prompt compliance.
+> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is reconstructed from an immutable committed source lock.

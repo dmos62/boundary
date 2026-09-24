@@ -160,9 +160,9 @@ Concrete change-system integrations use this query during planning and task refi
 
 ## Bootstrap independence
 
-Boundary installation and normal operation do not initialize, read, or require `.specdd/bootstrap.md` or another project-wide framework bootstrap as an agent-instruction source.
+Boundary installation and normal operation do not initialize, read, or require a project-wide provider bootstrap as an agent-instruction source.
 
-Existing legacy bootstrap files may remain in historical repositories, but Boundary does not copy their instructions into a global prompt or consult them for native authorization.
+Historical repositories may contain legacy bootstrap files, but Boundary does not copy their instructions into a global prompt or consult them for native authorization.
 
 ## No automatic full-contract loading
 

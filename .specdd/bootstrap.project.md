@@ -1,1 +1,0 @@
-# SpecDD project specific overrides

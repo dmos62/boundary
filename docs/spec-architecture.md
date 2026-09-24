@@ -21,7 +21,7 @@ The core owns provider-independent mechanics:
 - provider-neutral diagnostics;
 - atomic operation evidence.
 
-The core does not know about Spec Kit command names, agent skill directories, SpecDD sections, `.sdd`, or `.specdd/`.
+The core does not know about Spec Kit command names, agent skill directories, legacy specification-provider sections, provider file types, or provider bootstrap state.
 
 ### Native contract engine
 

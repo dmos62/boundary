@@ -2,7 +2,7 @@
 
 Boundary uses a native persistent-contract model designed for deterministic scope resolution and concise progressive agent context.
 
-The native model intentionally preserves the useful property of hierarchical constraints without inheriting SpecDD's file-location and framework-bootstrap semantics.
+The native model preserves hierarchical constraints without inheriting filesystem-position semantics or project-wide provider bootstrap rules.
 
 ## Canonical location
 
@@ -73,7 +73,7 @@ A contract must declare at least one of:
 
 `depends_on` is optional and contains contract IDs.
 
-Boundary v1 deliberately has no `extends`, `override`, `except`, `Can modify`, or equivalent delegated-write field.
+Boundary v1 deliberately has no `extends`, `override`, `except`, delegated-write, or equivalent permission field.
 
 ## Path scope grammar
 
@@ -101,7 +101,7 @@ An exact path is always exact.
 
 A subtree path always denotes that subtree whether or not the directory exists yet.
 
-No probe file or resolver capability is needed.
+No probe file or external resolver capability is needed.
 
 ## No global catch-all contract
 
@@ -113,7 +113,7 @@ Cross-component or cross-layer constraints must identify the concrete scopes to 
 
 Development-process rules that truly apply to every change belong in change-system governance or stable Boundary procedure, not in a global persistent architecture prompt.
 
-This prevents a new monolithic project contract from replacing the old framework bootstrap.
+This prevents a new monolithic project contract from replacing progressive disclosure.
 
 ## Applicability
 
@@ -260,14 +260,14 @@ Additional checks should be added only when their semantics are precise.
 
 ## Deliberately omitted v1 concepts
 
-Boundary v1 does not preserve these SpecDD concepts automatically:
+Boundary v1 does not preserve legacy provider concepts automatically, including:
 
-- framework bootstrap inheritance;
+- project-wide framework bootstrap inheritance;
 - directory-position semantics;
 - arbitrary ownership glob syntax;
-- `Can modify`;
+- delegated non-owner write permissions;
 - task entries inside persistent contracts;
-- global root contract inheritance;
+- global root-contract inheritance;
 - provider framework versions.
 
-If a concrete Boundary use case later requires delegated non-owner write permission, it should be introduced as a native owner-issued concept rather than copied from the legacy provider by default.
+If a concrete Boundary use case later requires delegated non-owner write permission, it should be introduced as a native owner-issued concept rather than inherited for compatibility.
