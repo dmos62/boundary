@@ -49,7 +49,7 @@ class AuthorizationWriteSetTests(unittest.TestCase):
             order=1,
             task_id="T011",
             story="US2",
-            writes=("src/auth/service.ts", "docs/login.md"),
+            writes=("docs/login.md",),
         )
         change = ChangeWriteSet(
             change_id="001-login",
@@ -83,6 +83,21 @@ class AuthorizationWriteSetTests(unittest.TestCase):
                 story="US1",
                 writes=("src/auth/service.ts", "src/auth/service.ts"),
             )
+
+        first = TaskWriteSet(
+            order=0,
+            task_id="T001",
+            story="US1",
+            writes=("src/auth/service.ts",),
+        )
+        second = TaskWriteSet(
+            order=1,
+            task_id="T002",
+            story="US1",
+            writes=("src/auth/service.ts",),
+        )
+        with self.assertRaisesRegex(WriteSetError, "multiple tasks"):
+            ChangeWriteSet("001-change", (first, second))
 
     def test_change_write_set_requires_canonical_task_order(self):
         later = TaskWriteSet(1, "T002", "US1", ("src/b.ts",))

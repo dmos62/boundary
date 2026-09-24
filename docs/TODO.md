@@ -11,14 +11,16 @@ The supported downstream lifecycle, immutable lock schema, generated-source prov
 Current verification baseline:
 
 - native contract check passes with 15 contracts;
-- Git history contains candidate revisions `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e` and `b43741a19ce12cc408fd493c25df17541e5a46c9`;
-- anonymous access to the configured GitHub repository/archive currently returns HTTP 404, so those revisions do not yet satisfy P10's publicly retrievable archive requirement;
-- exact release archive SHA-256 values therefore cannot yet be established;
-- release fixtures remain uncommitted and the release-proof test remains pending;
+- Git history contains release revisions `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e` and `b43741a19ce12cc408fd493c25df17541e5a46c9`;
+- `https://github.com/dmos62/speckit-specdd` is anonymously readable and both exact commit archives are anonymously downloadable;
+- archive `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e` has SHA-256 `2dd4b6231e63d1c236c5d715b6852aad4ca28a77208c9248c6614ef79a0600d5`;
+- archive `b43741a19ce12cc408fd493c25df17541e5a46c9` has SHA-256 `158db005bad253bd57b56cb9ea4697cbac4d29ad886248bf2ee0c05827774353`;
+- release fixtures now name those published immutable revisions and exact archive checksums;
+- the release-proof test remains to be confirmed against the committed real archive fixtures;
 - migration-only Change Boundary, validation, verification, and workflow test suites have been removed from the active test surface;
 - Spec Kit distribution tests use the current `integration/speckit*` source layout and native contracts rather than a compatibility fixture.
 
-Work in the order below. P10 remains first priority. `HUMAN-REQUEST.md` now requests public anonymous publication of the two genuine implementation revisions. While that external publication requirement remains unresolved, continue P11 cleanup without changing release-proof semantics.
+Work in the order below. P10 remains first priority until the committed release fixtures pass the real-archive lifecycle matrix.
 
 ## P10 — Define the reproducible downstream Boundary experience
 
@@ -26,20 +28,14 @@ The local checksum-verified archive lifecycle already covers fresh-clone install
 
 Release-proof coverage is implemented in `tests/test_consumer_release.py` and enabled with `BOUNDARY_RELEASE_ARCHIVE_TESTS=1`.
 
-Candidate identities:
+Published identities:
 
 - initial: `ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e`;
 - upgrade: `b43741a19ce12cc408fd493c25df17541e5a46c9`.
 
 Remaining work:
 
-- [ ] Make both candidate revisions anonymously retrievable as immutable GitHub commit archives from the intended public source.
-- [ ] Obtain the exact SHA-256 of the downloaded archive bytes for both published candidates.
-- [ ] Commit `tests/fixtures/consumer-release/boundary.lock.json` and `boundary-upgrade.lock.json` using those exact revisions, URLs, and SHA-256 values.
-- [ ] Run the fresh-clone release lifecycle matrix against the committed real archive fixtures.
-- [ ] Delete `HUMAN-REQUEST.md` after both archives have been downloaded anonymously and the release fixtures verify.
-
-Do not substitute authenticated-only downloads, unpublished revisions, mutable branch or tag archives, synthetic archives, or fabricated checksums.
+- [ ] Run the fresh-clone release lifecycle matrix against the committed real archive fixtures and resolve any genuine release-path failures.
 
 Done when:
   A fresh clone can reconstruct the same Boundary tooling and agent capabilities from the committed lock while carrying only native project contracts as persistent Boundary semantics.

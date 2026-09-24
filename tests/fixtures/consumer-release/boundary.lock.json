@@ -1,0 +1,8 @@
+{
+  "schema": "boundary.lock/v1",
+  "source": {
+    "revision": "ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e",
+    "sha256": "2dd4b6231e63d1c236c5d715b6852aad4ca28a77208c9248c6614ef79a0600d5",
+    "url": "https://github.com/dmos62/speckit-specdd/archive/ab7302e1d6986e0ce0db9ac8a567999e6aa3a50e.tar.gz"
+  }
+}

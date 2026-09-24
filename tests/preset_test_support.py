@@ -18,6 +18,7 @@ WORKFLOW_OVERLAY_PATH = EXTENSION_ROOT / "workflow-overlay.yml"
 BOOTSTRAP_PATH = REPO_ROOT / "scripts" / "bootstrap.sh"
 INSTALLER_PATH = REPO_ROOT / "scripts" / "install.sh"
 INSTALL_SOURCE_PATH = REPO_ROOT / "scripts" / "install-source.sh"
+INSTALL_HOST_PATH = REPO_ROOT / "scripts" / "install-host.sh"
 CODEX_SKILLS_DIR = Path(".agents") / "skills"
 INSTALLED_RUNTIME_PATH = (
     Path(".specify") / "extensions" / "boundary" / "scripts" / "adapter_gate.py"

@@ -4,6 +4,7 @@ from preset_test_support import (
     BOOTSTRAP_PATH,
     EXTENSION_ROOT,
     INSTALLER_PATH,
+    INSTALL_HOST_PATH,
     INSTALL_SOURCE_PATH,
     PRESET_ROOT,
     SPECKIT_VERSION,
@@ -91,7 +92,8 @@ class PresetSourceTests(unittest.TestCase):
     def test_installer_materializes_native_runtime(self):
         installer = INSTALLER_PATH.read_text(encoding="utf-8")
         source_helper = INSTALL_SOURCE_PATH.read_text(encoding="utf-8")
-        content = installer + "\n" + source_helper
+        host_helper = INSTALL_HOST_PATH.read_text(encoding="utf-8")
+        content = "\n".join((installer, source_helper, host_helper))
 
         for marker in (
             f'readonly SPECKIT_VERSION="{SPECKIT_VERSION}"',
@@ -99,6 +101,7 @@ class PresetSourceTests(unittest.TestCase):
             'readonly CODEX_SKILL_ADAPTER="adapters/codex/materialize.py"',
             'readonly BOUNDARY_RUNTIME_DIR=".specify/boundary-runtime"',
             'source "$INSTALL_SCRIPT_DIR/install-source.sh"',
+            'source "$INSTALL_SCRIPT_DIR/install-host.sh"',
             "specify extension add",
             "specify preset add",
             "specify workflow overlay add",
@@ -115,13 +118,14 @@ class PresetSourceTests(unittest.TestCase):
             "pip install",
             "specify bundle install",
         ):
-            self.assertNotIn(forbidden, installer)
+            self.assertNotIn(forbidden, content)
 
     def test_shell_sources_remain_small(self):
         for path in (
             BOOTSTRAP_PATH,
             INSTALLER_PATH,
             INSTALL_SOURCE_PATH,
+            INSTALL_HOST_PATH,
         ):
             with self.subTest(path=path.name):
                 self.assertLessEqual(
