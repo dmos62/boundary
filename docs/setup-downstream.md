@@ -10,7 +10,10 @@ The downstream machine needs:
 
 - Git;
 - `uv`;
-- Codex.
+- Codex;
+- a clean Boundary source checkout.
+
+The Boundary checkout is supplied by the operator. Boundary does not download or discover its own source.
 
 The locked installer establishes the supported Spec Kit version when installation requires it.
 
@@ -24,42 +27,83 @@ Commit:
 
 Do not commit generated Boundary runtime copies, installed adapter state, or materialized Boundary skills as Boundary source.
 
-A lock has this shape:
+The target lock has this shape:
 
     {
-      "schema": "boundary.lock/v1",
+      "schema": "boundary.lock/v2",
       "source": {
-        "revision": "<40-character Boundary commit>",
-        "sha256": "<SHA-256 of the exact archive bytes>",
-        "url": "https://github.com/<owner>/<repo>/archive/<commit>.tar.gz"
+        "revision": "<40-character Boundary commit>"
       }
     }
 
-The commit in `url` and `revision` must be identical.
+The lock records which Boundary revision the project expects. It does not contain a source URL, checksum, or local checkout path.
 
-## Fresh clone reconstruction
+## First-time adoption
 
-After cloning the downstream repository, run the Boundary consumer utility from an available Boundary distribution or tooling checkout:
+Choose a clean Boundary checkout at the revision the project should adopt.
+
+Run its consumer against the downstream repository:
+
+    python /path/to/boundary/scripts/consumer.py \
+      --root /path/to/project \
+      adopt
+
+This creates `/path/to/project/boundary.lock.json` using the current Boundary checkout's exact Git revision.
+
+Review and commit the new lock.
+
+Boundary does not generate the project's native architectural contracts. Add and maintain those under `contracts/` as project-authored persistent semantics.
+
+## Install locally
+
+Using the same Boundary checkout, run:
 
     python /path/to/boundary/scripts/consumer.py \
       --root /path/to/project \
       install
 
-The consumer reads `/path/to/project/boundary.lock.json`, verifies the locked archive, and delegates installation to that exact Boundary source.
+The consumer verifies that:
+
+- its own Boundary checkout is clean;
+- its Git revision matches the project's lock.
+
+It then installs generated Boundary runtime and integration state from that checkout.
+
+No Boundary source archive is downloaded.
+
+## Fresh clone installation
+
+After cloning an already adopted downstream repository:
+
+1. read the revision in `boundary.lock.json`;
+2. obtain a clean Boundary checkout at that exact revision;
+3. run that checkout's consumer with `install`.
+
+For example:
+
+    python /path/to/matching-boundary/scripts/consumer.py \
+      --root /path/to/project \
+      install
 
 The downstream repository does not need a canonical `src/boundary/`, `skills/`, `adapters/`, or `integration/` tree.
 
+The lock intentionally does not tell Boundary where to fetch its implementation. Supplying the matching checkout is an operator responsibility.
+
 ## Health check
 
-Run:
+Run from a Boundary checkout matching the project lock:
 
     python /path/to/boundary/scripts/consumer.py \
       --root /path/to/project \
       check
 
-The check requires installed source provenance to match the committed lock and then runs the health check supplied by the locked source.
+The check requires:
 
-## Remove and reconstruct
+- the invoking Boundary checkout to match the committed lock;
+- installed source provenance to match the committed lock;
+- generated integration state to pass that revision's health checks.
+
+## Remove and reinstall
 
 Remove generated Boundary integration:
 
@@ -67,28 +111,31 @@ Remove generated Boundary integration:
       --root /path/to/project \
       remove
 
-Reconstruct the same locked version:
+Reinstall the same locked version:
 
     python /path/to/boundary/scripts/consumer.py \
       --root /path/to/project \
       reinstall
 
+Both commands must be run from a clean Boundary checkout at the locked revision.
+
 ## Deliberate upgrade
 
-Determine the new exact Boundary commit and the SHA-256 of its exact GitHub commit archive.
+Obtain a clean Boundary checkout at the revision the project should use next.
 
-Then run:
+Run that candidate checkout's consumer:
 
-    python /path/to/boundary/scripts/consumer.py \
+    python /path/to/new-boundary/scripts/consumer.py \
       --root /path/to/project \
-      upgrade \
-      --source https://github.com/<owner>/<repo>/archive/<commit>.tar.gz \
-      --revision <commit> \
-      --sha256 <archive-sha256>
+      upgrade
 
-The upgrade installs the candidate source before replacing `boundary.lock.json`.
+The candidate is installed before `boundary.lock.json` is replaced.
 
-Review and commit the resulting lock change deliberately. Boundary never follows a mutable release automatically.
+Review and commit the resulting lock change deliberately.
+
+If candidate installation fails, the lock remains on the previous revision. Boundary does not automatically fetch or retain the previous source, so automatic rollback is not guaranteed.
+
+To restore the previous installation after a failed upgrade, obtain a clean Boundary checkout at the still-locked previous revision and reinstall from it.
 
 ## Generated state
 
@@ -98,4 +145,4 @@ Operation authorization evidence also lives in Git metadata rather than ordinary
 
 Shared Spec Kit registry or configuration files are not automatically ignored by Boundary. If installation changes shared host state, that change remains visible in Git status and should be handled according to the project's Spec Kit configuration policy.
 
-Boundary-owned generated files can be removed and reconstructed without changing native project contracts.
+Boundary-owned generated files can be removed and recreated from any clean Boundary checkout at the project's locked revision.

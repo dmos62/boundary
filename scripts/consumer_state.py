@@ -85,18 +85,20 @@ def update_local_excludes(root: Path, *, enabled: bool) -> None:
 def require_local_excludes(root: Path) -> None:
     path = _git_exclude_path(root)
     try:
-        lines = set(path.read_text(encoding="utf-8").splitlines())
+        lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as exc:
         raise ConsumerStateError(
             "Boundary generated-state Git exclusions are missing"
         ) from exc
 
-    required = {
-        EXCLUDE_BEGIN,
-        EXCLUDE_END,
-        *GENERATED_EXCLUDES,
-    }
-    if not required.issubset(lines):
+    span = _managed_exclude_span(lines)
+    if span is None:
+        raise ConsumerStateError(
+            "Boundary generated-state Git exclusions are missing or stale"
+        )
+
+    start, end = span
+    if tuple(lines[start + 1 : end]) != GENERATED_EXCLUDES:
         raise ConsumerStateError(
             "Boundary generated-state Git exclusions are missing or stale"
         )
@@ -123,15 +125,38 @@ def _git_exclude_path(root: Path) -> Path:
 
 
 def _without_managed_excludes(lines: list[str]) -> list[str]:
-    result: list[str] = []
-    inside = False
-    for line in lines:
+    span = _managed_exclude_span(lines)
+    if span is None:
+        return list(lines)
+
+    start, end = span
+    return [*lines[:start], *lines[end + 1 :]]
+
+
+def _managed_exclude_span(
+    lines: list[str],
+) -> tuple[int, int] | None:
+    start: int | None = None
+    end: int | None = None
+
+    for index, line in enumerate(lines):
         if line == EXCLUDE_BEGIN:
-            inside = True
-            continue
-        if line == EXCLUDE_END:
-            inside = False
-            continue
-        if not inside:
-            result.append(line)
-    return result
+            if start is not None:
+                raise ConsumerStateError(
+                    "Boundary generated-state Git exclusion block is malformed"
+                )
+            start = index
+        elif line == EXCLUDE_END:
+            if start is None or end is not None:
+                raise ConsumerStateError(
+                    "Boundary generated-state Git exclusion block is malformed"
+                )
+            end = index
+
+    if (start is None) != (end is None):
+        raise ConsumerStateError(
+            "Boundary generated-state Git exclusion block is malformed"
+        )
+    if start is None:
+        return None
+    return start, end

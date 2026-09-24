@@ -3,33 +3,15 @@
 from __future__ import annotations
 
 from contextlib import redirect_stderr
-import hashlib
 import io
 from pathlib import Path
-import shutil
 import subprocess
-import tarfile
-from typing import Callable
 import unittest
+from unittest import mock
 
 import consumer as consumer_module
 from consumer_lock import BoundaryLock, write_lock
-
-
-_REQUIRED_PLACEHOLDERS = (
-    "integration/speckit/extension.yml",
-    "integration/speckit-preset/preset.yml",
-    "integration/speckit/workflow-overlay.yml",
-    "adapters/codex/materialize.py",
-    "scripts/install-host.sh",
-    "scripts/install-source.sh",
-    "scripts/consumer.py",
-    "scripts/consumer_lock.py",
-    "src/boundary/__init__.py",
-    "skills/scope/SKILL.md",
-    "skills/implement/SKILL.md",
-    "skills/contracts/SKILL.md",
-)
+from consumer_state import GENERATED_EXCLUDES
 
 
 def run_git(root: Path, *args: str) -> str:
@@ -45,44 +27,34 @@ def run_git(root: Path, *args: str) -> str:
     return result.stdout
 
 
-def make_archive(
+def make_source_checkout(
     root: Path,
-    revision: str,
     marker: str,
     *,
     fail_install: bool = False,
 ) -> tuple[BoundaryLock, Path]:
-    source = root / f"boundary-{revision[:8]}"
-    source.mkdir()
-    for relative in _REQUIRED_PLACEHOLDERS:
-        path = source / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("fixture\n", encoding="utf-8")
-
-    failure = "exit 23" if fail_install else ""
-    (source / "scripts" / "install.sh").write_text(
-        _installer_source(marker, failure),
+    installer = root / "scripts" / "install.sh"
+    installer.parent.mkdir(parents=True)
+    installer.write_text(
+        _installer_source(marker, fail_install),
+        encoding="utf-8",
+    )
+    (root / "scripts" / "consumer.py").write_text(
+        "# fixture consumer location\n",
         encoding="utf-8",
     )
 
-    archive = root / f"{revision}.tar.gz"
-    with tarfile.open(archive, "w:gz") as handle:
-        handle.add(source, arcname=source.name)
-    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-    return (
-        BoundaryLock(
-            source_url=(
-                "https://github.com/example/boundary/archive/"
-                f"{revision}.tar.gz"
-            ),
-            revision=revision,
-            sha256=digest,
-        ),
-        archive,
-    )
+    run_git(root, "init", "-q")
+    run_git(root, "config", "user.email", "tests@example.invalid")
+    run_git(root, "config", "user.name", "Boundary Tests")
+    run_git(root, "add", "-A")
+    run_git(root, "commit", "-q", "-m", f"Boundary {marker}")
+    revision = run_git(root, "rev-parse", "HEAD").strip()
+    return BoundaryLock(revision=revision), root
 
 
-def _installer_source(marker: str, failure: str) -> str:
+def _installer_source(marker: str, fail_install: bool) -> str:
+    failure = "exit 23" if fail_install else ""
     return (
         "#!/usr/bin/env bash\n"
         "set -eu\n"
@@ -161,17 +133,12 @@ def clone_fixture(source: Path, target: Path) -> None:
         raise AssertionError(result.stdout + result.stderr)
 
 
-def download_from(
-    archives: dict[str, Path],
-) -> Callable[[str, Path], None]:
-    def download(url: str, output: Path) -> None:
-        shutil.copyfile(archives[url], output)
-
-    return download
-
-
-def run_consumer(root: Path, *args: str) -> int:
-    with redirect_stderr(io.StringIO()):
+def run_consumer(root: Path, source_root: Path, *args: str) -> int:
+    consumer_path = source_root / "scripts" / "consumer.py"
+    with (
+        mock.patch.object(consumer_module, "__file__", str(consumer_path)),
+        redirect_stderr(io.StringIO()),
+    ):
         return consumer_module.main(["--root", str(root), *args])
 
 
@@ -189,15 +156,11 @@ def assert_no_boundary_generated_status(
     case: unittest.TestCase,
     root: Path,
 ) -> None:
-    generated_roots = tuple(
-        value.strip("/")
-        for value in consumer_module._GENERATED_EXCLUDES
-    )
+    generated_roots = tuple(value.strip("/") for value in GENERATED_EXCLUDES)
     for path in status_paths(root):
         case.assertFalse(
             any(
-                path == generated
-                or path.startswith(f"{generated}/")
+                path == generated or path.startswith(f"{generated}/")
                 for generated in generated_roots
             ),
             path,

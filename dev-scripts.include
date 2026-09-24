@@ -1,5 +1,6 @@
 @cli! bash -lic "PYTHONPATH=src uv run --no-project python -m boundary contracts check"
 @cli! bash -lic "PYTHONPATH=src:integration/speckit/scripts:scripts uv run --no-project python -m unittest discover -s tests -p 'test_consumer*.py'"
 @cli! bash -lic 'log="$(mktemp)"; if bash scripts/bootstrap.sh >"$log" 2>&1 && bash scripts/bootstrap.sh --check >>"$log" 2>&1; then printf "%s\n" "bootstrap: ok"; rm -f "$log"; else cat "$log"; rm -f "$log"; exit 1; fi'
-@cli! bash -lic 'log="$(mktemp)"; if BOUNDARY_RELEASE_ARCHIVE_TESTS=1 PYTHONPATH=src:integration/speckit/scripts uv run --no-project python -m unittest discover -s tests -p "test_consumer_release.py" >"$log" 2>&1; then printf "%s\n" "published archive proof: ok"; rm -f "$log"; else cat "$log"; rm -f "$log"; exit 1; fi'
+@cli! bash -lic 'printf "%s\n" "--- potentially stale downstream distribution language ---"; grep -InE "archive URL|archive checksum|immutable download|immutable-download|remote downstream reconstruction|automatic reconstruction|automatic-reconstruction|download.*Boundary|fetch.*Boundary|resolve.*release|latest.release" docs/setup-*.md scripts/consumer.py scripts/install.sh 2>/dev/null || true'
+@cli! bash -lic 'test ! -s docs/TODO.md && printf "%s\n" "todo: empty"'
 @cli! bash -lic 'printf "%s\n" "--- Files over 250 lines ---"; find scripts tests docs contracts -type f \( -name "*.py" -o -name "*.sh" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" \) -not -path "*/__pycache__/*" -print0 2>/dev/null | xargs -0 -r wc -l | awk "\$1 > 250 && \$2 != \"total\" {print}"'

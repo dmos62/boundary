@@ -67,11 +67,15 @@ Usage:
   bash scripts/install.sh --check
   bash scripts/install.sh --remove
 
-This script installs from already materialized Boundary source and is intended
-for Boundary development and the locked downstream consumer.
+This script installs from already materialized local Boundary source.
 
-Downstream repositories should use boundary.lock.json with scripts/consumer.py.
-Direct mutable or unchecked remote source installation is not supported here.
+The --source option accepts a local directory or local archive. Local archive
+input is supported for Boundary development; the downstream consumer delegates
+installation using its validated Boundary checkout as the local source.
+
+Downstream repositories should run scripts/consumer.py from a clean Boundary
+checkout whose revision matches boundary.lock.json. Neither install.sh nor the
+downstream consumer retrieves or reconstructs Boundary source.
 EOF
 }
 

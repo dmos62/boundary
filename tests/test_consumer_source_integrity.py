@@ -1,69 +1,101 @@
+"""Tests for invoking Boundary source-checkout validation."""
+
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-import consumer_lock
-from consumer_lock import BoundaryLock, BoundaryLockError
+from consumer_source import (  # noqa: E402
+    BoundarySourceError,
+    load_source_checkout,
+)
 
 
-class ConsumerSourceIntegrityTests(unittest.TestCase):
-    def test_materialization_rejects_missing_consumer_state_helper(self) -> None:
-        revision = "a" * 40
-        with tempfile.TemporaryDirectory() as temp:
-            temp_root = Path(temp)
-            source_root = temp_root / f"boundary-{revision}"
-            for relative in consumer_lock._REQUIRED_SOURCE_PATHS:
-                if relative == "scripts/consumer_state.py":
-                    continue
-                path = source_root / relative
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text("fixture\n", encoding="utf-8")
+@unittest.skipUnless(shutil.which("git"), "Git is required")
+class ConsumerSourceCheckoutTests(unittest.TestCase):
+    def test_accepts_clean_checkout_and_reports_exact_head(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            consumer = self._initialize_source(root)
+            expected = self._git(root, "rev-parse", "HEAD").strip()
 
-            archive_base = temp_root / "fixture"
-            archive = Path(
-                shutil.make_archive(
-                    str(archive_base),
-                    "zip",
-                    root_dir=temp_root,
-                    base_dir=source_root.name,
-                )
-            )
-            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
-            lock = BoundaryLock(
-                source_url=(
-                    "https://github.com/example/boundary/archive/"
-                    f"{revision}.zip"
-                ),
-                revision=revision,
-                sha256=digest,
-            )
+            source = load_source_checkout(consumer)
 
-            destination = temp_root / "materialized"
+            self.assertEqual(root.resolve(), source.root)
+            self.assertEqual(expected, source.revision)
 
-            def copy_archive(_url: str, output: Path) -> None:
-                shutil.copyfile(archive, output)
+    def test_rejects_dirty_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            consumer = self._initialize_source(root)
+            (root / "dirty.txt").write_text("dirty\n", encoding="utf-8")
 
-            with mock.patch.object(
-                consumer_lock,
-                "_download",
-                side_effect=copy_archive,
+            with self.assertRaisesRegex(
+                BoundarySourceError,
+                "must be clean",
             ):
-                with self.assertRaisesRegex(
-                    BoundaryLockError,
-                    r"scripts/consumer_state\.py",
-                ):
-                    consumer_lock.materialize_locked_source(lock, destination)
+                load_source_checkout(consumer)
+
+    def test_rejects_non_git_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            consumer = root / "scripts" / "consumer.py"
+            consumer.parent.mkdir()
+            consumer.write_text("fixture\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                BoundarySourceError,
+                "not a Git worktree",
+            ):
+                load_source_checkout(consumer)
+
+    def test_requires_consumer_at_checkout_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._initialize_source(root)
+            nested = root / "nested" / "scripts" / "consumer.py"
+            nested.parent.mkdir(parents=True)
+            nested.write_text("fixture\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                BoundarySourceError,
+                "source checkout root",
+            ):
+                load_source_checkout(nested)
+
+    @classmethod
+    def _initialize_source(cls, root: Path) -> Path:
+        consumer = root / "scripts" / "consumer.py"
+        consumer.parent.mkdir(parents=True)
+        consumer.write_text("fixture\n", encoding="utf-8")
+        cls._git(root, "init", "-q")
+        cls._git(root, "config", "user.email", "tests@example.invalid")
+        cls._git(root, "config", "user.name", "Boundary Tests")
+        cls._git(root, "add", "-A")
+        cls._git(root, "commit", "-q", "-m", "source fixture")
+        return consumer
+
+    @staticmethod
+    def _git(root: Path, *args: str) -> str:
+        result = subprocess.run(
+            ["git", *args],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise AssertionError(result.stdout + result.stderr)
+        return result.stdout
 
 
 if __name__ == "__main__":

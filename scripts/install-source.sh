@@ -62,7 +62,7 @@ materialize_source() {
   fi
 
   if [[ "$source" == http://* || "$source" == https://* ]]; then
-    fail "remote Boundary source requires boundary.lock.json and scripts/consumer.py"
+    fail "remote Boundary source is not accepted; supply an already materialized local directory or archive"
   fi
 
   fail "source does not exist: ${source}"

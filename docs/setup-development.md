@@ -24,7 +24,7 @@ For development iterations, run:
 
 The source installer accepts an already materialized local Boundary directory or local archive.
 
-It does not fetch unchecked remote Boundary source. Remote downstream reconstruction uses `boundary.lock.json` and `scripts/consumer.py`.
+It does not fetch unchecked remote Boundary source. Downstream repositories do not reconstruct Boundary source from the lock. Operators supply a clean Boundary checkout at the exact revision recorded in `boundary.lock.json` and invoke that checkout's `scripts/consumer.py`.
 
 ## Core checks
 

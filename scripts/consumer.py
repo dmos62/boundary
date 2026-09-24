@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Manage downstream Boundary state from one committed immutable lock."""
+"""Manage downstream Boundary state from one pinned source checkout."""
 
 from __future__ import annotations
 
@@ -7,15 +7,18 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 from typing import Sequence
 
 from consumer_lock import (
     BoundaryLock,
     BoundaryLockError,
     load_lock,
-    materialize_locked_source,
     write_lock,
+)
+from consumer_source import (
+    BoundarySourceCheckout,
+    BoundarySourceError,
+    load_source_checkout,
 )
 from consumer_state import (
     ConsumerStateError,
@@ -29,14 +32,14 @@ _DEFAULT_LOCK = "boundary.lock.json"
 
 
 class ConsumerError(RuntimeError):
-    """Raised when downstream reconstruction cannot complete safely."""
+    """Raised when downstream Boundary lifecycle work cannot complete."""
 
 
 def parse_args(
     argv: Sequence[str] | None = None,
 ) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Reconstruct downstream Boundary state from its lock."
+        description="Manage downstream Boundary state from its pinned checkout."
     )
     parser.add_argument(
         "--root",
@@ -52,15 +55,12 @@ def parse_args(
     )
 
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("adopt")
     commands.add_parser("install")
     commands.add_parser("check")
     commands.add_parser("remove")
     commands.add_parser("reinstall")
-
-    upgrade = commands.add_parser("upgrade")
-    upgrade.add_argument("--source", required=True)
-    upgrade.add_argument("--revision", required=True)
-    upgrade.add_argument("--sha256", required=True)
+    commands.add_parser("upgrade")
     return parser.parse_args(argv)
 
 
@@ -72,26 +72,26 @@ def main(argv: Sequence[str] | None = None) -> int:
         lock_path = root / lock_path
 
     try:
-        if args.command == "upgrade":
-            replacement = BoundaryLock(
-                source_url=args.source,
-                revision=args.revision,
-                sha256=args.sha256,
-            )
-            _upgrade(root, lock_path, replacement)
+        source = _source_checkout()
+        if args.command == "adopt":
+            _adopt(lock_path, source)
+        elif args.command == "upgrade":
+            _upgrade(root, lock_path, source)
         else:
             lock = load_lock(lock_path)
+            _require_locked_source(lock, source)
             if args.command == "install":
-                _install(root, lock)
+                _install(root, lock, source)
             elif args.command == "check":
-                _check(root, lock)
+                _check(root, lock, source)
             elif args.command == "remove":
-                _remove(root, lock)
+                _remove(root, source)
             elif args.command == "reinstall":
-                _remove(root, lock)
-                _install(root, lock)
+                _remove(root, source)
+                _install(root, lock, source)
     except (
         BoundaryLockError,
+        BoundarySourceError,
         ConsumerError,
         ConsumerStateError,
         OSError,
@@ -101,70 +101,106 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-def _install(root: Path, lock: BoundaryLock) -> None:
-    _with_source(root, lock, "install")
+def _source_checkout() -> BoundarySourceCheckout:
+    return load_source_checkout(Path(__file__))
+
+
+def _adopt(
+    lock_path: Path,
+    source: BoundarySourceCheckout,
+) -> None:
+    if lock_path.exists():
+        raise ConsumerError(
+            f"Boundary lock already exists: {lock_path}"
+        )
+    write_lock(lock_path, BoundaryLock(revision=source.revision))
+
+
+def _require_locked_source(
+    lock: BoundaryLock,
+    source: BoundarySourceCheckout,
+) -> None:
+    if source.revision != lock.revision:
+        raise ConsumerError(
+            "Boundary source checkout revision does not match "
+            f"boundary.lock.json: expected {lock.revision}, "
+            f"received {source.revision}"
+        )
+
+
+def _install(
+    root: Path,
+    lock: BoundaryLock,
+    source: BoundarySourceCheckout,
+) -> None:
+    _with_source(root, source, "install")
     _write_provenance(root, lock)
     _update_local_excludes(root, enabled=True)
 
 
-def _check(root: Path, lock: BoundaryLock) -> None:
+def _check(
+    root: Path,
+    lock: BoundaryLock,
+    source: BoundarySourceCheckout,
+) -> None:
     _require_provenance(root, lock)
-    _with_source(root, lock, "check")
+    _with_source(root, source, "check")
     _require_local_excludes(root)
 
 
-def _remove(root: Path, lock: BoundaryLock) -> None:
-    _with_source(root, lock, "remove")
+def _remove(root: Path, source: BoundarySourceCheckout) -> None:
+    _with_source(root, source, "remove")
     _update_local_excludes(root, enabled=False)
 
 
 def _upgrade(
     root: Path,
     lock_path: Path,
-    replacement: BoundaryLock,
+    source: BoundarySourceCheckout,
 ) -> None:
     previous = load_lock(lock_path)
+    if source.revision == previous.revision:
+        raise ConsumerError(
+            "upgrade requires a Boundary source checkout at a different revision"
+        )
+
+    replacement = BoundaryLock(revision=source.revision)
     try:
-        _install(root, replacement)
-        write_lock(lock_path, replacement)
+        _install(root, replacement, source)
     except Exception as exc:
-        try:
-            _install(root, previous)
-        except Exception as rollback_exc:
-            raise ConsumerError(
-                "upgrade failed and the previous locked installation could "
-                f"not be restored: {rollback_exc}"
-            ) from exc
-        raise
+        raise ConsumerError(
+            f"candidate Boundary installation failed: {exc}. "
+            "boundary.lock.json remains "
+            f"at {previous.revision}. Recovery requires a Boundary checkout at "
+            "that still-locked revision"
+        ) from exc
+    write_lock(lock_path, replacement)
 
 
 def _with_source(
     root: Path,
-    lock: BoundaryLock,
+    source: BoundarySourceCheckout,
     action: str,
 ) -> None:
-    with tempfile.TemporaryDirectory(prefix="boundary-consumer-") as temp:
-        source_root = materialize_locked_source(lock, temp)
-        command = ["bash", str(source_root / "scripts" / "install.sh")]
-        if action == "install":
-            command.extend(["--source", str(source_root)])
-        elif action == "check":
-            command.append("--check")
-        elif action == "remove":
-            command.append("--remove")
-        else:
-            raise ConsumerError(f"unsupported consumer action: {action}")
+    command = ["bash", str(source.root / "scripts" / "install.sh")]
+    if action == "install":
+        command.extend(["--source", str(source.root)])
+    elif action == "check":
+        command.append("--check")
+    elif action == "remove":
+        command.append("--remove")
+    else:
+        raise ConsumerError(f"unsupported consumer action: {action}")
 
-        result = subprocess.run(
-            command,
-            cwd=root,
-            check=False,
+    result = subprocess.run(
+        command,
+        cwd=root,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ConsumerError(
+            f"Boundary {action} failed with exit status {result.returncode}"
         )
-        if result.returncode != 0:
-            raise ConsumerError(
-                f"locked Boundary {action} failed with exit "
-                f"status {result.returncode}"
-            )
 
 
 if __name__ == "__main__":

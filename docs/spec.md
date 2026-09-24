@@ -29,7 +29,7 @@ Boundary has the following durable concepts:
 - persistent-contract evolution;
 - actual-write verification;
 - progressive agent instruction disclosure;
-- immutable downstream source reconstruction.
+- source-revision-pinned downstream installation.
 
 These concepts must remain meaningful if the current change system or agent runtime is replaced.
 
@@ -39,13 +39,13 @@ The target downstream canonical state consists of:
 
 - change-system artifacts that define the requested change;
 - native Boundary contracts under `contracts/`;
-- one `boundary.lock.json` pinning an exact Boundary source revision and archive checksum.
+- one `boundary.lock.json` pinning the exact Boundary Git revision adopted by the project.
 
 Generated integration state, effective-context projections, installed skills, caches, install provenance, and operation evidence are not persistent system contracts.
 
 Operation evidence is historical workflow state stored outside ordinary project source, preferably in current-worktree Git metadata.
 
-The Boundary lock identifies implementation source but does not duplicate Boundary implementation into the downstream canonical tree.
+The Boundary lock records the expected Boundary source revision but is not a source-distribution locator. Operators supply a Boundary source checkout separately when running downstream lifecycle commands.
 
 ## Native persistent contracts
 
@@ -135,15 +135,17 @@ The current concrete integrations are Spec Kit for change-system state and Codex
 
 Boundary does not introduce a generalized runtime provider-plugin framework merely to abstract these implementations. Concrete adapters are preferred until actual implementations demonstrate a useful stable shared interface.
 
-## Downstream reconstruction invariant
+## Downstream source-checkout invariant
 
-A downstream repository must be able to reconstruct Boundary tooling from its committed `boundary.lock.json`.
+A downstream repository records the exact Boundary Git revision it expects but does not carry canonical Boundary implementation source.
 
-The lock identifies an immutable source revision and the exact downloaded archive checksum.
+Downstream lifecycle commands are executed from an operator-supplied Boundary source checkout. Except when first adopting or deliberately upgrading Boundary, that checkout must be clean and its exact Git revision must equal the committed lock.
 
-Generated runtime, extension, preset, workflow, and skill state is recreated from that source and does not become canonical Boundary implementation source in the consumer project.
+The downstream consumer does not fetch Boundary source, resolve releases, follow branches or tags, or reconstruct source from a remote locator stored in the project.
 
-Upgrades replace the lock deliberately. Installation must not silently follow a mutable branch, tag alias, or latest release.
+Generated runtime, extension, preset, workflow, and skill state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
+
+Adoption records the revision of the Boundary checkout being used. Upgrades are performed deliberately from a different clean Boundary checkout and replace the lock only after candidate installation succeeds.
 
 Detailed downstream semantics are defined in [spec-distribution.md](spec-distribution.md).
 
@@ -163,7 +165,8 @@ Boundary does not:
 - provide implicit contract override semantics;
 - introduce a generalized adapter marketplace or plugin framework;
 - automatically evolve persistent contracts to make implementation pass;
-- silently follow a mutable Boundary release during downstream installation.
+- fetch or discover Boundary source on behalf of a downstream project;
+- encode operator-local Boundary checkout paths in canonical project state.
 
 ## Focused specifications
 
@@ -175,7 +178,7 @@ The design is split by responsibility:
 - [spec-authorization.md](spec-authorization.md): explicit writes, operation records, Git baselines, epochs, and verification.
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation, and convergence.
-- [spec-distribution.md](spec-distribution.md): immutable downstream source locks, reconstruction, generated state, and upgrades.
+- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, generated state, and upgrades.
 
 Historical migration material is isolated under [history/](history/) and is not part of the current product architecture.
 
@@ -200,4 +203,4 @@ Remaining work is release evidence, compatibility cleanup, and final verificatio
 
 Boundary remains coherent while:
 
-> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is reconstructed from an immutable committed source lock.
+> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is supplied from a clean Boundary checkout whose revision matches the project's committed source pin.

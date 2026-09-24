@@ -1,27 +1,29 @@
 @filegroup
 @glob AGENTS.md
-@glob README.md
 @glob docs/spec.md
 @glob docs/TODO.md
 @glob docs/spec-distribution.md
 @glob docs/setup-downstream.md
+@glob docs/setup-development.md
 @glob contracts/boundary-repository-tooling.contract.md
-@glob contracts/boundary-tests.contract.md
-@glob scripts/consumer*.py
+@glob scripts/consumer.py
 @glob scripts/install.sh
-@glob scripts/install-source.sh
-@glob scripts/install-host.sh
-@glob scripts/bootstrap.sh
-@glob tests/test_consumer*.py
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
+@globexclude README.md
 @globexclude docs/history/**
 @globexclude docs/spec-authorization.md
-@globexclude docs/setup-development.md
 @globexclude docs/*.sdd
 @globexclude **/*.sdd
+@globexclude contracts/boundary-tests.contract.md
 @globexclude contracts/boundary-authorization.contract.md
 @globexclude contracts/boundary-operation-lifecycle.contract.md
+@globexclude scripts/bootstrap.sh
+@globexclude scripts/consumer_lock.py
+@globexclude scripts/consumer_source.py
+@globexclude scripts/consumer_state.py
+@globexclude scripts/install-source.sh
+@globexclude scripts/install-host.sh
 @globexclude src/**
 @globexclude adapters/**
 @globexclude integration/**
@@ -29,7 +31,7 @@
 @globexclude .agents/**
 @globexclude .specify/**
 @globexclude .specdd/**
-@globexclude tests/__pycache__/**
+@globexclude tests/**
 @globexclude **/__pycache__/**
 @globexclude **/*.pyc
 @endfilegroup

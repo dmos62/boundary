@@ -1,10 +1,9 @@
-"""Tests for immutable downstream Boundary source locks."""
+"""Tests for revision-only downstream Boundary source locks."""
 
 from __future__ import annotations
 
-from pathlib import Path
-from unittest import mock
 import json
+from pathlib import Path
 import sys
 import tempfile
 import unittest
@@ -14,7 +13,6 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-import consumer as consumer_module  # noqa: E402
 from consumer_lock import (  # noqa: E402
     BoundaryLock,
     BoundaryLockError,
@@ -24,114 +22,66 @@ from consumer_lock import (  # noqa: E402
 
 
 class BoundaryLockTests(unittest.TestCase):
-    def test_round_trips_exact_immutable_source_identity(self) -> None:
-        revision = "a" * 40
-        lock = BoundaryLock(
-            source_url=(
-                "https://github.com/example/boundary/archive/"
-                f"{revision}.tar.gz"
-            ),
-            revision=revision,
-            sha256="b" * 64,
-        )
+    def test_round_trips_exact_revision_only_source_identity(self) -> None:
+        lock = BoundaryLock(revision="a" * 40)
 
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "boundary.lock.json"
             write_lock(path, lock)
-
             loaded = load_lock(path)
+            document = json.loads(path.read_text(encoding="utf-8"))
 
         self.assertEqual(loaded, lock)
-        self.assertEqual(loaded.to_document(), lock.to_document())
-
-    def test_locked_install_passes_materialized_source(self) -> None:
-        revision = "a" * 40
-        lock = BoundaryLock(
-            source_url=(
-                "https://github.com/example/boundary/archive/"
-                f"{revision}.tar.gz"
-            ),
-            revision=revision,
-            sha256="b" * 64,
-        )
-
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp) / "consumer"
-            source = Path(temp) / "source"
-            root.mkdir()
-            source.mkdir()
-            with (
-                mock.patch.object(
-                    consumer_module,
-                    "materialize_locked_source",
-                    return_value=source,
-                ),
-                mock.patch.object(
-                    consumer_module.subprocess,
-                    "run",
-                    return_value=mock.Mock(returncode=0),
-                ) as run,
-            ):
-                consumer_module._with_source(root, lock, "install")
-
-        command = run.call_args.args[0]
         self.assertEqual(
-            command[-2:],
-            ["--source", str(source)],
+            {
+                "schema": "boundary.lock/v2",
+                "source": {"revision": "a" * 40},
+            },
+            document,
         )
 
-    def test_rejects_mutable_tag_archive(self) -> None:
+    def test_normalizes_uppercase_revision(self) -> None:
+        lock = BoundaryLock(revision="A" * 40)
+        self.assertEqual("a" * 40, lock.revision)
+
+    def test_rejects_malformed_revision(self) -> None:
         with self.assertRaisesRegex(
             BoundaryLockError,
-            "immutable HTTPS GitHub commit archive",
+            "40-character Git commit id",
         ):
-            BoundaryLock(
-                source_url=(
-                    "https://github.com/example/boundary/archive/"
-                    "refs/tags/v1.0.0.tar.gz"
-                ),
-                revision="a" * 40,
-                sha256="b" * 64,
-            )
+            BoundaryLock(revision="main")
 
-    def test_rejects_revision_that_disagrees_with_url(self) -> None:
-        with self.assertRaisesRegex(
-            BoundaryLockError,
-            "url revision does not match",
-        ):
-            BoundaryLock(
-                source_url=(
-                    "https://github.com/example/boundary/archive/"
-                    f"{'a' * 40}.zip"
-                ),
-                revision="c" * 40,
-                sha256="b" * 64,
-            )
-
-    def test_rejects_unknown_source_fields(self) -> None:
-        revision = "a" * 40
+    def test_rejects_archive_fields(self) -> None:
         document = {
-            "schema": "boundary.lock/v1",
+            "schema": "boundary.lock/v2",
             "source": {
-                "url": (
-                    "https://github.com/example/boundary/archive/"
-                    f"{revision}.zip"
-                ),
-                "revision": revision,
+                "revision": "a" * 40,
+                "url": "https://example.invalid/source.tar.gz",
                 "sha256": "b" * 64,
-                "branch": "main",
             },
         }
 
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "boundary.lock.json"
-            path.write_text(
-                json.dumps(document),
-                encoding="utf-8",
-            )
+            path.write_text(json.dumps(document), encoding="utf-8")
             with self.assertRaisesRegex(
                 BoundaryLockError,
-                "url, revision, and sha256",
+                "contain only revision",
+            ):
+                load_lock(path)
+
+    def test_rejects_v1_schema(self) -> None:
+        document = {
+            "schema": "boundary.lock/v1",
+            "source": {"revision": "a" * 40},
+        }
+
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "boundary.lock.json"
+            path.write_text(json.dumps(document), encoding="utf-8")
+            with self.assertRaisesRegex(
+                BoundaryLockError,
+                "boundary.lock/v2",
             ):
                 load_lock(path)
 
