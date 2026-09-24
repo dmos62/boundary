@@ -17,6 +17,21 @@
       },
       "registered_skills": [],
       "installed_at": "2026-09-23T13:47:44.655201+00:00"
+    },
+    "boundary": {
+      "version": "0.1.0",
+      "source": "local",
+      "manifest_hash": "sha256:ab59cda8429e32e262724a4781fc7c28fad13102ee485e35b0ca0f64a06d31c9",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "codex": [
+          "speckit.boundary.authorize",
+          "speckit.boundary.verify"
+        ]
+      },
+      "registered_skills": [],
+      "installed_at": "2026-09-24T14:16:04.253143+00:00"
     }
   }
 }

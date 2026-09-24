@@ -100,9 +100,7 @@ def load_lock(path: str | Path) -> BoundaryLock:
     try:
         value = json.loads(lock_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        raise BoundaryLockError(
-            f"Boundary lock is invalid JSON: {exc}"
-        ) from exc
+        raise BoundaryLockError(f"Boundary lock is invalid JSON: {exc}") from exc
 
     if not isinstance(value, dict):
         raise BoundaryLockError("Boundary lock must be a JSON object")
@@ -111,9 +109,7 @@ def load_lock(path: str | Path) -> BoundaryLock:
             "Boundary lock must contain only schema and source"
         )
     if value["schema"] != _SCHEMA:
-        raise BoundaryLockError(
-            f"Boundary lock schema must be {_SCHEMA!r}"
-        )
+        raise BoundaryLockError(f"Boundary lock schema must be {_SCHEMA!r}")
 
     source = value["source"]
     if not isinstance(source, dict):
@@ -124,9 +120,7 @@ def load_lock(path: str | Path) -> BoundaryLock:
             "Boundary lock source must contain only url, revision, and sha256"
         )
     if not all(isinstance(source[key], str) for key in expected):
-        raise BoundaryLockError(
-            "Boundary lock source values must be strings"
-        )
+        raise BoundaryLockError("Boundary lock source values must be strings")
 
     return BoundaryLock(
         source_url=source["url"],

@@ -1,0 +1,29 @@
+schema_version: "1.0"
+
+extension:
+  id: boundary
+  name: "Boundary Spec Kit Adapter"
+  version: "0.1.0"
+  description: "Project structured Spec Kit implementation scope into native Boundary authorization and verification."
+  author: "Boundary contributors"
+  repository: "https://github.com/specdd/speckit-boundary"
+  license: "Apache-2.0"
+  category: integration
+  effect: read-write
+
+requires:
+  speckit_version: "==1.0.10"
+
+provides:
+  commands:
+    - name: speckit.boundary.authorize
+      file: commands/authorize.md
+      description: "Authorize the active Spec Kit implementation scope with Boundary."
+    - name: speckit.boundary.verify
+      file: commands/verify.md
+      description: "Verify actual implementation writes with Boundary."
+
+tags:
+  - boundary
+  - integration
+  - architecture

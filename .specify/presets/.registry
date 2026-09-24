@@ -22,6 +22,24 @@
         ]
       },
       "installed_at": "2026-09-23T13:47:45.099672+00:00"
+    },
+    "boundary": {
+      "version": "0.1.0",
+      "source": "local",
+      "manifest_hash": "sha256:a3236e78dc59937d0f78e73d28d2a4732e91a22d7baaa9258682f8bde1e1bd3d",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "codex": [
+          "speckit.tasks"
+        ]
+      },
+      "registered_skills": {
+        "codex": [
+          "speckit-tasks"
+        ]
+      },
+      "installed_at": "2026-09-24T14:16:04.456165+00:00"
     }
   }
 }
