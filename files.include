@@ -8,6 +8,8 @@
 @glob scripts/install.sh
 @glob scripts/install-host.sh
 @glob scripts/consumer_state.py
+@# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
+@file ../gui-auto2/BOUNDARY-FEEDBACK.md
 @globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
