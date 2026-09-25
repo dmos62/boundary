@@ -17,22 +17,60 @@ print(value)
 PY
 }
 
-ensure_codex_project() {
-  if [[ ! -d .specify ]]; then
-    specify init \
-      --here \
-      --force \
-      --non-interactive \
-      --ignore-agent-tools \
-      --script ps \
-      --integration "$ACTIVE_INTEGRATION"
+run_speckit_init() {
+  local args=(
+    init
+    --here
+    --force
+    --non-interactive
+    --ignore-agent-tools
+    --integration "$ACTIVE_INTEGRATION"
+  )
+
+  if [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+    args+=(--script "$SPECKIT_SCRIPT_OVERRIDE")
   fi
 
-  local current
-  current="$(active_integration || true)"
-  if [[ "$current" != "$ACTIVE_INTEGRATION" ]]; then
-    specify integration switch "$ACTIVE_INTEGRATION" --script ps
+  specify "${args[@]}"
+}
+
+ensure_requested_speckit_script() {
+  [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]] || return 0
+
+  local current_script
+  current_script="$(selected_speckit_script_type)" ||
+    fail "could not determine the configured Spec Kit script mode"
+
+  if [[ "$current_script" != "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+    specify integration upgrade \
+      "$ACTIVE_INTEGRATION" \
+      --script "$SPECKIT_SCRIPT_OVERRIDE"
   fi
+
+  current_script="$(selected_speckit_script_type)" ||
+    fail "could not determine the configured Spec Kit script mode"
+  [[ "$current_script" == "$SPECKIT_SCRIPT_OVERRIDE" ]] ||
+    fail "Spec Kit did not select requested script mode: ${SPECKIT_SCRIPT_OVERRIDE}"
+}
+
+ensure_codex_project() {
+  if [[ ! -d .specify ]]; then
+    run_speckit_init
+  else
+    local current
+    current="$(active_integration || true)"
+    if [[ "$current" != "$ACTIVE_INTEGRATION" ]]; then
+      local args=(integration switch "$ACTIVE_INTEGRATION")
+      if [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+        args+=(--script "$SPECKIT_SCRIPT_OVERRIDE")
+      fi
+      specify "${args[@]}"
+    else
+      ensure_requested_speckit_script
+    fi
+  fi
+
+  require_speckit_script_runtime
 }
 
 materialize_boundary_skills() {

@@ -1,11 +1,14 @@
 ---
 name: speckit-specdd-validate
-description: Validate the active feature's Spec Kit tasks against the current SpecDD Change Boundary.
+description: Validate the active feature's Spec Kit tasks against the current SpecDD
+  Change Boundary.
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: SpecDD contributors
-  source: specdd:commands/validate.md
+  source: extension:specdd
 ---
+
+# Specdd Validate Skill
 
 ## User Input
 

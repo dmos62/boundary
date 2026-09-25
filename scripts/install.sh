@@ -12,6 +12,7 @@ readonly WORKFLOW_OVERLAY_PRIORITY="10"
 readonly CODEX_SKILL_ADAPTER="adapters/codex/materialize.py"
 readonly BOUNDARY_RUNTIME_DIR=".specify/boundary-runtime"
 readonly INSTALL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+readonly SPECKIT_SCRIPT_OVERRIDE="${BOUNDARY_SPECKIT_SCRIPT:-}"
 
 ACTION="install"
 SOURCE="."
@@ -27,6 +28,19 @@ require_command() {
   local command_name="$1"
   command -v "$command_name" >/dev/null 2>&1 ||
     fail "required command not found: ${command_name}"
+}
+
+validate_speckit_script_type() {
+  local script_type="$1"
+  local source="$2"
+
+  case "$script_type" in
+    sh|ps|py)
+      ;;
+    *)
+      fail "unsupported Spec Kit script mode from ${source}: ${script_type}"
+      ;;
+  esac
 }
 
 selected_speckit_script_type() {
@@ -63,23 +77,28 @@ print(script_type)
 PY
 }
 
-require_speckit_script_runtime() {
-  local script_type
+require_speckit_script_runtime_type() {
+  local script_type="$1"
 
-  script_type="$(selected_speckit_script_type)" ||
-    fail "could not determine the configured Spec Kit script mode"
+  [[ -n "$script_type" ]] || return 0
+  validate_speckit_script_type "$script_type" "Spec Kit configuration"
 
   case "$script_type" in
-    ""|sh|py)
+    sh|py)
       ;;
     ps)
       command -v pwsh >/dev/null 2>&1 ||
         fail "Spec Kit PowerShell script mode requires pwsh; install PowerShell or select a supported Spec Kit script mode before installing Boundary"
       ;;
-    *)
-      fail "unsupported Spec Kit script mode: ${script_type}"
-      ;;
   esac
+}
+
+require_speckit_script_runtime() {
+  local script_type
+
+  script_type="$(selected_speckit_script_type)" ||
+    fail "could not determine the configured Spec Kit script mode"
+  require_speckit_script_runtime_type "$script_type"
 }
 
 speckit_matches_pin() {
@@ -92,7 +111,14 @@ ensure_install_prerequisites() {
   require_command git
   require_command uv
   require_command codex
-  require_speckit_script_runtime
+
+  if [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+    validate_speckit_script_type \
+      "$SPECKIT_SCRIPT_OVERRIDE" "BOUNDARY_SPECKIT_SCRIPT"
+    require_speckit_script_runtime_type "$SPECKIT_SCRIPT_OVERRIDE"
+  else
+    require_speckit_script_runtime
+  fi
 
   if ! speckit_matches_pin; then
     uv tool install specify-cli --force \
@@ -116,7 +142,7 @@ source "$INSTALL_SCRIPT_DIR/install-source.sh"
 source "$INSTALL_SCRIPT_DIR/install-host.sh"
 
 usage() {
-  cat <<'EOF'
+  cat <<'EOF_USAGE'
 Usage:
   bash scripts/install.sh [--source <directory|archive>]
   bash scripts/install.sh --check
@@ -128,10 +154,15 @@ The --source option accepts a local directory or local archive. Local archive
 input is supported for Boundary development; the downstream consumer delegates
 installation using its validated Boundary checkout as the local source.
 
+Set BOUNDARY_SPECKIT_SCRIPT=sh|ps|py only when deliberately changing the
+existing Spec Kit script mode during installation. Without that override,
+Boundary preserves an existing Spec Kit selection and lets Spec Kit choose the
+platform default when initializing a new project.
+
 Downstream repositories should run scripts/consumer.py from a clean Boundary
 checkout whose revision matches boundary.lock.json. Neither install.sh nor the
 downstream consumer retrieves or reconstructs Boundary source.
-EOF
+EOF_USAGE
 }
 
 cleanup() {

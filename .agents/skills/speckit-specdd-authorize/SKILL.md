@@ -4,8 +4,10 @@ description: Authorize implementation and preserve immutable SpecDD operation ev
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: SpecDD contributors
-  source: specdd:commands/authorize.md
+  source: extension:specdd
 ---
+
+# Specdd Authorize Skill
 
 ## User Input
 

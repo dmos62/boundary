@@ -7,6 +7,7 @@ readonly ACTIVE_COMMANDS_DIR=".agents/skills"
 readonly BOUNDARY_EXTENSION_ID="boundary"
 readonly BOUNDARY_PRESET_ID="boundary"
 readonly WORKFLOW_OVERLAY_ID="boundary"
+readonly SPECKIT_SCRIPT_OVERRIDE="${BOUNDARY_SPECKIT_SCRIPT:-}"
 readonly MODE="${1:-apply}"
 
 fail() {
@@ -31,6 +32,22 @@ check_prerequisites() {
   require_command git "install Git, then rerun bash scripts/bootstrap.sh"
   require_command uv "install uv, then rerun bash scripts/bootstrap.sh"
   require_command codex "install the Codex CLI and put codex on PATH, then rerun bash scripts/bootstrap.sh"
+}
+
+validate_script_override() {
+  [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]] || return 0
+
+  case "$SPECKIT_SCRIPT_OVERRIDE" in
+    sh|py)
+      ;;
+    ps)
+      require_command pwsh \
+        "PowerShell is required when BOUNDARY_SPECKIT_SCRIPT=ps"
+      ;;
+    *)
+      fail "BOUNDARY_SPECKIT_SCRIPT must be one of: sh, ps, py"
+      ;;
+  esac
 }
 
 require_skill_file() {
@@ -131,6 +148,7 @@ run_checks() {
   printf '%s\n' '--- Runtime versions ---'
   printf '%s' 'Python: '; uv run --no-project python --version
   check_initialized_state
+  bash scripts/install.sh --check >/dev/null
   printf '%s\n' '--- Spec Kit version ---'; specify version
   printf '%s\n' '--- Spec Kit active integrations ---'; specify integration list
   printf '%s\n' '--- Spec Kit extensions ---'; specify extension list --json
@@ -144,8 +162,26 @@ install_adapter() {
   bash scripts/install.sh --source .
 }
 
+initialize_speckit() {
+  local args=(
+    init
+    --here
+    --force
+    --non-interactive
+    --ignore-agent-tools
+    --integration "$ACTIVE_INTEGRATION"
+  )
+
+  if [[ -n "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+    args+=(--script "$SPECKIT_SCRIPT_OVERRIDE")
+  fi
+
+  specify "${args[@]}"
+}
+
 apply_bootstrap() {
   check_prerequisites
+  validate_script_override
   git rev-parse --is-inside-work-tree >/dev/null 2>&1 || git init
 
   if ! speckit_matches_pin; then
@@ -153,21 +189,7 @@ apply_bootstrap() {
       --from "git+https://github.com/github/spec-kit.git@${SPECKIT_TAG}"
   fi
 
-  if [[ ! -d .specify ]]; then
-    specify init \
-      --here \
-      --force \
-      --non-interactive \
-      --ignore-agent-tools \
-      --script ps \
-      --integration "$ACTIVE_INTEGRATION"
-  else
-    local active_integration
-    active_integration="$(spec_kit_active_integration || true)"
-    [[ "$active_integration" == "$ACTIVE_INTEGRATION" ]] ||
-      specify integration switch "$ACTIVE_INTEGRATION" --script ps
-  fi
-
+  initialize_speckit
   install_adapter
   run_checks
 }

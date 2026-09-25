@@ -4,8 +4,10 @@ description: Verify actual changes against immutable SpecDD authorization eviden
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: SpecDD contributors
-  source: specdd:commands/verify.md
+  source: extension:specdd
 ---
+
+# Specdd Verify Skill
 
 ## User Input
 

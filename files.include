@@ -9,6 +9,9 @@
 @glob scripts/install.sh
 @glob scripts/install-host.sh
 @glob scripts/bootstrap.sh
+@glob scripts/consumer*.py
+@glob tests/test_consumer*.py
+@glob tests/test_install_host_script_mode.py
 @globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
@@ -20,10 +23,6 @@
 @globexclude contracts/boundary-tests.contract.md
 @globexclude contracts/boundary-authorization.contract.md
 @globexclude contracts/boundary-operation-lifecycle.contract.md
-@globexclude scripts/consumer.py
-@globexclude scripts/consumer_lock.py
-@globexclude scripts/consumer_source.py
-@globexclude scripts/consumer_state.py
 @globexclude scripts/install-source.sh
 @globexclude src/**
 @globexclude adapters/**
@@ -32,7 +31,6 @@
 @globexclude .agents/**
 @globexclude .specify/**
 @globexclude .specdd/**
-@globexclude tests/**
 @globexclude **/__pycache__/**
 @globexclude **/*.pyc
 @endfilegroup

@@ -15,7 +15,12 @@
           "speckit.specdd.verify"
         ]
       },
-      "registered_skills": [],
+      "registered_skills": [
+        "speckit-specdd-context",
+        "speckit-specdd-validate",
+        "speckit-specdd-authorize",
+        "speckit-specdd-verify"
+      ],
       "installed_at": "2026-09-23T13:47:44.655201+00:00"
     },
     "boundary": {
@@ -31,7 +36,7 @@
         ]
       },
       "registered_skills": [],
-      "installed_at": "2026-09-25T11:01:26.873683+00:00"
+      "installed_at": "2026-09-25T12:03:10.046476+00:00"
     }
   }
 }

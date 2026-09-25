@@ -4,8 +4,10 @@ description: Build or refresh the active feature's derived SpecDD Change Boundar
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: SpecDD contributors
-  source: specdd:commands/context.md
+  source: extension:specdd
 ---
+
+# Specdd Context Skill
 
 ## User Input
 
