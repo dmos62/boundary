@@ -42,8 +42,13 @@ ensure_requested_speckit_script() {
     fail "could not determine the configured Spec Kit script mode"
 
   if [[ "$current_script" != "$SPECKIT_SCRIPT_OVERRIDE" ]]; then
+    # The override is an explicit request to regenerate Spec Kit-managed
+    # integration files for another script mode. A diff-aware upgrade can
+    # otherwise reject managed files changed by installed integration layers.
+    # Keep the overwrite inside Spec Kit rather than patching generated files.
     specify integration upgrade \
       "$ACTIVE_INTEGRATION" \
+      --force \
       --script "$SPECKIT_SCRIPT_OVERRIDE"
   fi
 

@@ -113,8 +113,27 @@ class InstallHostScriptModeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             result.stdout.strip(),
-            "integration upgrade codex --script sh",
+            "integration upgrade codex --force --script sh",
         )
+
+    def test_matching_override_does_not_refresh_integration(self) -> None:
+        result = self.run_host_case(
+            r'''
+            set -euo pipefail
+            mkdir -p .specify
+            ACTIVE_INTEGRATION=codex
+            SPECKIT_SCRIPT_OVERRIDE=sh
+            fail() { printf 'fail: %s\n' "$*" >&2; exit 1; }
+            selected_speckit_script_type() { printf 'sh\n'; }
+            require_speckit_script_runtime() { :; }
+            specify() { printf 'unexpected specify call: %s\n' "$*" >&2; exit 9; }
+            source "$INSTALL_HOST"
+            active_integration() { printf 'codex\n'; }
+            ensure_codex_project
+            '''
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
 
 
 if __name__ == "__main__":

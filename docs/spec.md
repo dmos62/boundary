@@ -35,17 +35,21 @@ These concepts must remain meaningful if the current change system or agent runt
 
 ## Canonical state
 
-The target downstream canonical state consists of:
+The Boundary-defined portion of downstream canonical state consists of:
 
 - change-system artifacts that define the requested change;
 - native Boundary contracts under `contracts/`;
 - one `boundary.lock.json` pinning the exact Boundary Git revision adopted by the project.
 
-Generated integration state, effective-context projections, installed skills, caches, install provenance, and operation evidence are not persistent system contracts.
+A host change system may own additional persistent project configuration or shareable generated state. Boundary does not reclassify such host-owned state merely because Boundary installation or integration lifecycle commands update it.
+
+Generated Boundary integration state, effective-context projections, installed Boundary skills, caches, install provenance, and operation evidence are not persistent system contracts.
 
 Operation evidence is historical workflow state stored outside ordinary project source, preferably in current-worktree Git metadata.
 
 The Boundary lock records the expected Boundary source revision but is not a source-distribution locator. Operators supply a Boundary source checkout separately when running downstream lifecycle commands.
+
+Current Spec Kit project-state ownership and generated-state boundaries are defined in [spec-distribution.md](spec-distribution.md).
 
 ## Native persistent contracts
 
@@ -143,7 +147,7 @@ Downstream lifecycle commands are executed from an operator-supplied Boundary so
 
 The downstream consumer does not fetch Boundary source, resolve releases, follow branches or tags, or reconstruct source from a remote locator stored in the project.
 
-Generated runtime, extension, preset, workflow, and skill state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
+Generated runtime, extension, preset, workflow, and Boundary skill state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
 
 Adoption records the revision of the Boundary checkout being used. Upgrades are performed deliberately from a different clean Boundary checkout and replace the lock only after candidate installation succeeds.
 
@@ -178,7 +182,7 @@ The design is split by responsibility:
 - [spec-authorization.md](spec-authorization.md): explicit writes, operation records, Git baselines, epochs, and verification.
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation, and convergence.
-- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, generated state, and upgrades.
+- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, generated state, host project-state ownership, and upgrades.
 
 Historical migration material is isolated under [history/](history/) and is not part of the current product architecture.
 
@@ -203,4 +207,4 @@ Remaining work is release evidence, compatibility cleanup, and final verificatio
 
 Boundary remains coherent while:
 
-> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is supplied from a clean Boundary checkout whose revision matches the project's committed source pin.
+> project contracts are canonical and independently scoped; change systems provide explicit change intent and own their project state; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is supplied from a clean Boundary checkout whose revision matches the project's committed source pin.

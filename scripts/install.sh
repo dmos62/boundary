@@ -157,7 +157,10 @@ installation using its validated Boundary checkout as the local source.
 Set BOUNDARY_SPECKIT_SCRIPT=sh|ps|py only when deliberately changing the
 existing Spec Kit script mode during installation. Without that override,
 Boundary preserves an existing Spec Kit selection and lets Spec Kit choose the
-platform default when initializing a new project.
+platform default when initializing a new project. An explicit transition uses
+Spec Kit's supported forced integration-upgrade lifecycle to regenerate its
+managed integration files, so intentional local edits to those files should be
+committed or otherwise preserved before changing modes.
 
 Downstream repositories should run scripts/consumer.py from a clean Boundary
 checkout whose revision matches boundary.lock.json. Neither install.sh nor the
