@@ -12,6 +12,11 @@ Run:
 
 The bootstrap establishes the repository's supported Spec Kit and Codex integration baseline, then installs the current local Boundary source.
 
+If `.specify/init-options.json` selects PowerShell scripts, `pwsh` must be
+available on `PATH`. Boundary validates that requirement before changing
+generated integration state and does not silently rewrite the selected Spec Kit
+script mode.
+
 Check an existing development installation with:
 
     bash scripts/bootstrap.sh --check

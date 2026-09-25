@@ -11,9 +11,18 @@ The downstream machine needs:
 - Git;
 - `uv`;
 - Codex;
-- a clean Boundary source checkout.
+- a clean Boundary source checkout;
+- the runtime required by the project's selected Spec Kit script mode.
 
-The Boundary checkout is supplied by the operator. Boundary does not download or discover its own source.
+Spec Kit records its selected script mode in `.specify/init-options.json`.
+Boundary preserves that project choice rather than silently changing it. In
+particular, a project selecting `"script": "ps"` must have `pwsh` available on
+`PATH`.
+
+The Boundary installer validates the selected script runtime before modifying
+generated Boundary integration state, so an unavailable PowerShell runtime is
+reported during installation or health checking rather than during the first
+Spec Kit workflow command.
 
 The locked installer establishes the supported Spec Kit version when installation requires it.
 
@@ -67,6 +76,9 @@ The consumer verifies that:
 - its own Boundary checkout is clean;
 - its Git revision matches the project's lock.
 
+The installer also validates the runtime required by the existing Spec Kit
+script selection before materializing Boundary state.
+
 It then installs generated Boundary runtime and integration state from that checkout.
 
 No Boundary source archive is downloaded.
@@ -77,7 +89,8 @@ After cloning an already adopted downstream repository:
 
 1. read the revision in `boundary.lock.json`;
 2. obtain a clean Boundary checkout at that exact revision;
-3. run that checkout's consumer with `install`.
+3. ensure the runtime selected by `.specify/init-options.json` is available;
+4. run that checkout's consumer with `install`.
 
 For example:
 
@@ -100,6 +113,7 @@ Run from a Boundary checkout matching the project lock:
 The check requires:
 
 - the invoking Boundary checkout to match the committed lock;
+- the selected Spec Kit script runtime to be available;
 - installed source provenance to match the committed lock;
 - generated integration state to pass that revision's health checks.
 

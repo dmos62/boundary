@@ -6,8 +6,10 @@
 @glob docs/setup-downstream.md
 @glob docs/setup-development.md
 @glob contracts/boundary-repository-tooling.contract.md
-@glob scripts/consumer.py
 @glob scripts/install.sh
+@glob scripts/install-host.sh
+@glob scripts/bootstrap.sh
+@globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
 @globexclude README.md
@@ -18,12 +20,11 @@
 @globexclude contracts/boundary-tests.contract.md
 @globexclude contracts/boundary-authorization.contract.md
 @globexclude contracts/boundary-operation-lifecycle.contract.md
-@globexclude scripts/bootstrap.sh
+@globexclude scripts/consumer.py
 @globexclude scripts/consumer_lock.py
 @globexclude scripts/consumer_source.py
 @globexclude scripts/consumer_state.py
 @globexclude scripts/install-source.sh
-@globexclude scripts/install-host.sh
 @globexclude src/**
 @globexclude adapters/**
 @globexclude integration/**

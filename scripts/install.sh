@@ -29,6 +29,59 @@ require_command() {
     fail "required command not found: ${command_name}"
 }
 
+selected_speckit_script_type() {
+  local options_path=".specify/init-options.json"
+
+  [[ -f "$options_path" ]] || return 0
+
+  uv run --no-project python - "$options_path" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+try:
+    options = json.loads(path.read_text(encoding="utf-8"))
+except (OSError, json.JSONDecodeError) as exc:
+    print(
+        f"install: invalid Spec Kit init options at {path}: {exc}",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
+script_type = options.get("script")
+if script_type is None:
+    raise SystemExit(0)
+if not isinstance(script_type, str):
+    print(
+        f"install: invalid Spec Kit script mode in {path}: expected a string",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
+print(script_type)
+PY
+}
+
+require_speckit_script_runtime() {
+  local script_type
+
+  script_type="$(selected_speckit_script_type)" ||
+    fail "could not determine the configured Spec Kit script mode"
+
+  case "$script_type" in
+    ""|sh|py)
+      ;;
+    ps)
+      command -v pwsh >/dev/null 2>&1 ||
+        fail "Spec Kit PowerShell script mode requires pwsh; install PowerShell or select a supported Spec Kit script mode before installing Boundary"
+      ;;
+    *)
+      fail "unsupported Spec Kit script mode: ${script_type}"
+      ;;
+  esac
+}
+
 speckit_matches_pin() {
   command -v specify >/dev/null 2>&1 &&
     specify --version 2>&1 |
@@ -39,6 +92,7 @@ ensure_install_prerequisites() {
   require_command git
   require_command uv
   require_command codex
+  require_speckit_script_runtime
 
   if ! speckit_matches_pin; then
     uv tool install specify-cli --force \
@@ -52,6 +106,7 @@ check_install_prerequisites() {
   require_command git
   require_command uv
   require_command codex
+  require_speckit_script_runtime
   require_command specify
   speckit_matches_pin ||
     fail "Spec Kit ${SPECKIT_VERSION} is required"
@@ -119,6 +174,7 @@ case "$ACTION" in
     install_adapter
     ;;
   check)
+    check_install_prerequisites
     check_adapter
     ;;
   remove)
