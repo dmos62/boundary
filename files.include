@@ -5,12 +5,13 @@
 @glob docs/spec-distribution-state.md
 @glob TODO.md
 @glob contracts/boundary-repository-tooling.contract.md
-@glob **/spec_kit_adapter.py
-@glob **/adapter_gate.py
+@glob integration/speckit/scripts/spec_kit_adapter.py
+@glob integration/speckit/scripts/adapter_gate.py
 @glob scripts/install.sh
 @glob scripts/install-host.sh
 @glob tests/install_real_cli_support.py
 @glob tests/test_install_real_cli.py
+@glob tests/test_install_real_cli_recovery.py
 @glob tests/test_spec_kit_adapter.py
 @glob dev-scripts.include
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).

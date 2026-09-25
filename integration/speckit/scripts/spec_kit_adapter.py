@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import subprocess
+import sys
 from typing import Callable
 
 from boundary.authorization import (
@@ -49,21 +50,10 @@ def active_feature(root: Path) -> tuple[Path, str]:
     if configured:
         return _feature_path(root, configured)
 
-    script = (
-        root
-        / ".specify"
-        / "scripts"
-        / "powershell"
-        / "check-prerequisites.ps1"
-    )
-    if not script.is_file():
-        raise SpecKitAdapterError(
-            "Spec Kit prerequisite discovery is unavailable"
-        )
-
+    command = _prerequisite_command(root)
     try:
         result = subprocess.run(
-            ["pwsh", str(script), "-Json", "-PathsOnly"],
+            command,
             cwd=root,
             check=False,
             capture_output=True,
@@ -71,7 +61,7 @@ def active_feature(root: Path) -> tuple[Path, str]:
         )
     except FileNotFoundError as exc:
         raise SpecKitAdapterError(
-            "required command not found: pwsh"
+            f"required command not found: {command[0]}"
         ) from exc
 
     if result.returncode != 0:
@@ -170,6 +160,57 @@ def path_classifier(
         return "ordinary"
 
     return classify
+
+
+def _prerequisite_command(root: Path) -> list[str]:
+    mode = _configured_script_mode(root)
+    scripts = root / ".specify" / "scripts"
+
+    if mode == "sh":
+        script = scripts / "bash" / "check-prerequisites.sh"
+        command = ["bash", str(script), "--json", "--paths-only"]
+    elif mode == "ps":
+        script = scripts / "powershell" / "check-prerequisites.ps1"
+        command = ["pwsh", str(script), "-Json", "-PathsOnly"]
+    elif mode == "py":
+        script = scripts / "python" / "check_prerequisites.py"
+        command = [
+            sys.executable,
+            str(script),
+            "--json",
+            "--paths-only",
+        ]
+    else:
+        raise SpecKitAdapterError(
+            f"unsupported configured Spec Kit script mode: {mode}"
+        )
+
+    if not script.is_file():
+        raise SpecKitAdapterError(
+            f"Spec Kit prerequisite discovery is unavailable for {mode} mode"
+        )
+    return command
+
+
+def _configured_script_mode(root: Path) -> str:
+    options_path = root / ".specify" / "init-options.json"
+    try:
+        options = json.loads(options_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise SpecKitAdapterError(
+            f"Spec Kit init options are unavailable: {options_path}: {exc}"
+        ) from exc
+    except json.JSONDecodeError as exc:
+        raise SpecKitAdapterError(
+            f"Spec Kit init options contain invalid JSON: {options_path}"
+        ) from exc
+
+    mode = options.get("script") if isinstance(options, dict) else None
+    if not isinstance(mode, str) or not mode:
+        raise SpecKitAdapterError(
+            "Spec Kit init options do not select a script mode"
+        )
+    return mode
 
 
 def _feature_path(root: Path, configured: str) -> tuple[Path, str]:
