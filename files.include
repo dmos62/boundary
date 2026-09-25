@@ -1,16 +1,13 @@
 @filegroup
 @glob AGENTS.md
 @glob docs/spec.md
-@glob docs/TODO.md
 @glob docs/spec-distribution.md
+@glob docs/spec-distribution-state.md
+@glob docs/TODO.md
 @glob contracts/boundary-repository-tooling.contract.md
 @glob scripts/install.sh
 @glob scripts/install-host.sh
 @glob scripts/consumer_state.py
-@glob tests/install_real_cli_support.py
-@glob tests/test_install_real_cli.py
-@glob tests/test_install_host_script_mode.py
-@glob tests/test_consumer*.py
 @globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
@@ -33,6 +30,7 @@
 @globexclude adapters/**
 @globexclude integration/**
 @globexclude skills/**
+@globexclude tests/**
 @globexclude .agents/**
 @globexclude .specify/**
 @globexclude .specdd/**

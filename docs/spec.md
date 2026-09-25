@@ -49,7 +49,7 @@ Operation evidence is historical workflow state stored outside ordinary project 
 
 The Boundary lock records the expected Boundary source revision but is not a source-distribution locator. Operators supply a Boundary source checkout separately when running downstream lifecycle commands.
 
-Current Spec Kit project-state ownership and generated-state boundaries are defined in [spec-distribution.md](spec-distribution.md).
+Current Spec Kit project-state ownership and generated-state boundaries are defined in [spec-distribution-state.md](spec-distribution-state.md).
 
 ## Native persistent contracts
 
@@ -151,7 +151,7 @@ Generated runtime, extension, preset, workflow, and Boundary skill state is recr
 
 Adoption records the revision of the Boundary checkout being used. Upgrades are performed deliberately from a different clean Boundary checkout and replace the lock only after candidate installation succeeds.
 
-Detailed downstream semantics are defined in [spec-distribution.md](spec-distribution.md).
+Detailed downstream lifecycle semantics are defined in [spec-distribution.md](spec-distribution.md), with project-state ownership defined in [spec-distribution-state.md](spec-distribution-state.md).
 
 ## Non-goals
 
@@ -182,7 +182,8 @@ The design is split by responsibility:
 - [spec-authorization.md](spec-authorization.md): explicit writes, operation records, Git baselines, epochs, and verification.
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation, and convergence.
-- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, generated state, host project-state ownership, and upgrades.
+- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, health checking, removal, and upgrades.
+- [spec-distribution-state.md](spec-distribution-state.md): downstream canonical state, Spec Kit project-state ownership, and Boundary generated-state exclusions.
 
 Historical migration material is isolated under [history/](history/) and is not part of the current product architecture.
 

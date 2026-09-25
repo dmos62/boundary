@@ -136,6 +136,47 @@ class RealSpecKitFixtureMixin:
         self.assertIn("\nfeature.json\n", "\n" + content)
         self.assertIn("extensions/*/local-config.yml", content)
 
+    def assert_tracked(self, project, relative_path):
+        result = run(
+            [
+                "git",
+                "ls-files",
+                "--error-unmatch",
+                "--",
+                relative_path,
+            ],
+            cwd=project,
+        )
+        self.assert_success(result)
+
+    def assert_not_ignored(self, project, relative_path):
+        result = run(
+            [
+                "git",
+                "check-ignore",
+                "--no-index",
+                "-q",
+                "--",
+                relative_path,
+            ],
+            cwd=project,
+        )
+        self.assertEqual(
+            1,
+            result.returncode,
+            result.stdout + result.stderr,
+        )
+
+    def tree_snapshot(self, root):
+        return {
+            path.relative_to(root).as_posix(): (
+                path.stat().st_mode & 0o7777,
+                path.read_bytes(),
+            )
+            for path in sorted(root.rglob("*"))
+            if path.is_file()
+        }
+
     def run_workflow_helper(self, project):
         result = run(
             [

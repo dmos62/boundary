@@ -80,6 +80,10 @@ class RealSpecKitLinuxLifecycleTests(
         self.commit(project, "saved PowerShell Spec Kit project")
         self.adopt(project, source)
 
+        gitignore_before = (project / ".specify/.gitignore").read_bytes()
+        self.assert_tracked(project, ".specify/.gitignore")
+        self.assert_tracked(project, ".specify/integration.json")
+
         self.write_tool("pwsh")
         installed = self.consumer(project, source, "install")
         self.assert_success(installed)
@@ -98,6 +102,10 @@ class RealSpecKitLinuxLifecycleTests(
             )
             self.assertEqual("ps", self.script_mode(project))
 
+        powershell = project / ".specify/scripts/powershell"
+        powershell_before = self.tree_snapshot(powershell)
+        self.assertTrue(powershell_before)
+
         recovery_env = dict(self.env)
         recovery_env["BOUNDARY_SPECKIT_SCRIPT"] = "sh"
         recovered = self.consumer(
@@ -111,27 +119,71 @@ class RealSpecKitLinuxLifecycleTests(
         self.assert_success(checked)
 
         self.assert_shell_mode(project)
-        self.assertTrue((project / ".specify/scripts/powershell").is_dir())
+        self.assertTrue(powershell.is_dir())
+        self.assertEqual(powershell_before, self.tree_snapshot(powershell))
         self.assert_gitignore(project)
+        self.assertEqual(
+            gitignore_before,
+            (project / ".specify/.gitignore").read_bytes(),
+        )
         self.run_workflow_helper(project)
 
-        status_lines = self.status_lines(project)
         status_paths = {
             line[3:]
-            for line in status_lines
+            for line in self.status_lines(project)
             if len(line) >= 4
         }
         self.assertIn(".specify/init-options.json", status_paths)
-        self.assertTrue(
-            any(
-                path.startswith(".agents/skills/speckit-")
-                for path in status_paths
-            )
+        self.assertIn(".specify/extensions/.registry", status_paths)
+        self.assertIn(".specify/presets/.registry", status_paths)
+
+        manifests = {
+            path
+            for path in status_paths
+            if path.startswith(".specify/integrations/")
+            and path.endswith(".manifest.json")
+        }
+        bash_scripts = {
+            path
+            for path in status_paths
+            if path.startswith(".specify/scripts/bash/")
+        }
+        core_skills = {
+            path
+            for path in status_paths
+            if path.startswith(".agents/skills/speckit-")
+            and not path.startswith(".agents/skills/speckit-boundary-")
+        }
+        self.assertTrue(manifests)
+        self.assertTrue(bash_scripts)
+        self.assertTrue(core_skills)
+
+        shared_paths = {
+            ".specify/.gitignore",
+            ".specify/init-options.json",
+            ".specify/integration.json",
+            ".specify/extensions/.registry",
+            ".specify/presets/.registry",
+            *manifests,
+            *bash_scripts,
+            *core_skills,
+        }
+        for path in shared_paths:
+            self.assert_not_ignored(project, path)
+
+        boundary_generated = (
+            ".agents/skills/boundary-",
+            ".agents/skills/speckit-boundary-",
+            ".specify/boundary-runtime/",
+            ".specify/extensions/boundary/",
+            ".specify/presets/boundary/",
+            ".specify/workflows/overlays/speckit/boundary.yml",
         )
         self.assertFalse(
             any(
-                path.startswith(".specify/boundary-runtime/")
+                path.startswith(boundary_path)
                 for path in status_paths
+                for boundary_path in boundary_generated
             )
         )
         self.assertFalse(
