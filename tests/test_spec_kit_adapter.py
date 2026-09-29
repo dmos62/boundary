@@ -212,8 +212,9 @@ class SpecKitLifecycleTests(unittest.TestCase):
             root = Path(temporary)
             feature = self.initialize(root)
 
-            authorized = authorize_feature(root, feature)
+            authorized = authorize_feature(root, feature, ("T001",))
             self.assertEqual("001-change", authorized.change_id)
+            self.assertEqual(("T001",), authorized.selected_task_ids)
             self.assertEqual(
                 ("src/a.py",),
                 tuple(
@@ -234,3 +235,7 @@ class SpecKitLifecycleTests(unittest.TestCase):
             verified = verify_feature(root, feature)
 
         self.assertEqual("verified", verified.status)
+
+
+if __name__ == "__main__":
+    unittest.main()

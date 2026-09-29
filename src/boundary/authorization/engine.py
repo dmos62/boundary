@@ -25,18 +25,26 @@ from .model import (
 def authorize_implementation(
     repository_root: str | Path,
     change: ChangeWriteSet,
+    *,
+    selected_task_ids: tuple[str, ...] | None = None,
 ) -> ImplementationAuthorization:
-    """Authorize exact implementation writes against a freshly loaded graph."""
+    """Authorize one explicit implementation unit against a fresh graph."""
 
-    if not change.writes:
-        raise AuthorizationError(
-            "implementation authorization requires at least one "
-            "declared write target"
-        )
+    selected_tasks = change.select_tasks(selected_task_ids)
+    selected_ids = tuple(
+        task.task_id
+        for task in selected_tasks
+        if task.task_id is not None
+    )
+    writes = tuple(
+        write
+        for task in selected_tasks
+        for write in task.writes
+    )
 
     graph = _load_graph(repository_root)
     targets: list[AuthorizedTarget] = []
-    for path in change.writes:
+    for path in writes:
         if is_native_contract_path(path):
             raise AuthorizationError(
                 "OPERATION_KIND_VIOLATION: implementation operations may "
@@ -67,7 +75,8 @@ def authorize_implementation(
 
     return ImplementationAuthorization(
         change_id=change.change_id,
-        tasks=change.tasks,
+        selected_task_ids=selected_ids,
+        tasks=selected_tasks,
         targets=tuple(targets),
         contract_graph_identity=contract_graph_identity(graph),
     )

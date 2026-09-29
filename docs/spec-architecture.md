@@ -44,8 +44,9 @@ A change-system adapter translates an external change workflow into Boundary inp
 Its responsibilities are limited to concepts such as:
 
 - active change identifier;
-- canonical task identity;
+- canonical task identity and task order;
 - explicit declared write targets;
+- explicit implementation-unit task selection;
 - adapter-owned feature artifacts;
 - lifecycle integration points.
 
@@ -111,8 +112,8 @@ Input supplied by a change-system adapter:
 
 - change identifier;
 - operation kind;
-- task identity where applicable;
-- exact declared write targets;
+- ordered task identities and structured writes;
+- explicit selected task identities for implementation;
 - adapter-owned non-implementation artifacts.
 
 The core never discovers authorization scope from arbitrary prose.
@@ -124,6 +125,7 @@ Historical evidence for one authorized operation:
 - operation identifier;
 - change identifier;
 - operation kind;
+- selected task identities for implementation;
 - exact authorized targets;
 - target ownership/effective-context identities;
 - Git `HEAD`;
@@ -171,6 +173,7 @@ Deterministic code owns facts that can be computed reliably:
 - scope containment;
 - ownership selection;
 - applicability;
+- explicit task-selection validity;
 - explicit write-set equality;
 - Git baseline comparison;
 - undeclared-write detection;
@@ -193,7 +196,7 @@ Boundary does not require a feature-local `boundary.json`.
 
 Planning and task generation may call `boundary inspect` and receive target projections, but those projections are disposable query results.
 
-Authorization always resolves canonical task scope against a fresh `ContractGraph`.
+Authorization always resolves the explicitly selected canonical task scope against a fresh `ContractGraph`.
 
 This removes:
 
@@ -226,6 +229,7 @@ Replacing Spec Kit, Codex, or Claude Code must not require redesigning:
 - native contract semantics;
 - target effective-context composition;
 - explicit write authorization;
+- task-selected implementation units;
 - operation evidence;
 - Git verification;
 - contract-evolution separation.

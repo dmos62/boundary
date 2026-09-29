@@ -95,6 +95,7 @@ class OperationRecordTests(unittest.TestCase):
             record = authorize_implementation_operation(
                 root,
                 self.implementation_change(),
+                selected_task_ids=("T001",),
                 operation_id="operation-1",
             )
             path = current_operation_path(root)
@@ -103,6 +104,8 @@ class OperationRecordTests(unittest.TestCase):
 
         self.assertEqual("operation-1", record.operation_id)
         self.assertEqual("implementation", document["kind"])
+        self.assertEqual(["T001"], document["selectedTaskIds"])
+        self.assertEqual(["T001"], [item["id"] for item in document["tasks"]])
         self.assertEqual(head, document["gitBaseline"]["head"])
         self.assertEqual(
             ["docs/note.md", "docs/old.md"],
@@ -133,6 +136,7 @@ class OperationRecordTests(unittest.TestCase):
             authorize_implementation_operation(
                 root,
                 self.implementation_change(),
+                selected_task_ids=("T001",),
                 operation_id="operation-1",
             )
             path = current_operation_path(root)
@@ -145,6 +149,7 @@ class OperationRecordTests(unittest.TestCase):
                 authorize_implementation_operation(
                     root,
                     self.implementation_change("docs/unowned.md"),
+                    selected_task_ids=("T001",),
                     operation_id="operation-2",
                 )
 
@@ -156,6 +161,7 @@ class OperationRecordTests(unittest.TestCase):
             authorize_implementation_operation(
                 root,
                 self.implementation_change(),
+                selected_task_ids=("T001",),
                 operation_id="operation-1",
             )
             finalize_operation_verification(
@@ -176,6 +182,7 @@ class OperationRecordTests(unittest.TestCase):
                     authorize_implementation_operation(
                         root,
                         self.implementation_change(),
+                        selected_task_ids=("T001",),
                         operation_id="operation-2",
                     )
 
@@ -197,6 +204,7 @@ class OperationRecordTests(unittest.TestCase):
             )
 
         self.assertEqual("contract-evolution", record.kind)
+        self.assertEqual([], document["selectedTaskIds"])
         self.assertEqual([], document["tasks"])
         self.assertEqual(
             [{"path": "contracts/auth.contract.md"}],

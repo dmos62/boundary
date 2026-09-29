@@ -41,7 +41,7 @@ class TaskWriteSet:
 
 @dataclass(frozen=True, slots=True)
 class ChangeWriteSet:
-    """Ordered implementation writes supplied by one change-system adapter."""
+    """Ordered implementation tasks supplied by one change-system adapter."""
 
     change_id: str
     tasks: tuple[TaskWriteSet, ...] = ()
@@ -56,9 +56,15 @@ class ChangeWriteSet:
         if orders != tuple(sorted(orders)):
             raise WriteSetError("tasks must preserve canonical task order")
 
-        task_ids = [task.task_id for task in tasks if task.task_id is not None]
+        task_ids: list[str] = []
+        for task in tasks:
+            if task.task_id is None:
+                raise WriteSetError(
+                    "change implementation tasks must have explicit task ids"
+                )
+            task_ids.append(task.task_id)
         if len(task_ids) != len(set(task_ids)):
-            raise WriteSetError("task ids must be unique when present")
+            raise WriteSetError("task ids must be unique")
 
         declared_by: dict[str, int] = {}
         for task in tasks:
@@ -75,13 +81,58 @@ class ChangeWriteSet:
 
     @property
     def writes(self) -> tuple[str, ...]:
-        """Return all exact task writes in canonical task order."""
+        """Return the planning-level union of all task writes."""
 
         return tuple(
             write
             for task in self.tasks
             for write in task.writes
         )
+
+    def select_tasks(
+        self,
+        selected_task_ids: tuple[str, ...] | None,
+    ) -> tuple[TaskWriteSet, ...]:
+        """Resolve explicit selection into canonical host task order."""
+
+        if selected_task_ids is None:
+            raise WriteSetError(
+                "implementation authorization requires an explicit task selection"
+            )
+
+        requested = tuple(selected_task_ids)
+        if not requested:
+            raise WriteSetError(
+                "implementation authorization requires at least one selected task id"
+            )
+
+        for task_id in requested:
+            _validate_required_identity(task_id, "selected task id")
+        if len(requested) != len(set(requested)):
+            raise WriteSetError("selected task ids must not contain duplicates")
+
+        available = {
+            task.task_id: task
+            for task in self.tasks
+            if task.task_id is not None
+        }
+        for task_id in requested:
+            if task_id not in available:
+                raise WriteSetError(
+                    f"selected task id is not present in the active change: {task_id}"
+                )
+
+        selected_ids = set(requested)
+        selected = tuple(
+            task
+            for task in self.tasks
+            if task.task_id in selected_ids
+        )
+        if not any(task.writes for task in selected):
+            raise WriteSetError(
+                "selected implementation tasks declare no write targets"
+            )
+        return selected
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +168,7 @@ class ImplementationAuthorization:
     """Fresh canonical authorization result for one implementation operation."""
 
     change_id: str
+    selected_task_ids: tuple[str, ...]
     tasks: tuple[TaskWriteSet, ...]
     targets: tuple[AuthorizedTarget, ...]
     contract_graph_identity: str
@@ -168,6 +220,13 @@ def _validate_change_id(value: str) -> None:
         raise TypeError("change id must be a string")
     if not value.strip():
         raise WriteSetError("change id must be non-empty")
+
+
+def _validate_required_identity(value: str, label: str) -> None:
+    if not isinstance(value, str):
+        raise TypeError(f"{label} must be a string")
+    if not value.strip():
+        raise WriteSetError(f"{label} must be non-empty")
 
 
 def _validate_optional_identity(value: str | None, label: str) -> None:

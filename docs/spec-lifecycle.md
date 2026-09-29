@@ -10,6 +10,8 @@ Boundary's mandatory lifecycle is:
 
     authorize → implement → verify
 
+Each implementation authorization operates on one explicitly selected implementation unit.
+
 Planning and task generation may use Boundary context, but they do not establish implementation authority.
 
 Persisted context refresh and separate validation gates are not part of the supported Boundary lifecycle.
@@ -53,11 +55,15 @@ Authorization is the blocking transition into implementation.
 
 It uses:
 
-- canonical explicit writes;
+- a fresh ordered change-task projection;
+- explicit selected task identities;
+- only the structured writes of those selected tasks;
 - fresh native contracts;
 - current Git state.
 
 It does not refresh an earlier boundary and does not prove an earlier planning cache fresh.
+
+Missing task selection is a failure. Authorization never interprets an omitted selection as the complete active change.
 
 Successful authorization creates the historical operation record consumed by verification.
 
@@ -85,12 +91,16 @@ When implementation discovers another required target:
 1. the target may be inspected;
 2. it may not be written under the current operation;
 3. the current operation is verified and closed;
-4. a new operation is authorized;
-5. verified predecessor state may be carried forward only when its exact Git state is unchanged.
+4. structured task scope is updated when necessary;
+5. a fresh implementation unit is explicitly selected;
+6. a new operation is authorized;
+7. verified predecessor state may be carried forward only when its exact Git state is unchanged.
 
 A verified predecessor is archived only when the successor actually relies on that carry-forward evidence.
 
 Scope expansion does not require discarding valid completed work, but it does require an explicit authorization epoch transition.
+
+Whether the discovered target shares an architectural owner with the current unit does not alter this requirement.
 
 ## Verification
 
@@ -99,6 +109,7 @@ Verification compares actual Git changes with the historical operation record.
 It does not use:
 
 - current task prose;
+- current task selection;
 - current planning projections;
 - a regenerated feature boundary.
 
@@ -119,7 +130,8 @@ When requested behavior cannot satisfy current persistent contracts:
 5. modify only native contract files;
 6. run `boundary contracts check`;
 7. verify and close contract evolution;
-8. authorize dependent implementation against the resulting fresh graph.
+8. select the dependent implementation unit explicitly;
+9. authorize dependent implementation against the resulting fresh graph.
 
 Contract evolution never retroactively authorizes earlier implementation.
 
@@ -161,12 +173,16 @@ Those names belong to the adapter.
 
 They are not the canonical Boundary product API.
 
-The Spec Kit workflow integration enforces:
+The Spec Kit workflow integration enforces a repeatable unit lifecycle:
 
     tasks
+      → explicit unit selection
       → boundary-authorize
       → implement
       → boundary-verify
+      → next selected unit when needed
+
+The current workflow overlay receives the explicit Spec Kit task selection through transient adapter input. It has no implicit whole-feature selection.
 
 Planning and task augmentations may invoke Boundary skills and inspection, but they do not create redundant structural gates.
 
@@ -196,7 +212,8 @@ It does not create planning context state, a validation phase, or convergence-ti
 Replacing Spec Kit must require only a new change-system adapter that can provide:
 
 - active change identity;
-- explicit operation writes;
+- ordered structured tasks and exact writes;
+- explicit implementation-unit task selection;
 - lifecycle calls around implementation;
 - classification of its own generated/change artifacts.
 

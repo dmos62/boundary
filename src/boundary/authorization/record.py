@@ -1,10 +1,7 @@
 """Versioned atomic operation-record model."""
 
 from dataclasses import dataclass, replace
-import re
 from uuid import uuid4
-
-from boundary.repository import normalize_repo_path
 
 from .model import (
     ContractEvolutionAuthorization,
@@ -12,8 +9,12 @@ from .model import (
     TaskWriteSet,
 )
 from .record_document import operation_record_to_document
-
-_OPERATION_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+from .record_validation import (
+    validate_nonempty as _validate_nonempty,
+    validate_operation_id as _validate_operation_id,
+    validate_path as _validate_path,
+    validate_unique_paths as _validate_unique_paths,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +92,7 @@ class OperationRecord:
     carried_forward: tuple[CarriedForwardState, ...] = ()
     verification_final_states: tuple[DirtyPathState, ...] = ()
     status: str = "authorized"
+    selected_task_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         _validate_operation_id(self.operation_id)
@@ -103,15 +105,12 @@ class OperationRecord:
             raise ValueError(f"unsupported operation kind: {self.kind!r}")
         if self.status not in {"authorized", "verified"}:
             raise ValueError(f"unsupported operation status: {self.status!r}")
-        if self.kind == "contract-evolution" and self.tasks:
-            raise ValueError(
-                "contract-evolution operation must not contain tasks"
-            )
         if self.status == "authorized" and self.verification_final_states:
             raise ValueError(
                 "authorized operation cannot contain final verification states"
             )
 
+        self._validate_task_selection()
         _validate_unique_paths(
             self.authorized_targets,
             "authorized target",
@@ -125,10 +124,7 @@ class OperationRecord:
             "verification final path",
         )
 
-        target_paths = {
-            target.path
-            for target in self.authorized_targets
-        }
+        target_paths = {target.path for target in self.authorized_targets}
         for item in self.carried_forward:
             if item.path not in target_paths:
                 raise ValueError(
@@ -141,6 +137,34 @@ class OperationRecord:
                     "verification final path is not an authorized target: "
                     f"{item.path}"
                 )
+
+    def _validate_task_selection(self) -> None:
+        if self.kind == "contract-evolution":
+            if self.tasks or self.selected_task_ids:
+                raise ValueError(
+                    "contract-evolution operation must not contain task selection"
+                )
+            return
+
+        task_ids = tuple(task.task_id for task in self.tasks)
+        if not task_ids or any(task_id is None for task_id in task_ids):
+            raise ValueError(
+                "implementation operation must contain selected task identities"
+            )
+
+        canonical_ids = tuple(
+            task_id for task_id in task_ids if task_id is not None
+        )
+        selected = tuple(self.selected_task_ids) or canonical_ids
+        if selected != canonical_ids:
+            raise ValueError(
+                "selected task identities must match operation task evidence"
+            )
+        if len(selected) != len(set(selected)):
+            raise ValueError("selected task identities must be unique")
+        for task_id in selected:
+            _validate_nonempty(task_id, "selected task id")
+        object.__setattr__(self, "selected_task_ids", selected)
 
     def mark_verified(
         self,
@@ -184,15 +208,14 @@ def implementation_record(
             OperationTargetEvidence(
                 path=target.path,
                 owner=target.owner_id,
-                effective_context_identity=(
-                    target.effective_context_identity
-                ),
+                effective_context_identity=target.effective_context_identity,
             )
             for target in authorization.targets
         ),
         contract_graph_identity=authorization.contract_graph_identity,
         git_baseline=baseline,
         carried_forward=carried_forward,
+        selected_task_ids=authorization.selected_task_ids,
     )
 
 
@@ -211,37 +234,9 @@ def contract_evolution_record(
         kind="contract-evolution",
         tasks=(),
         authorized_targets=tuple(
-            OperationTargetEvidence(path=path)
-            for path in authorization.targets
+            OperationTargetEvidence(path=path) for path in authorization.targets
         ),
         contract_graph_identity=authorization.contract_graph_identity,
         git_baseline=baseline,
         carried_forward=carried_forward,
     )
-
-
-def _validate_path(path: str) -> None:
-    normalized = normalize_repo_path(path)
-    if normalized != path:
-        raise ValueError(
-            f"operation path must be canonical: {path!r}"
-        )
-
-
-def _validate_nonempty(value: str, label: str) -> None:
-    if not isinstance(value, str) or not value:
-        raise ValueError(f"{label} must be a non-empty string")
-
-
-def _validate_operation_id(value: str) -> None:
-    if not isinstance(value, str) or not _OPERATION_ID_RE.fullmatch(value):
-        raise ValueError("operation id contains unsupported characters")
-
-
-def _validate_unique_paths(
-    values: tuple[object, ...],
-    label: str,
-) -> None:
-    paths = [getattr(item, "path") for item in values]
-    if len(paths) != len(set(paths)):
-        raise ValueError(f"{label}s must be unique")

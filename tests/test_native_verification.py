@@ -82,6 +82,14 @@ def implementation_change(*paths: str) -> ChangeWriteSet:
     )
 
 
+def authorize_implementation(root: Path, *paths: str):
+    return authorize_implementation_operation(
+        root,
+        implementation_change(*paths),
+        selected_task_ids=("T001",),
+    )
+
+
 @unittest.skipUnless(shutil.which("git"), "Git is required")
 class NativeVerificationTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
@@ -100,10 +108,7 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
             (root / "src" / "a.py").write_text(
                 "VALUE = 'changed'\n",
                 encoding="utf-8",
@@ -120,10 +125,7 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
             (root / "src" / "b.py").write_text(
                 "VALUE = 'undeclared'\n",
                 encoding="utf-8",
@@ -140,10 +142,7 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
             write_policy_contract(root)
 
             with self.assertRaises(VerificationError) as raised:
@@ -155,10 +154,7 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
             (root / "src" / "a.py").write_text(
                 "VALUE = 'changed'\n",
                 encoding="utf-8",
@@ -178,10 +174,7 @@ class NativeVerificationTests(unittest.TestCase):
             note = root / "docs" / "note.md"
             note.parent.mkdir()
             note.write_text("preexisting\n", encoding="utf-8")
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
 
             result = verify_operation_authorization(root)
 
@@ -192,10 +185,7 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation_operation(
-                root,
-                implementation_change("src/a.py"),
-            )
+            authorize_implementation(root, "src/a.py")
             generated = root / ".adapter" / "generated.json"
             generated.parent.mkdir()
             generated.write_text("{}\n", encoding="utf-8")

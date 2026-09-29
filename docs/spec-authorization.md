@@ -1,6 +1,6 @@
 # Authorization and Operation Evidence
 
-Boundary turns explicit change-system write declarations plus fresh native contracts into historical evidence for one operation. Authorization does not depend on a persisted planning boundary.
+Boundary turns explicit change-system task selection and write declarations plus fresh native contracts into historical evidence for one operation. Authorization does not depend on a persisted planning boundary.
 
 ## Explicit write declarations
 
@@ -19,7 +19,8 @@ Boundary v1 has two operation kinds.
 
 An implementation operation:
 
-- authorizes exact ordinary project paths;
+- selects one or more explicit task identities from the active change;
+- authorizes only the exact ordinary project paths declared by those tasks;
 - requires one unambiguous primary owner for every target;
 - may span several owners;
 - may not modify native contracts.
@@ -42,14 +43,17 @@ Changed contracts never authorize implementation writes in the same operation.
 Implementation authorization consumes:
 
 - active change identity;
-- task identities where available;
-- exact declared write targets;
+- ordered canonical task projection;
+- explicit selected task identities;
+- exact declared write targets belonging to those selected tasks;
 - a freshly loaded native `ContractGraph`;
 - current Git `HEAD`;
 - exact current index/worktree dirty state;
 - adapter classification of generated and change-system-owned paths where needed by integration.
 
-It verifies canonical paths, operation kind, unambiguous ownership, resolvable effective context, internally consistent task scope, verified predecessor closure, dirty-target provenance, and reliable Git capture.
+It verifies canonical paths, operation kind, selected-task validity, unambiguous ownership, resolvable effective context, internally consistent task scope, verified predecessor closure, dirty-target provenance, and reliable Git capture.
+
+Missing, unknown, duplicate, or empty-write task selection is blocking input failure. Omitted selection never means all tasks.
 
 No feature-local Change Boundary or refresh-time context sidecar is required.
 
@@ -78,6 +82,7 @@ Each successful authorization creates one versioned operation document containin
     operationId
     changeId
     kind
+    selectedTaskIds
     tasks
     authorizedTargets
       path
@@ -94,6 +99,8 @@ Each successful authorization creates one versioned operation document containin
     verification
       finalPathStates
     status
+
+For implementation, `tasks` contains only the selected task evidence in canonical host order and `selectedTaskIds` records those identities explicitly.
 
 One operation is never split across independently writable boundary, selection, and baseline documents.
 
@@ -135,7 +142,7 @@ For implementation it:
 - excludes unchanged baseline dirty state;
 - separates adapter-owned generated/change-system state when the adapter classifies it as such;
 - rejects native contract changes;
-- rejects every ordinary write absent from the exact authorized target set, even when its owner is already represented;
+- rejects every ordinary write absent from the exact authorized target set, even when another current task now declares it;
 - fresh-resolves actual ordinary targets through the native graph;
 - rejects unowned or ambiguous targets;
 - detects changed effective contract context.
@@ -159,10 +166,11 @@ When implementation discovers another required target:
 1. stop before writing it;
 2. verify and close the current operation;
 3. preserve verified final states of completed targets;
-4. authorize a fresh write set;
-5. carry forward only exact verified predecessor states;
-6. archive the predecessor only when the successor relies on that evidence;
-7. continue implementation.
+4. update structured task scope when the target was undeclared, or explicitly select its existing task when it was declared elsewhere;
+5. authorize a fresh implementation unit;
+6. carry forward only exact verified predecessor states;
+7. archive the predecessor only when the successor relies on that evidence;
+8. continue implementation.
 
 This preserves completed work without widening stale authority.
 

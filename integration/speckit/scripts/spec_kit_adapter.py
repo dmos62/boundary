@@ -13,6 +13,7 @@ from typing import Callable
 from boundary.authorization import (
     ChangeWriteSet,
     OperationRecord,
+    WriteSetError,
     authorize_implementation_operation,
     read_current_operation,
 )
@@ -91,6 +92,7 @@ def project_change(
 ) -> ChangeWriteSet:
     """Project one active feature into Boundary's normalized change model."""
 
+    del root
     task_path = feature_dir / "tasks.md"
     try:
         source = task_path.read_text(encoding="utf-8")
@@ -99,22 +101,34 @@ def project_change(
             f"active Spec Kit task file is unavailable: {task_path}: {exc}"
         ) from exc
 
-    return ChangeWriteSet(
-        change_id=feature_dir.name,
-        tasks=parse_tasks(source),
-    )
+    try:
+        return ChangeWriteSet(
+            change_id=feature_dir.name,
+            tasks=parse_tasks(source),
+        )
+    except WriteSetError as exc:
+        raise SpecKitAdapterError(
+            f"active Spec Kit task scope is invalid: {exc}"
+        ) from exc
 
 
 def authorize_feature(
     root: Path,
     feature_dir: Path,
+    selected_task_ids: tuple[str, ...] | None = None,
 ) -> OperationRecord:
-    """Fresh-authorize the active feature through native Boundary."""
+    """Fresh-authorize one selected unit from the active feature."""
 
-    return authorize_implementation_operation(
-        root,
-        project_change(root, feature_dir),
-    )
+    try:
+        return authorize_implementation_operation(
+            root,
+            project_change(root, feature_dir),
+            selected_task_ids=selected_task_ids,
+        )
+    except WriteSetError as exc:
+        raise SpecKitAdapterError(
+            f"invalid implementation task selection: {exc}"
+        ) from exc
 
 
 def verify_feature(

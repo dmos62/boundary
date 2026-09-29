@@ -22,6 +22,7 @@ def operation_record_to_document(
         "operationId": record.operation_id,
         "changeId": record.change_id,
         "kind": record.kind,
+        "selectedTaskIds": list(record.selected_task_ids),
         "tasks": [
             {
                 "order": task.order,

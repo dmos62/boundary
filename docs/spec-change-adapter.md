@@ -11,13 +11,14 @@ A change-system adapter supplies:
 - the active change identity;
 - stable task identities and task order;
 - exact implementation writes declared by each task;
+- an explicit implementation-unit task selection at authorization entry;
 - adapter-owned feature or generated paths;
 - implementation lifecycle entry and exit integration.
 
 Boundary supplies:
 
 - native contract discovery and effective context;
-- implementation authorization;
+- implementation-unit authorization;
 - operation records and authorization epochs;
 - Git baselines and actual-write derivation;
 - contract-evolution separation;
@@ -46,7 +47,7 @@ Each task contains:
 
 Task IDs must be unique within the active change.
 
-Task order is preserved because diagnostics and authorization evidence may refer back to the host's task order.
+Task order is preserved because diagnostics, implementation-unit selection, and authorization evidence refer back to the host's task order.
 
 Boundary does not infer writes from descriptive prose, path-shaped text, headings, or owner names.
 
@@ -56,13 +57,34 @@ The adapter must use the host's structured write declaration mechanism.
 
 Implementation writes are exact repository-relative paths.
 
-The change-level write projection is the deterministic ordered union of task writes, preserving first occurrence.
+The change-level write projection is the deterministic ordered union of task writes, preserving first occurrence. That union is useful for planning and diagnostics but is not itself implementation authority.
 
 A path declared by more than one task is ambiguous structured scope and must be rejected rather than silently normalized into a different task model.
 
 A declared write expresses implementation intent only. It does not itself grant permission.
 
-Boundary authorization resolves the declared target against fresh canonical contracts and current repository state.
+Boundary authorization resolves the selected unit's declared targets against fresh canonical contracts and current repository state.
+
+## Implementation-unit selection
+
+An implementation unit is an explicit selection of one or more task IDs from the active change.
+
+The adapter validates the supplied identities against the fresh ordered task projection. It must reject:
+
+- a missing selection;
+- unknown task IDs;
+- duplicate task IDs;
+- a selection whose resulting structured write set is empty.
+
+Selected tasks are projected in canonical host task order. The unit write set is their deterministic ordered union, preserving each task's declared path order.
+
+Tasks not selected for the unit contribute no write authority, even when they belong to the same active change or primary owner.
+
+Selecting every task is valid only when every task ID is explicitly selected. The adapter must not silently treat an omitted selection as "all tasks."
+
+Boundary resolves primary ownership and effective contract context after unit selection. The selected unit may resolve to one owner or several owners. Owner resolution informs authorization evidence and diagnostics but does not alter the selected write set.
+
+The operation record, not a new persistent unit file, is the historical identity of the authorized implementation unit. It records the selected task IDs together with the selected task evidence and resolved authorized targets.
 
 ## Adapter-owned paths
 
@@ -74,7 +96,7 @@ Adapter-owned path rules must be deterministic and repository-relative. They may
 
 Adapter-owned classification must not:
 
-- hide a path that is in the active declared implementation write set;
+- hide a path that is in the active unit's declared implementation write set;
 - hide a native Boundary contract write;
 - convert an otherwise unauthorized implementation write into generated state;
 - depend on free-form task prose;
@@ -84,19 +106,21 @@ Boundary may exclude valid adapter-owned state from implementation actual-write 
 
 The concrete path vocabulary remains in the adapter. Boundary core receives only the normalized classification.
 
+Durable project workflow records that are not owned by the host change system remain ordinary writes. They require explicit task declaration and native contract ownership rather than adapter-owned masking.
+
 ## Implementation lifecycle
 
 Boundary recognizes two structural integration points for ordinary implementation.
 
 ### Entry
 
-At implementation entry, the adapter supplies a fresh normalized change projection.
+At implementation entry, the adapter supplies a fresh normalized change projection plus the explicit task selection for the requested implementation unit.
 
 Boundary authorization then evaluates:
 
 - active change identity;
-- task identities and order;
-- exact declared writes;
+- selected task identities in host order;
+- exact declared writes belonging to those selected tasks;
 - canonical target context;
 - current Git state;
 - predecessor evidence when applicable.
@@ -109,9 +133,11 @@ Planning-time inspection is not an authorization transition.
 
 At implementation exit, Boundary verifies the active operation from repository state.
 
-Verification derives actual writes from Git and compares them with the authorized write set while accounting for valid adapter-owned state.
+Verification derives actual writes from Git and compares them with the immutable authorized write set while accounting for valid adapter-owned state.
 
 The adapter must ensure that the active Boundary operation belongs to the same host change before requesting closure.
+
+The adapter does not widen verification from the current unit back to the whole change.
 
 The adapter may allow its host workflow to continue only after the Boundary verification transition returns its result.
 
@@ -123,11 +149,14 @@ When implementation discovers an additional required write:
 
 1. the active implementation operation does not gain permission implicitly;
 2. the current operation must leave implementation through the supported Boundary lifecycle;
-3. the adapter updates structured task scope in its own change system;
-4. Boundary receives a fresh normalized change projection;
-5. fresh implementation authorization is required.
+3. if the target is undeclared, the adapter updates structured task scope in its own change system;
+4. if the target belongs to an unselected existing task, the next unit selection explicitly includes that task;
+5. Boundary receives a fresh normalized change projection and explicit unit selection;
+6. fresh implementation authorization is required.
 
 Previous verified work may carry forward only through Boundary's deterministic predecessor evidence.
+
+Boundary may report whether the newly requested target has the same primary owner as the previous unit or crosses an owner boundary. That distinction may guide coordination, but it never changes the authorization requirement.
 
 ## Contract evolution
 
@@ -135,9 +164,9 @@ Persistent contract evolution is separate from implementation scope supplied by 
 
 A contract-evolution operation modifies only native Boundary contract files.
 
-Changing host task scope does not authorize contract edits.
+Changing host task scope or unit selection does not authorize contract edits.
 
-After contract evolution completes, dependent implementation requires a fresh adapter projection and fresh Boundary implementation authorization.
+After contract evolution completes, dependent implementation requires a fresh adapter projection, explicit unit selection, and fresh Boundary implementation authorization.
 
 ## On-demand context
 
@@ -151,9 +180,15 @@ Adapters should not create a persisted context phase or copy canonical contract 
 
 The Spec Kit adapter uses the active feature directory name as its opaque change identity and preserves task order from `tasks.md`.
 
-Implementation write scope comes only from dedicated indented `Writes:` metadata attached directly to checklist tasks. Backticked repository-relative paths in that metadata are projected as exact writes. Incidental path-looking prose elsewhere in a task is not authorization input.
+Implementation write declarations come only from dedicated indented `Writes:` metadata attached directly to checklist tasks. Backticked repository-relative paths in that metadata are projected as exact writes. Incidental path-looking prose elsewhere in a task is not authorization input.
 
 Malformed, empty, duplicate, or ambiguously repeated structured write declarations are blocking adapter errors.
+
+Implementation authorization requires an explicit task-ID selection. The adapter gate accepts repeated `--task` arguments for direct invocation. The workflow overlay transports the same operation input through the transient `BOUNDARY_TASK_IDS` environment value as a JSON array.
+
+`BOUNDARY_TASK_IDS` is integration transport only. It is not persistent project state or operation evidence.
+
+The adapter projects only the selected tasks' writes into the requested implementation unit. No task selection means no implementation authorization; it does not mean the entire feature.
 
 The adapter is installed with Spec Kit extension identity `boundary`. Under Spec Kit's canonical extension-command namespace, this yields the two public wrappers:
 
@@ -162,9 +197,11 @@ The adapter is installed with Spec Kit extension identity `boundary`. Under Spec
 
 Those wrappers invoke native Boundary authorization and verification. They are adapter commands, not alternate product identities.
 
+The workflow overlay owns the two blocking lifecycle transitions. It requires explicit selection input before its authorization gate and never reconstructs feature-wide scope.
+
 Spec Kit planning and task refinement use `boundary inspect` on demand. There is no public persisted context phase and no public validation phase.
 
-The Spec Kit workflow overlay owns the two blocking lifecycle transitions. The extension does not duplicate them as hooks.
+The extension does not duplicate workflow-overlay authorization and verification as hooks.
 
 Spec Kit feature artifacts and `.specify/` state are adapter-owned for actual-write classification unless a path is itself an authorized implementation target or a native Boundary contract. That classification cannot hide an authorized or contract path because Boundary checks those classes before consulting the adapter classifier.
 
@@ -186,16 +223,18 @@ A replacement change system should therefore require a new adapter implementatio
 
 ## Determinism
 
-Given the same host change state, the adapter must produce the same normalized projection.
+Given the same host change state and the same explicit task selection, the adapter must produce the same normalized implementation unit.
 
 Adapter projection must not depend on transient agent conversation state.
 
 Authorization and verification consume fresh host state at their respective lifecycle transitions rather than trusting a stale planning projection.
 
+Verification remains bound to historical operation evidence even if the host task projection changes after authorization.
+
 ## Failure behavior
 
 Malformed or ambiguous structured change state is a blocking adapter error.
 
-Missing change identity, duplicate task identity, repeated write ownership between tasks, invalid write paths, or invalid adapter-owned path declarations must not be converted into permissive defaults.
+Missing change identity, missing implementation-unit selection, unknown or duplicate selected task identity, duplicate task identity in the change, repeated write ownership between tasks, invalid write paths, empty selected-unit writes, or invalid adapter-owned path declarations must not be converted into permissive defaults.
 
-When the adapter cannot represent required implementation scope, implementation remains unauthorized until the host state is corrected.
+When the adapter cannot represent required implementation scope, implementation remains unauthorized until the host state or explicit unit selection is corrected.

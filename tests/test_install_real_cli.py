@@ -102,6 +102,8 @@ class RealSpecKitLinuxInstallTests(
                 "authorize",
                 "--root",
                 str(project),
+                "--task",
+                "T001",
             ],
             cwd=project,
             env=self.env,
@@ -112,6 +114,10 @@ class RealSpecKitLinuxInstallTests(
         self.assertEqual(
             "specs/001-runtime-check",
             payload["feature"],
+        )
+        self.assertEqual(
+            ["T001"],
+            payload["operation"]["selectedTaskIds"],
         )
 
 

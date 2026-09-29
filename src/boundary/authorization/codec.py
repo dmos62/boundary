@@ -48,6 +48,13 @@ def operation_record_from_document(
             root.get("verification"),
             status,
         )
+        selected_task_ids = tuple(
+            _string(task_id, "selected task id")
+            for task_id in _list(
+                root.get("selectedTaskIds", []),
+                "selectedTaskIds",
+            )
+        )
         return OperationRecord(
             operation_id=_string(
                 root.get("operationId"),
@@ -65,6 +72,7 @@ def operation_record_from_document(
             carried_forward=carried,
             verification_final_states=final_states,
             status=status,
+            selected_task_ids=selected_task_ids,
         )
     except (TypeError, ValueError) as exc:
         if isinstance(exc, AuthorizationError):

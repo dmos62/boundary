@@ -27,11 +27,16 @@ def authorize_implementation_operation(
     repository_root: str | Path,
     change: ChangeWriteSet,
     *,
+    selected_task_ids: tuple[str, ...] | None = None,
     operation_id: str | None = None,
 ) -> OperationRecord:
-    """Fresh-authorize implementation and atomically persist its evidence."""
+    """Fresh-authorize one selected implementation unit and persist evidence."""
 
-    authorization = authorize_implementation(repository_root, change)
+    authorization = authorize_implementation(
+        repository_root,
+        change,
+        selected_task_ids=selected_task_ids,
+    )
     baseline = capture_git_baseline(repository_root)
     predecessor, carried = _carry_forward(
         repository_root,
