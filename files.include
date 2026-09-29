@@ -16,6 +16,8 @@
 @glob dev-scripts.include
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
+@# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK-REVIEW1.md).
+@file ../gui-auto2/BOUNDARY-FEEDBACK-REVIEW1.md
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
 @globexclude README.md
