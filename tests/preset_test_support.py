@@ -99,7 +99,7 @@ def init_project(testcase, root: Path, integration: str = "codex") -> None:
             "--non-interactive",
             "--ignore-agent-tools",
             "--script",
-            "ps",
+            "sh",
             "--integration",
             integration,
         ),
@@ -180,7 +180,16 @@ def run_installed_gate(
     root: Path,
     feature_dir: Path,
     stage: str,
+    task_ids: tuple[str, ...] = (),
 ) -> subprocess.CompletedProcess[str]:
+    env = {
+        "SPECIFY_FEATURE_DIRECTORY": feature_dir.relative_to(root).as_posix(),
+    }
+    if stage == "authorize":
+        if not task_ids:
+            raise ValueError("authorize gate requires explicit task_ids")
+        env["BOUNDARY_TASK_IDS"] = json.dumps(list(task_ids))
+
     return run_command(
         root,
         "uv",
@@ -189,5 +198,5 @@ def run_installed_gate(
         "python",
         str(INSTALLED_RUNTIME_PATH),
         stage,
-        env={"SPECIFY_FEATURE_DIRECTORY": feature_dir.relative_to(root).as_posix()},
+        env=env,
     )

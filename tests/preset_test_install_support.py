@@ -76,7 +76,7 @@ def initialize_codex_project(testcase, root: Path) -> dict[str, str]:
             "--non-interactive",
             "--ignore-agent-tools",
             "--script",
-            "ps",
+            "sh",
             "--integration",
             "codex",
         ),

@@ -162,12 +162,18 @@ class DistributionInstallTests(unittest.TestCase):
             require_success(self, resolved)
             assert_resolved_workflow(self, resolved.stdout)
 
-            authorize = run_installed_gate(root, feature_dir, "authorize")
+            authorize = run_installed_gate(
+                root,
+                feature_dir,
+                "authorize",
+                task_ids=("T001",),
+            )
             require_success(self, authorize)
             authorization = json.loads(authorize.stdout)
             operation = authorization["operation"]
             self.assertEqual("implementation", operation["kind"])
             self.assertEqual("authorized", operation["status"])
+            self.assertEqual(["T001"], operation["selectedTaskIds"])
             self.assertEqual(
                 ["src/app.py"],
                 [item["path"] for item in operation["authorizedTargets"]],

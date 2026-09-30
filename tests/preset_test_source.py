@@ -82,12 +82,14 @@ class PresetSourceTests(unittest.TestCase):
         for marker in (
             'readonly ACTIVE_INTEGRATION="codex"',
             'readonly ACTIVE_COMMANDS_DIR=".agents/skills"',
-            'specify integration switch "$ACTIVE_INTEGRATION" --script ps',
+            'readonly SPECKIT_SCRIPT_OVERRIDE="${BOUNDARY_SPECKIT_SCRIPT:-}"',
+            'args+=(--script "$SPECKIT_SCRIPT_OVERRIDE")',
             "bash scripts/install.sh --source .",
         ):
             self.assertIn(marker, content)
 
         self.assertNotIn("--integration generic", content)
+        self.assertNotIn("--script ps", content)
 
     def test_installer_materializes_native_runtime(self):
         installer = INSTALLER_PATH.read_text(encoding="utf-8")
@@ -100,13 +102,15 @@ class PresetSourceTests(unittest.TestCase):
             'readonly ACTIVE_INTEGRATION="codex"',
             'readonly CODEX_SKILL_ADAPTER="adapters/codex/materialize.py"',
             'readonly BOUNDARY_RUNTIME_DIR=".specify/boundary-runtime"',
+            'readonly SPECKIT_SCRIPT_OVERRIDE="${BOUNDARY_SPECKIT_SCRIPT:-}"',
             'source "$INSTALL_SCRIPT_DIR/install-source.sh"',
             'source "$INSTALL_SCRIPT_DIR/install-host.sh"',
             "specify extension add",
             "specify preset add",
             "specify workflow overlay add",
             "specify workflow overlay remove",
-            "specify integration switch",
+            'local args=(integration switch "$ACTIVE_INTEGRATION")',
+            'args+=(--script "$SPECKIT_SCRIPT_OVERRIDE")',
             "materialize_boundary_runtime",
             "materialize_boundary_skills",
             "src/boundary/__init__.py",
