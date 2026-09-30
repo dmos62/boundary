@@ -3,6 +3,7 @@
 - [ ] Replace the custom `boundary.lock.json` / source-checkout distribution model with mise-managed Boundary installation and locking.
   - Treat this as a distribution-architecture change, not a compatibility patch.
   - The target model is that the downstream project uses mise to install Boundary and `mise.lock` to retain the resolved Boundary revision and Python dependency resolution. Boundary must not maintain a second revision lock.
+  - Investigation is still active. The supplied harness currently reports mise 2026.9.12. Keep findings and rejected mechanisms in `DEBUGGING.md` until the exact workflow is proven.
   - First prove the exact mise mechanism before making it normative:
     - install Boundary as a real `boundary` CLI from a local Boundary Git repository;
     - select an exact commit that exists in that repository rather than implicitly using its current working-tree `HEAD`;
@@ -13,6 +14,7 @@
     - establish the minimum supported mise/uv behavior needed for the workflow.
   - Local Git source support is a required use case. Do not standardize undocumented `pypi:git+file://...` syntax without proving it against the supported mise version. If mise cannot robustly lock/install that form, choose another mise-native mechanism rather than recreating a Boundary revision lock or exposing raw `uv` as the consumer interface.
   - Keep operator-local filesystem paths out of portable committed project state. Determine how the local Boundary source repository is supplied to mise without making an absolute source path canonical project semantics.
+  - Reject a mechanism that only pins the top-level Git revision if it cannot also satisfy the required Python dependency-resolution locking model.
 
 - [ ] Rewrite the distribution specifications around the proven mise model.
   - Remove `boundary.lock.json` from Boundary-defined canonical downstream state.

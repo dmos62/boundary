@@ -1,6 +1,7 @@
 @filegroup
 @glob AGENTS.md
 @glob TODO.md
+@glob DEBUGGING.md
 @glob docs/spec.md
 @glob docs/spec-architecture.md
 @glob docs/spec-distribution.md
@@ -13,6 +14,8 @@
 @glob contracts/boundary-documentation.contract.md
 @glob contracts/boundary-repository-tooling.contract.md
 @glob contracts/boundary-specifications.contract.md
+@glob src/boundary/__main__.py
+@glob src/boundary/cli/**
 @glob dev-scripts.include
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
@@ -44,7 +47,6 @@
 @globexclude integration/**
 @globexclude scripts/**
 @globexclude skills/**
-@globexclude src/**
 @globexclude tests/**
 @globexclude .agents/**
 @globexclude .boundary/**
