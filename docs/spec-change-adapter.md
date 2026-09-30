@@ -162,6 +162,16 @@ The adapter may allow its host workflow to continue only after the Boundary veri
 
 Ordinary tests and host workflow completion do not substitute for Boundary verification.
 
+## Authorization-state handoff
+
+An adapter may expose Boundary's compact current authorization handoff as a read-only convenience for coordinators and workers.
+
+The handoff is not another lifecycle transition. It is derived from current Boundary operation evidence and current Git `HEAD`; the adapter must not reconstruct task authority from mutable host state.
+
+An adapter may report whether the handoff's `changeId` matches its currently active host change. That relationship is informational and does not alter either the historical operation or host task state.
+
+No task selection is required to read the handoff, and reading it creates no operation evidence.
+
 ## Scope expansion
 
 When implementation discovers an additional required write:
@@ -212,6 +222,8 @@ Implementation authorization requires an explicit task-ID selection. The adapter
 `BOUNDARY_TASK_IDS` is integration transport only. It is not persistent project state or operation evidence.
 
 The adapter projects only the selected tasks' writes into the requested implementation unit. No task selection means no implementation authorization; it does not mean the entire feature.
+
+The adapter gate also exposes a non-blocking `status` query containing Boundary's compact authorization handoff plus whether its change identity matches the active Spec Kit feature. The query does not select tasks, authorize writes, or verify the operation.
 
 The adapter is installed with Spec Kit extension identity `boundary`. Under Spec Kit's canonical extension-command namespace, this yields the two public wrappers:
 

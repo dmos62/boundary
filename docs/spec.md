@@ -138,6 +138,8 @@ Successful authorization creates one atomic operation record containing all evid
 
 Mutable planning state cannot widen that record retroactively.
 
+A compact authorization-state handoff may be derived from current operation evidence for agent transfer. It is transient query output and never becomes another authority source.
+
 ## Agent-context invariant
 
 Boundary does not require a large framework bootstrap or the complete project contract set in normal agent context.
@@ -205,7 +207,7 @@ The design is split by responsibility:
 - [spec-architecture.md](spec-architecture.md): core structures, adapters, transient projections, and deterministic boundaries.
 - [spec-contracts.md](spec-contracts.md): native contract syntax and semantic model.
 - [spec-agent-instructions.md](spec-agent-instructions.md): skill architecture and progressive disclosure.
-- [spec-authorization.md](spec-authorization.md): explicit writes, implementation-unit authorization, operation records, Git baselines, epochs, and verification.
+- [spec-authorization.md](spec-authorization.md): explicit writes, implementation-unit authorization, operation records, Git baselines, epochs, verification, and authorization-state handoff.
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection, task-selected implementation units, and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation-unit transitions, and convergence.
 - [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, health checking, removal, and upgrades.
@@ -233,7 +235,11 @@ The Spec Kit adapter now requires explicit task selection and persists the selec
 
 Downstream installations now expose a generated project-local semantic Boundary command that hides runtime and adapter packaging from normal agent procedure.
 
-Remaining release work includes compact authorization-state handoff, earlier workflow-record scope diagnostics, machine-readable lifecycle outcomes, compatibility cleanup, and final verification.
+Declared-scope preflight now surfaces invalid, unowned, or ambiguously owned structured writes before implementation entry, and blocking adapter results expose stable machine-readable lifecycle outcomes.
+
+A compact provider-neutral authorization-state handoff is available to integrations without creating another authorization artifact or lifecycle stage.
+
+Remaining release work includes canonical status exposure for that handoff, compatibility cleanup, and final verification.
 
 ## Summary invariant
 

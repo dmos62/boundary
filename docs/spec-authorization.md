@@ -53,6 +53,8 @@ Implementation authorization consumes:
 
 It verifies canonical paths, operation kind, selected-task validity, unambiguous ownership, resolvable effective context, internally consistent task scope, verified predecessor closure, dirty-target provenance, and reliable Git capture.
 
+Authorization captures `HEAD` around the dirty-state snapshot. If `HEAD` changes while that snapshot is being captured, authorization fails closed with `GIT_STATE_UNAVAILABLE` rather than storing a baseline assembled across two revisions.
+
 Missing, unknown, duplicate, or empty-write task selection is blocking input failure. Omitted selection never means all tasks.
 
 No feature-local Change Boundary or refresh-time context sidecar is required.
@@ -105,6 +107,34 @@ For implementation, `tasks` contains only the selected task evidence in canonica
 One operation is never split across independently writable boundary, selection, and baseline documents.
 
 `status: verified` closes the authorization epoch and permits replacement.
+
+## Authorization-state handoff
+
+Boundary may project the current operation into a compact read-only authorization handoff for coordinator-to-worker transfer.
+
+The version-1 handoff contains:
+
+- operation, change, kind, and operation status;
+- explicit selected task identities;
+- exact authorized targets with their recorded owner and effective-context identity;
+- the recorded contract-graph identity;
+- authorization-time Git `HEAD`;
+- current Git `HEAD`;
+- whether current `HEAD` still equals the authorization baseline.
+
+The handoff is derived from the current atomic operation record plus a fresh Git `HEAD` read. It is transient query output, not a second operation record or persistent project artifact.
+
+A matching `HEAD` is only one useful freshness fact. The handoff must not claim that semantic contract context or actual writes have been reverified. Effective contract prose remains available through target inspection, and authoritative closure remains `boundary verify`.
+
+Reading a handoff:
+
+- does not select tasks;
+- does not widen or refresh authority;
+- does not replace target inspection;
+- does not replace authorization or verification;
+- does not mutate operation evidence.
+
+If there is no current operation, the handoff is absent.
 
 ## Storage and atomicity
 
@@ -186,6 +216,7 @@ Native authorization and verification prefer product-level codes such as:
 - `OPERATION_KIND_VIOLATION`;
 - `DIRTY_TARGET_NOT_VERIFIED`;
 - `GIT_BASELINE_CHANGED`;
+- `GIT_STATE_UNAVAILABLE`;
 - `CONTRACT_GRAPH_INVALID`.
 
 Legacy provider diagnostics stay inside migration adapters.

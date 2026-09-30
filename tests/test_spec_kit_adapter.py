@@ -14,6 +14,7 @@ for path in (SCRIPT_ROOT, SOURCE_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
+from adapter_gate import run_stage
 from spec_kit_adapter import authorize_feature, verify_feature
 from spec_kit_discovery import active_feature
 from spec_kit_errors import SpecKitAdapterError
@@ -232,6 +233,34 @@ class SpecKitLifecycleTests(unittest.TestCase):
             verified = verify_feature(root, feature)
 
         self.assertEqual("verified", verified.status)
+
+    def test_status_projects_compact_authorization_handoff(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            feature = self.initialize(root)
+            authorized = authorize_feature(root, feature, ("T001",))
+
+            with mock.patch.dict(
+                "os.environ",
+                {"SPECIFY_FEATURE_DIRECTORY": str(feature)},
+                clear=False,
+            ):
+                status = run_stage(root, "status")
+
+        self.assertTrue(status["matchesActiveFeature"])
+        handoff = status["authorizationState"]
+        self.assertIsInstance(handoff, dict)
+        assert isinstance(handoff, dict)
+        self.assertEqual(
+            "boundary.authorization-handoff/v1",
+            handoff["schema"],
+        )
+        self.assertEqual(
+            authorized.operation_id,
+            handoff["operationId"],
+        )
+        self.assertEqual(["T001"], handoff["selectedTaskIds"])
+        self.assertTrue(handoff["git"]["headMatchesBaseline"])
 
 
 if __name__ == "__main__":

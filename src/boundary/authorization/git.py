@@ -13,6 +13,8 @@ from boundary.repository import RepositoryPathError, normalize_repo_path
 from .model import AuthorizationError
 from .record import DirtyPathState, GitBaseline
 
+_GIT_STATE_UNAVAILABLE = "GIT_STATE_UNAVAILABLE"
+
 
 def capture_git_baseline(
     repository_root: str | Path,
@@ -20,9 +22,17 @@ def capture_git_baseline(
     """Capture authorization-time HEAD and exact dirty-path identities."""
 
     root = Path(repository_root)
+    head_before = capture_git_head(root)
+    dirty_path_states = capture_dirty_path_states(root)
+    head_after = capture_git_head(root)
+    if head_before != head_after:
+        raise _git_state_error(
+            "Git HEAD changed while the authorization baseline was "
+            "being captured"
+        )
     return GitBaseline(
-        head=capture_git_head(root),
-        dirty_path_states=capture_dirty_path_states(root),
+        head=head_after,
+        dirty_path_states=dirty_path_states,
     )
 
 
@@ -41,7 +51,7 @@ def capture_git_head(
     if result.returncode == 1 and not (result.stderr or result.stdout).strip():
         return None
     detail = " ".join((result.stderr or result.stdout or "").split())
-    raise AuthorizationError(
+    raise _git_state_error(
         "could not determine Git HEAD"
         + (f": {detail}" if detail else "")
     )
@@ -95,7 +105,7 @@ def git_metadata_directory(
     result = _run_git(root, ["rev-parse", "--git-dir"])
     if result.returncode != 0 or not result.stdout.strip():
         detail = " ".join((result.stderr or result.stdout or "").split())
-        raise AuthorizationError(
+        raise _git_state_error(
             "could not determine the Git metadata directory"
             + (f": {detail}" if detail else "")
         )
@@ -118,7 +128,7 @@ def _dirty_paths(root: Path) -> tuple[str, ...]:
     )
     if result.returncode != 0:
         detail = " ".join((result.stderr or result.stdout or "").split())
-        raise AuthorizationError(
+        raise _git_state_error(
             "could not determine dirty Git paths"
             + (f": {detail}" if detail else "")
         )
@@ -128,14 +138,14 @@ def _dirty_paths(root: Path) -> tuple[str, ...]:
         if not record:
             continue
         if len(record) < 4 or record[2] != " ":
-            raise AuthorizationError(
+            raise _git_state_error(
                 "Git returned an unexpected porcelain status record"
             )
         raw = record[3:]
         try:
             paths.add(normalize_repo_path(raw))
         except RepositoryPathError as exc:
-            raise AuthorizationError(
+            raise _git_state_error(
                 f"Git returned an invalid repository path: {raw}"
             ) from exc
     return tuple(sorted(paths))
@@ -148,7 +158,7 @@ def _index_state(root: Path, path: str) -> tuple[str, ...]:
     )
     if result.returncode != 0:
         detail = " ".join((result.stderr or result.stdout or "").split())
-        raise AuthorizationError(
+        raise _git_state_error(
             f"could not identify Git index state for {path}"
             + (f": {detail}" if detail else "")
         )
@@ -186,11 +196,11 @@ def _worktree_state(root: Path, path: str) -> dict[str, str]:
                 "sha256": hashlib.sha256(payload).hexdigest(),
             }
     except OSError as exc:
-        raise AuthorizationError(
+        raise _git_state_error(
             f"could not identify dirty Git path: {path}: {exc}"
         ) from exc
 
-    raise AuthorizationError(
+    raise _git_state_error(
         f"dirty Git path is not a file or symlink: {path}"
     )
 
@@ -208,8 +218,17 @@ def _run_git(
             text=True,
         )
     except FileNotFoundError as exc:
-        raise AuthorizationError(
+        raise _git_state_error(
             "required Git executable was not found"
         ) from exc
     except OSError as exc:
-        raise AuthorizationError(f"Git could not be executed: {exc}") from exc
+        raise _git_state_error(
+            f"Git could not be executed: {exc}"
+        ) from exc
+
+
+def _git_state_error(message: str) -> AuthorizationError:
+    return AuthorizationError(
+        message,
+        code=_GIT_STATE_UNAVAILABLE,
+    )

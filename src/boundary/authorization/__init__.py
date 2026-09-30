@@ -11,6 +11,11 @@ from .git import (
     capture_git_head,
     path_state,
 )
+from .handoff import (
+    AuthorizationHandoff,
+    AuthorizationHandoffTarget,
+    read_authorization_handoff,
+)
 from .identities import contract_graph_identity, effective_context_identity
 from .model import (
     AuthorizationError,
@@ -43,6 +48,8 @@ from .storage import (
 
 __all__ = [
     "AuthorizationError",
+    "AuthorizationHandoff",
+    "AuthorizationHandoffTarget",
     "AuthorizedTarget",
     "CarriedForwardState",
     "ChangeWriteSet",
@@ -69,6 +76,7 @@ __all__ = [
     "is_native_contract_path",
     "operation_archive_path",
     "path_state",
+    "read_authorization_handoff",
     "read_current_operation",
     "write_current_operation",
 ]

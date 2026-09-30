@@ -18,6 +18,7 @@ if RUNTIME_ROOT.is_dir() and str(RUNTIME_ROOT) not in sys.path:
 
 from boundary.authorization import (  # noqa: E402
     AuthorizationError,
+    read_authorization_handoff,
     read_current_operation,
 )
 from boundary.verification import VerificationError  # noqa: E402
@@ -42,7 +43,7 @@ def parse_args(
     )
     parser.add_argument(
         "stage",
-        choices=("preflight", "authorize", "verify"),
+        choices=("preflight", "authorize", "verify", "status"),
     )
     parser.add_argument(
         "--root",
@@ -141,6 +142,21 @@ def _run_resolved_stage(
                     for context in contexts
                 ],
             },
+        }
+
+    if stage == "status":
+        handoff = read_authorization_handoff(root)
+        return {
+            "adapter": "speckit",
+            "feature": feature_path,
+            "authorizationState": (
+                None if handoff is None else handoff.to_document()
+            ),
+            "matchesActiveFeature": (
+                None
+                if handoff is None
+                else handoff.change_id == feature_dir.name
+            ),
         }
 
     if stage == "authorize":

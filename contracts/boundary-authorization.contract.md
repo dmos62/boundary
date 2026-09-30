@@ -26,6 +26,7 @@ Authorize exact operation write scope against fresh contracts and current Git st
 - Successful authorization creates one atomic operation record with the Git baseline and governing target identities.
 - Dirty intended targets require exact verified predecessor provenance before carry-forward.
 - An unverified active operation cannot be silently replaced.
+- Compact authorization handoff state is derived from current operation evidence and current Git state rather than persisted as another authority artifact.
 
 ## Prohibitions
 
@@ -34,8 +35,10 @@ Authorize exact operation write scope against fresh contracts and current Git st
 - Architectural ownership must not infer implementation-unit membership or widen the selected write set.
 - Native contract changes must not authorize implementation writes in the same operation.
 - Mutable planning state must not alter historical authorization evidence.
+- Reading authorization handoff state must not widen, refresh, or verify an operation.
 
 ## Interfaces
 
 - Authorization services produce and persist versioned `OperationRecord` evidence for implementation and contract-evolution operations.
 - Implementation operation evidence exposes the explicit selected task identities and resolved authorized targets used for that authorization epoch.
+- Authorization services expose a compact read-only handoff projection of the current operation for coordinator and worker transfer.

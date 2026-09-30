@@ -7,10 +7,13 @@
 @glob TODO.md
 @glob contracts/**
 @glob integration/speckit/scripts/**
+@glob src/boundary/__main__.py
 @glob src/boundary/outcomes.py
 @glob src/boundary/authorization/**
-@glob src/boundary/verification/**
+@glob src/boundary/cli/**
+@glob tests/test_authorization_handoff.py
 @glob tests/test_spec_kit_adapter.py
+@glob tests/test_native_contract_cli.py
 @glob dev-scripts.include
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
@@ -33,7 +36,6 @@
 @globexclude **/*.sdd
 @globexclude contracts/boundary-agent-adapters.contract.md
 @globexclude contracts/boundary-agent-procedure.contract.md
-@globexclude contracts/boundary-cli.contract.md
 @globexclude contracts/boundary-context.contract.md
 @globexclude contracts/boundary-native-contracts.contract.md
 @globexclude contracts/boundary-repository.contract.md
@@ -45,10 +47,10 @@
 @globexclude integration/speckit-preset/**
 @globexclude scripts/**
 @globexclude skills/**
-@globexclude src/boundary/cli/**
 @globexclude src/boundary/context/**
 @globexclude src/boundary/contracts/**
 @globexclude src/boundary/repository/**
+@globexclude src/boundary/verification/**
 @globexclude tests/consumer_test_support.py
 @globexclude tests/install_real_cli_support.py
 @globexclude tests/native_contract_cli_test_support.py
@@ -71,7 +73,6 @@
 @globexclude tests/test_install_real_cli.py
 @globexclude tests/test_install_real_cli_recovery.py
 @globexclude tests/test_lifecycle_outcomes.py
-@globexclude tests/test_native_contract_cli.py
 @globexclude tests/test_native_contract_context.py
 @globexclude tests/test_native_contract_graph.py
 @globexclude tests/test_native_contract_inspect.py

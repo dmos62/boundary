@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import subprocess
 import sys
 
@@ -147,11 +147,8 @@ def _configured_script_mode(root: Path) -> str:
 
 def _feature_path(root: Path, configured: str) -> tuple[Path, str]:
     normalized = configured.replace("\\", "/")
-    raw = PurePosixPath(normalized)
-    candidate = Path(*raw.parts)
-    if raw.is_absolute():
-        candidate = Path(normalized)
-    else:
+    candidate = Path(normalized)
+    if not candidate.is_absolute():
         candidate = root / candidate
 
     resolved = candidate.resolve()
