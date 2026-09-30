@@ -12,9 +12,6 @@
 @glob src/boundary/cli/main.py
 @glob src/boundary/cli/status.py
 @glob tests/test_operation_record_task_selection.py
-@glob tests/test_authorization_handoff.py
-@glob tests/test_boundary_status_cli.py
-@glob tests/test_task_selected_units.py
 @glob dev-scripts.include
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
@@ -58,6 +55,9 @@
 @globexclude src/boundary/outcomes.py
 @globexclude src/boundary/repository/**
 @globexclude src/boundary/verification/**
+@globexclude tests/test_authorization_handoff.py
+@globexclude tests/test_boundary_status_cli.py
+@globexclude tests/test_task_selected_units.py
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**

@@ -1,1 +1,1 @@
-- Complete final release verification after the operation-record compatibility cleanup. Confirm that version-1 implementation evidence fails closed when explicit `selectedTaskIds` is missing or inconsistent, run the full test suite and native contract check, and remove this item when all release checks are green.
+

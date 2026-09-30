@@ -19,6 +19,11 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
 
         self.assertEqual(record.selected_task_ids, ("T001",))
 
+    def test_valid_record_serializes_selected_task_ids_explicitly(self) -> None:
+        record = operation_record_from_document(_implementation_document())
+
+        self.assertEqual(record.to_document()["selectedTaskIds"], ["T001"])
+
     def test_missing_selected_task_ids_is_rejected(self) -> None:
         document = _implementation_document()
         del document["selectedTaskIds"]
@@ -32,6 +37,16 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
     def test_empty_selected_task_ids_is_not_inferred_from_tasks(self) -> None:
         document = _implementation_document()
         document["selectedTaskIds"] = []
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "selected task identities must match operation task evidence",
+        ):
+            operation_record_from_document(document)
+
+    def test_inconsistent_selected_task_ids_is_rejected(self) -> None:
+        document = _implementation_document()
+        document["selectedTaskIds"] = ["T999"]
 
         with self.assertRaisesRegex(
             AuthorizationError,
