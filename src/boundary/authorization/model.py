@@ -12,6 +12,15 @@ class WriteSetError(ValueError):
 class AuthorizationError(ValueError):
     """Raised when canonical inputs cannot authorize an operation."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str | None = None,
+    ) -> None:
+        self.code = code
+        super().__init__(message)
+
 
 @dataclass(frozen=True, slots=True)
 class TaskWriteSet:

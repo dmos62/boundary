@@ -105,7 +105,8 @@ def _carry_forward(
     if predecessor is not None and predecessor.status != "verified":
         raise AuthorizationError(
             "OPERATION_NOT_VERIFIED: the active operation must be "
-            "verified before another authorization epoch can replace it"
+            "verified before another authorization epoch can replace it",
+            code="OPERATION_NOT_VERIFIED",
         )
 
     dirty = {
@@ -123,7 +124,8 @@ def _carry_forward(
     if predecessor is None:
         raise AuthorizationError(
             "DIRTY_TARGET_NOT_VERIFIED: intended target already contains "
-            f"dirty state without predecessor provenance: {dirty_targets[0]}"
+            f"dirty state without predecessor provenance: {dirty_targets[0]}",
+            code="DIRTY_TARGET_NOT_VERIFIED",
         )
     if (
         predecessor.change_id != change_id
@@ -131,7 +133,8 @@ def _carry_forward(
     ):
         raise AuthorizationError(
             "DIRTY_TARGET_NOT_VERIFIED: verified predecessor belongs to "
-            "a different change or operation kind"
+            "a different change or operation kind",
+            code="DIRTY_TARGET_NOT_VERIFIED",
         )
 
     verified = {
@@ -144,7 +147,8 @@ def _carry_forward(
         if verified.get(path) != current_state:
             raise AuthorizationError(
                 "DIRTY_TARGET_NOT_VERIFIED: intended dirty target does not "
-                f"match verified predecessor output: {path}"
+                f"match verified predecessor output: {path}",
+                code="DIRTY_TARGET_NOT_VERIFIED",
             )
         carried.append(
             CarriedForwardState(

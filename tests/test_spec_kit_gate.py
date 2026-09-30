@@ -11,7 +11,7 @@ for path in (SCRIPT_ROOT, SOURCE_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from adapter_gate import resolve_task_selection
+from adapter_gate import parse_args, resolve_task_selection
 from spec_kit_adapter import SpecKitAdapterError
 
 
@@ -58,6 +58,19 @@ class SpecKitGateSelectionTests(unittest.TestCase):
             self.assertEqual(
                 (),
                 resolve_task_selection("verify", ("T012",)),
+            )
+
+    def test_preflight_is_non_authorizing_and_requires_no_selection(self):
+        args = parse_args(("preflight",))
+        self.assertEqual("preflight", args.stage)
+
+        with mock.patch.dict(
+            os.environ,
+            {"BOUNDARY_TASK_IDS": '["T009"]'},
+        ):
+            self.assertEqual(
+                (),
+                resolve_task_selection("preflight", ("T012",)),
             )
 
 

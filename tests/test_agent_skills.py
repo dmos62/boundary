@@ -52,10 +52,13 @@ class CanonicalBoundarySkillTests(unittest.TestCase):
 
         for marker in (
             "exact repository-relative targets",
+            "durable project or workflow records",
             "effective context",
             "additively",
             "structured write declaration",
+            "declared-scope readiness preflight",
             "Path-looking prose",
+            "non-authorizing",
             "Do not authorize implementation from this skill",
             "Authorization remains a separate deterministic transition",
         ):

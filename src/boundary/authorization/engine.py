@@ -48,19 +48,22 @@ def authorize_implementation(
         if is_native_contract_path(path):
             raise AuthorizationError(
                 "OPERATION_KIND_VIOLATION: implementation operations may "
-                f"not modify native contracts: {path}"
+                f"not modify native contracts: {path}",
+                code="OPERATION_KIND_VIOLATION",
             )
         try:
             context = resolve_target_context(graph, path)
         except ContractOwnershipError as exc:
             raise AuthorizationError(
                 "AMBIGUOUS_OWNERSHIP: implementation write has ambiguous "
-                f"ownership: {path}"
+                f"ownership: {path}",
+                code="AMBIGUOUS_OWNERSHIP",
             ) from exc
         if context.owner_id is None:
             raise AuthorizationError(
                 "UNOWNED_WRITE_TARGET: implementation write has no primary "
-                f"owner: {path}"
+                f"owner: {path}",
+                code="UNOWNED_WRITE_TARGET",
             )
         targets.append(
             AuthorizedTarget(
@@ -96,7 +99,8 @@ def authorize_contract_evolution(
         if not is_native_contract_path(path):
             raise AuthorizationError(
                 "OPERATION_KIND_VIOLATION: contract-evolution operations may "
-                f"modify only native contracts: {path}"
+                f"modify only native contracts: {path}",
+                code="OPERATION_KIND_VIOLATION",
             )
 
     graph = _load_graph(repository_root)
@@ -121,9 +125,11 @@ def _load_graph(repository_root: str | Path) -> ContractGraph:
         return load_contract_graph(repository_root)
     except ContractOwnershipError as exc:
         raise AuthorizationError(
-            f"AMBIGUOUS_OWNERSHIP: {exc}"
+            f"AMBIGUOUS_OWNERSHIP: {exc}",
+            code="AMBIGUOUS_OWNERSHIP",
         ) from exc
     except (ContractParseError, ContractGraphError) as exc:
         raise AuthorizationError(
-            f"CONTRACT_GRAPH_INVALID: {exc}"
+            f"CONTRACT_GRAPH_INVALID: {exc}",
+            code="CONTRACT_GRAPH_INVALID",
         ) from exc

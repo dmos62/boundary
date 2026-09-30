@@ -126,6 +126,38 @@ Successful verification closes the current authorization epoch by marking its op
 
 Feature correctness and broader convergence are separate.
 
+## Machine-readable lifecycle outcomes
+
+Blocking Boundary results expose stable machine-readable lifecycle semantics in addition to human-readable diagnostics.
+
+The version-1 blocked outcome contains:
+
+- `schema: boundary.lifecycle-outcome/v1`;
+- `status: blocked`;
+- the lifecycle stage;
+- one stable category;
+- one structured diagnostic code;
+- the human-readable message;
+- the active change identity when available;
+- the active operation identity when available;
+- structured diagnostics when the underlying check produced them;
+- an optional required Boundary transition when a failure implies one.
+
+Stable categories include:
+
+- `scope-expansion-required`;
+- `contract-evolution-required`;
+- `invalid-adapter-state`;
+- `missing-external-prerequisite`;
+- `stale-authorization`;
+- `verification-write-scope-failure`.
+
+Verification keeps its historical semantics when producing these outcomes. An undeclared or unowned actual write remains a verification failure; current mutable task state is not consulted to reinterpret or authorize it. The outcome may additionally identify `scope-expansion-required` or `contract-evolution-required` as the required Boundary transition.
+
+Declared-scope preflight uses the same vocabulary where applicable, but a preflight result never contains an operation identity because preflight creates no operation.
+
+Structured outcomes describe Boundary state and required Boundary lifecycle transitions. They do not decide whether an outer controller should pause, retry, ask a human, or continue another activity.
+
 ## Contract evolution
 
 When requested behavior cannot satisfy current persistent contracts:
