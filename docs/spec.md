@@ -239,7 +239,7 @@ Declared-scope preflight now surfaces invalid, unowned, or ambiguously owned str
 
 A compact provider-neutral authorization-state handoff is available to integrations without creating another authorization artifact or lifecycle stage.
 
-Remaining release work includes canonical status exposure for that handoff, compatibility cleanup, and final verification.
+Canonical `boundary status` now exposes that compact handoff directly. Remaining release work is compatibility cleanup and final verification.
 
 ## Summary invariant
 

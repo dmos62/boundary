@@ -6,11 +6,13 @@ from pathlib import Path
 import sys
 from typing import TextIO
 
+from boundary.authorization import AuthorizationError
 from boundary.contracts import ContractGraphError, ContractParseError
 from boundary.repository import RepositoryPathError
 
 from .contracts import run_contracts_check
 from .inspection import run_inspect
+from .status import run_status
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -45,6 +47,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repository-relative target path.",
     )
 
+    commands.add_parser(
+        "status",
+        help="Show current Boundary authorization state.",
+    )
+
     return parser
 
 
@@ -72,7 +79,10 @@ def main(
             return run_contracts_check(root, output)
         if args.command == "inspect":
             return run_inspect(root, args.targets, output)
+        if args.command == "status":
+            return run_status(root, output)
     except (
+        AuthorizationError,
         ContractParseError,
         ContractGraphError,
         RepositoryPathError,

@@ -136,6 +136,8 @@ The canonical product-level command surface should converge toward:
 
 Additional status or debugging commands may be introduced when justified. These commands use Boundary terminology and do not depend on a particular change system.
 
+`boundary status` is a read-only query. It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists. It does not select tasks, create operation evidence, or replace authorization or verification.
+
 Installed downstream projects materialize the semantic surface at `.boundary/bin/boundary`. That generated command self-locates installed Boundary runtime state and delegates change-system-specific authorization and verification translation to the active adapter. Its filesystem location is installation detail rather than a second product API.
 
 Declared-scope preflight composes the existing `boundary inspect` query over structured targets. It does not add another mandatory Boundary lifecycle phase or require a persisted preflight artifact.

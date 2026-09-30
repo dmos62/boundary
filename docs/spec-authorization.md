@@ -124,6 +124,8 @@ The version-1 handoff contains:
 
 The handoff is derived from the current atomic operation record plus a fresh Git `HEAD` read. It is transient query output, not a second operation record or persistent project artifact.
 
+Canonical `boundary status` serializes this handoff document directly as JSON. When there is no current operation, it emits JSON `null`.
+
 A matching `HEAD` is only one useful freshness fact. The handoff must not claim that semantic contract context or actual writes have been reverified. Effective contract prose remains available through target inspection, and authoritative closure remains `boundary verify`.
 
 Reading a handoff:

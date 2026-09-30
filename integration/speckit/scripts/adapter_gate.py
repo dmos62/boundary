@@ -35,9 +35,7 @@ from spec_kit_adapter import (  # noqa: E402
 _TASK_SELECTION_ENV = "BOUNDARY_TASK_IDS"
 
 
-def parse_args(
-    argv: Sequence[str] | None = None,
-) -> argparse.Namespace:
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run Boundary actions for the Spec Kit adapter."
     )
@@ -67,7 +65,6 @@ def resolve_task_selection(
 
     if stage != "authorize":
         return ()
-
     supplied = tuple(task_ids)
     if supplied:
         return supplied
@@ -160,14 +157,9 @@ def _run_resolved_stage(
         }
 
     if stage == "authorize":
-        record = authorize_feature(
-            root,
-            feature_dir,
-            selected_task_ids,
-        )
+        record = authorize_feature(root, feature_dir, selected_task_ids)
     else:
         record = verify_feature(root, feature_dir)
-
     return {
         "adapter": "speckit",
         "feature": feature_path,
@@ -188,10 +180,7 @@ def main(
     change_id: str | None = None
 
     try:
-        selected_task_ids = resolve_task_selection(
-            args.stage,
-            args.task_ids,
-        )
+        selected_task_ids = resolve_task_selection(args.stage, args.task_ids)
         root = resolve_repository_root(args.root)
         feature_dir, feature_path = active_feature(root)
         change_id = feature_dir.name

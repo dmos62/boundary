@@ -1,2 +1,1 @@
-- Finish compact authorization-state handoff at the canonical product surface: wire the provider-neutral handoff projection into `boundary status` and add focused CLI coverage. Core handoff projection and the Spec Kit adapter `status` query are now implemented.
-- After canonical status exposure, perform compatibility cleanup and final release verification.
+- Perform compatibility cleanup and final release verification. Canonical `boundary status` now emits the provider-neutral authorization handoff JSON directly (or `null` with no active operation); focused CLI coverage is in `tests/test_boundary_status_cli.py`.
