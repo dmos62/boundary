@@ -14,13 +14,10 @@ for path in (SCRIPT_ROOT, SOURCE_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from spec_kit_adapter import (
-    SpecKitAdapterError,
-    active_feature,
-    authorize_feature,
-    parse_tasks,
-    verify_feature,
-)
+from spec_kit_adapter import authorize_feature, verify_feature
+from spec_kit_discovery import active_feature
+from spec_kit_errors import SpecKitAdapterError
+from task_projection import parse_tasks
 
 
 def run_git(root: Path, *args: str) -> None:
@@ -138,7 +135,7 @@ class SpecKitFeatureDiscoveryTests(unittest.TestCase):
             )
 
             with mock.patch(
-                "spec_kit_adapter.subprocess.run",
+                "spec_kit_discovery.subprocess.run",
                 return_value=completed,
             ) as invoked:
                 resolved, relative = active_feature(root)
