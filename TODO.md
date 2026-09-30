@@ -2,42 +2,32 @@
 
 Task-selected implementation units are active in the native authorization model and the Spec Kit adapter. New implementation operations require explicit task selection, persist `selectedTaskIds`, authorize only selected-task writes, and preserve deterministic predecessor carry-forward.
 
-Downstream installation now also materializes `.boundary/bin/boundary` as generated project-local integration state. It exposes semantic `inspect`, `authorize`, `verify`, `status`, and `contracts check` entrypoints, self-locates installed runtime and adapter state, and owns a local UV cache so callers no longer reconstruct packaging paths or cache configuration.
+Downstream installation materializes `.boundary/bin/boundary` as generated project-local integration state. It exposes semantic `inspect`, `authorize`, `verify`, `status`, and `contracts check` entrypoints, self-locates installed runtime and adapter state, and owns a local UV cache so callers no longer reconstruct packaging paths or cache configuration.
 
-The remaining work should make authorization handoff richer, surface lifecycle scope earlier, and provide stable orchestration outcomes without weakening task-selected authorization.
+Authorization handoff is complete at the procedural layer. The compact `boundary.status/v2` projection reports current operation identity and status, change identity, selected tasks, authorized target evidence, optional recorded target contexts, and current-versus-baseline Git HEAD freshness. Canonical implementation procedure now requires delegated workers to establish authority from that status projection before writing rather than rediscovering raw operation evidence or reconstructing authority from mutable task files.
 
-## 1. Make authorization state cheap to hand off
+The remaining work should surface lifecycle scope earlier and provide stable orchestration outcomes without weakening task-selected authorization.
 
-Expand the current minimal `boundary status` result into a compact deterministic status/capsule suitable for coordinators and disposable workers.
+## 1. Surface workflow-record scope before implementation
 
-It should report at least:
+The architecture now distinguishes declared-scope readiness from implementation authorization.
 
-- operation ID and status;
-- active change ID;
-- selected task IDs, using the task selection already persisted in operation evidence;
-- authorized targets;
-- resolved primary owners and relevant effective-contract identifiers;
-- Git baseline/freshness evidence needed to know whether the operation is still usable.
+The declared-scope preflight is non-authorizing planning/task-readiness work over the deterministic ordered union of structured task writes. It uses Boundary effective target inspection, creates no operation record or Git baseline, does not select an implementation unit, and cannot grant authority to unselected tasks. Fresh selected-unit authorization remains authoritative.
 
-The representation should be query output derived from operation evidence and current repository state, not another persistent source-of-truth file.
+Durable checkpoint, continuation, feedback, and similar project records remain ordinary writes unless the host change system actually owns them. When implementation is expected to update such records, task generation must declare their exact paths so ownership defects can be surfaced before implementation.
 
-Update agent procedure so a delegated worker can establish its authority from this output instead of rediscovering or rereading raw operation evidence.
+Remaining work:
 
-## 2. Surface workflow-record scope before implementation
+- update the canonical Boundary scope skill and concrete Spec Kit task-generation guidance to call out required durable project records and require exact `Writes:` declarations for them;
+- wire the Spec Kit task-readiness path to inspect the complete declared write projection through Boundary rather than reproducing contract resolution;
+- make unowned and ambiguous declared targets visible before implementation entry without persisting another lifecycle artifact or changing selected-unit authorization semantics;
+- add focused tests covering the `specs/CONTINUATION.md` / `BOUNDARY-FEEDBACK.md` regression shape and proving that preflight information grants no implementation authority.
 
-Keep durable project records as real writes rather than weakening verification or broadly classifying them as generated state.
-
-Required work:
-
-- update Spec Kit planning/task guidance to call out durable checkpoint, continuation, feedback, and similar project records when the project workflow requires them;
-- ensure such paths are represented by explicit `Writes:` metadata when implementation is expected to update them;
-- add an early scope/ownership diagnostic over declared writes so unowned ordinary targets are found before implementation authorization;
-- keep native contract ownership as the durable authorization story for project records;
-- do not auto-create project-specific record contracts and do not hide these writes through adapter-owned classification.
+Do not auto-create project-specific record contracts and do not hide these writes through adapter-owned classification.
 
 Use the `specs/CONTINUATION.md` / `BOUNDARY-FEEDBACK.md` failure as regression guidance.
 
-## 3. Return machine-readable lifecycle outcomes
+## 2. Return machine-readable lifecycle outcomes
 
 Make blocking Boundary results distinguishable to orchestration layers without parsing prose.
 

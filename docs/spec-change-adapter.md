@@ -65,6 +65,25 @@ A declared write expresses implementation intent only. It does not itself grant 
 
 Boundary authorization resolves the selected unit's declared targets against fresh canonical contracts and current repository state.
 
+## Declared-scope preflight
+
+After structured task writes exist, a change-system integration may run a non-authorizing preflight over the complete change-level ordered write projection.
+
+The preflight uses Boundary's effective target inspection rather than reimplementing contract resolution in the adapter. Its purpose is to surface scope defects such as invalid targets, missing ownership, or ambiguous ownership before an implementation unit begins.
+
+This diagnostic:
+
+- is planning or task-readiness information, not authorization evidence;
+- creates no operation record and captures no Git authorization baseline;
+- does not select tasks or infer an implementation unit;
+- does not grant authority to writes from unselected tasks;
+- does not replace fresh target resolution during later authorization;
+- must not be persisted as a feature-local authorization artifact.
+
+A host workflow may require declared-scope diagnostics to be clean before treating its task set as implementation-ready. That host readiness rule does not change Boundary core authorization semantics: authorization still consumes only the explicitly selected tasks and independently reloads current contracts and Git state.
+
+Durable project workflow records are ordinary writes unless the host change system genuinely owns them as bookkeeping. When implementation is expected to update a checkpoint, continuation record, feedback record, or similar project artifact, task generation must represent that exact path in structured write metadata so the preflight can inspect its real ownership before implementation.
+
 ## Implementation-unit selection
 
 An implementation unit is an explicit selection of one or more task IDs from the active change.
@@ -127,7 +146,7 @@ Boundary authorization then evaluates:
 
 Implementation may begin only after Boundary records a successful authorization operation.
 
-Planning-time inspection is not an authorization transition.
+Planning-time inspection, including declared-scope preflight, is not an authorization transition and is never reused as authorization evidence.
 
 ### Exit
 
@@ -172,7 +191,7 @@ After contract evolution completes, dependent implementation requires a fresh ad
 
 Target inspection is a Boundary query, not a change-system lifecycle state.
 
-Planning tools may invoke `boundary inspect <target...>` whenever target context is needed.
+Planning tools may invoke `boundary inspect <target...>` whenever target context is needed, including a declared-scope preflight over the ordered union of structured task writes.
 
 Adapters should not create a persisted context phase or copy canonical contract semantics into host feature artifacts merely to make them available to agents.
 
@@ -183,6 +202,10 @@ The Spec Kit adapter uses the active feature directory name as its opaque change
 Implementation write declarations come only from dedicated indented `Writes:` metadata attached directly to checklist tasks. Backticked repository-relative paths in that metadata are projected as exact writes. Incidental path-looking prose elsewhere in a task is not authorization input.
 
 Malformed, empty, duplicate, or ambiguously repeated structured write declarations are blocking adapter errors.
+
+Spec Kit task refinement must include durable project records in `Writes:` metadata whenever the workflow expects implementation to update those records. A continuation checkpoint, feedback record, or similar file outside the active feature directory is not Spec Kit bookkeeping merely because it supports the development workflow.
+
+After task refinement, the Spec Kit integration should inspect the deterministic ordered union of declared writes through Boundary's target-context query. Unowned or ambiguously owned ordinary targets should therefore be reported before implementation entry rather than discovered only from an actual write at verification. This inspection remains non-authorizing and is not saved as operation evidence.
 
 Implementation authorization requires an explicit task-ID selection. The adapter gate accepts repeated `--task` arguments for direct invocation. The workflow overlay transports the same operation input through the transient `BOUNDARY_TASK_IDS` environment value as a JSON array.
 
@@ -199,7 +222,7 @@ Those wrappers invoke native Boundary authorization and verification. They are a
 
 The workflow overlay owns the two blocking lifecycle transitions. It requires explicit selection input before its authorization gate and never reconstructs feature-wide scope.
 
-Spec Kit planning and task refinement use `boundary inspect` on demand. There is no public persisted context phase and no public validation phase.
+Spec Kit planning and task refinement use `boundary inspect` on demand, including declared-scope readiness checks. There is no public persisted context phase and no public validation phase.
 
 The extension does not duplicate workflow-overlay authorization and verification as hooks.
 
@@ -231,6 +254,8 @@ Authorization and verification consume fresh host state at their respective life
 
 Verification remains bound to historical operation evidence even if the host task projection changes after authorization.
 
+Declared-scope preflight is likewise recomputed from current structured host state when requested. Its output is advisory and never substitutes for fresh authorization-time resolution.
+
 ## Failure behavior
 
 Malformed or ambiguous structured change state is a blocking adapter error.
@@ -238,3 +263,5 @@ Malformed or ambiguous structured change state is a blocking adapter error.
 Missing change identity, missing implementation-unit selection, unknown or duplicate selected task identity, duplicate task identity in the change, repeated write ownership between tasks, invalid write paths, empty selected-unit writes, or invalid adapter-owned path declarations must not be converted into permissive defaults.
 
 When the adapter cannot represent required implementation scope, implementation remains unauthorized until the host state or explicit unit selection is corrected.
+
+Planning/readiness diagnostics may additionally identify unowned or ambiguously owned writes elsewhere in the declared change before their task is selected. Those diagnostics do not enlarge the selected unit or become historical authorization evidence.

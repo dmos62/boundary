@@ -43,6 +43,11 @@ def make_source_checkout(
         "# fixture consumer location\n",
         encoding="utf-8",
     )
+    (root / "scripts" / "project_boundary.py").write_text(
+        "#!/usr/bin/env python3\n"
+        f"# fixture project Boundary entrypoint: {marker}\n",
+        encoding="utf-8",
+    )
 
     run_git(root, "init", "-q")
     run_git(root, "config", "user.email", "tests@example.invalid")

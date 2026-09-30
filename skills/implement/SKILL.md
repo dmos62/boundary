@@ -2,16 +2,25 @@
 
 Use this skill only after an implementation operation has been successfully authorized.
 
+## Establish implementation authority
+
+Before changing project files:
+
+1. Read deterministic Boundary status (`boundary status`) for the current repository.
+2. Require an operation to be present with implementation kind and active status, and identify its change identity, selected task identities, and exact authorized targets.
+3. Treat the selected task identities and authorized targets as the status projection of historical authorization evidence. Do not reconstruct or widen authority from mutable change-system task files.
+4. Require the current Git HEAD to match the recorded baseline when a baseline is available. Missing operation evidence, a non-implementation or inactive operation, or a stale baseline requires the supported lifecycle transition rather than implementation.
+5. Use any recorded target-context evidence for handoff orientation, then inspect Boundary effective context for each target before modifying it.
+
 ## Procedure
 
-1. Read the active authorized write set before changing project files.
-2. Inspect Boundary effective context for each target before modifying it.
-3. Preserve every applicable invariant and prohibition, including constraints contributed by broader owning contracts.
-4. Use relevant dependency interfaces when the target participates in declared architectural relationships.
-5. Modify only targets present in the authorized write set.
-6. Keep implementation work separate from native contract evolution.
-7. Run the implementation's normal tests and checks without treating their success as authorization evidence.
-8. Finish by running Boundary verification for the active operation.
+1. Inspect Boundary effective context for each target before modifying it.
+2. Preserve every applicable invariant and prohibition, including constraints contributed by broader owning contracts.
+3. Use relevant dependency interfaces when the target participates in declared architectural relationships.
+4. Modify only targets present in the authorized write set projected by status.
+5. Keep implementation work separate from native contract evolution.
+6. Run the implementation's normal tests and checks without treating their success as authorization evidence.
+7. Finish by running Boundary verification for the active operation.
 
 ## Scope expansion
 
@@ -37,6 +46,7 @@ When requested behavior cannot satisfy the applicable persistent contracts:
 ## Guardrails
 
 - Prompt instructions do not widen authorization.
+- A Boundary status capsule is query output derived from historical evidence and current repository state; it does not replace or widen the operation record.
 - A previously inspected target is not automatically authorized.
 - A target owned by an already represented owner is still undeclared unless it is in the authorized write set.
 - Native contract files are not implementation targets.

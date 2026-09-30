@@ -102,6 +102,8 @@ The generated command self-locates the installed runtime and change-system adapt
     .boundary/bin/boundary status
     .boundary/bin/boundary contracts check
 
+`status` returns the compact `boundary.status/v2` authorization capsule. It projects the current operation identity and status, active change identity, selected task identities, authorized target evidence, optional recorded target-context evidence, and current-versus-baseline Git HEAD freshness from operation evidence plus current repository state.
+
 Callers do not need to provide `PYTHONPATH`, know adapter script paths, or choose a UV cache directory.
 
 Supported host lifecycle commands may also update host-owned persistent configuration or shareable generated state. Those changes remain visible according to [spec-distribution-state.md](spec-distribution-state.md).

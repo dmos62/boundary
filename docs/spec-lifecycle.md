@@ -8,7 +8,7 @@ The current change-system adapter is Spec Kit. Another change system, or a futur
 
 Boundary's mandatory lifecycle is:
 
-    authorize → implement → verify
+   authorize → implement → verify
 
 Each implementation authorization operates on one explicitly selected implementation unit.
 
@@ -41,7 +41,14 @@ The Boundary scope skill helps the agent:
 - name exact intended writes;
 - inspect their effective context;
 - separate contract evolution from implementation;
-- prefer coherent owner-local tasks where useful.
+- prefer coherent owner-local tasks where useful;
+- include durable workflow records when implementation is expected to update them.
+
+A checkpoint, continuation record, feedback record, or similar durable project artifact is an ordinary write unless the active change system actually owns it as bookkeeping. Workflow importance does not exempt such a path from structured declaration or native contract ownership.
+
+After structured task writes are available, the host integration should run a non-authorizing declared-scope preflight over their deterministic ordered union. The preflight uses Boundary target inspection to surface invalid, unowned, or ambiguously owned targets before implementation entry.
+
+Declared-scope preflight is task-readiness information only. It creates no operation record, captures no Git authorization baseline, selects no implementation unit, and grants no authority. Later implementation authorization independently reloads current task state, contracts, and Git state and considers only the explicitly selected tasks.
 
 A user story may span any number of owner domains.
 
@@ -61,7 +68,7 @@ It uses:
 - fresh native contracts;
 - current Git state.
 
-It does not refresh an earlier boundary and does not prove an earlier planning cache fresh.
+It does not refresh an earlier boundary and does not prove an earlier planning or declared-scope diagnostic fresh.
 
 Missing task selection is a failure. Authorization never interprets an omitted selection as the complete active change.
 
@@ -153,11 +160,11 @@ A concrete change system may impose additional governance without making it a Bo
 
 The canonical product-level command surface should converge toward:
 
-    boundary inspect <target...>
-    boundary contracts check
-    boundary authorize
-    boundary verify
-    boundary status
+   boundary inspect <target...>
+   boundary contracts check
+   boundary authorize
+   boundary verify
+   boundary status
 
 Additional status/debugging commands may be introduced when justified.
 
@@ -165,12 +172,14 @@ These commands use Boundary terminology and do not depend on a particular change
 
 Installed downstream projects materialize the semantic surface at `.boundary/bin/boundary`. That generated command self-locates installed Boundary runtime state and delegates change-system-specific authorization and verification translation to the active adapter. Its filesystem location is installation detail rather than a second product API.
 
+Declared-scope preflight composes the existing `boundary inspect` query over structured targets. It does not add another mandatory Boundary lifecycle phase or require a persisted preflight artifact.
+
 ## Spec Kit adapter
 
 The Spec Kit adapter exposes thin agent-facing wrappers:
 
-    speckit.boundary.authorize
-    speckit.boundary.verify
+   speckit.boundary.authorize
+   speckit.boundary.verify
 
 Those names belong to the adapter.
 
@@ -178,12 +187,14 @@ They are not the canonical Boundary product API.
 
 The Spec Kit workflow integration enforces a repeatable unit lifecycle:
 
-    tasks
-      → explicit unit selection
-      → boundary-authorize
-      → implement
-      → boundary-verify
-      → next selected unit when needed
+   tasks
+     → explicit unit selection
+     → boundary-authorize
+     → implement
+     → boundary-verify
+     → next selected unit when needed
+
+Before that lifecycle begins, Spec Kit task refinement should inspect the complete structured write projection and surface ownership defects. This readiness check remains outside the blocking Boundary lifecycle and supplies no authorization evidence.
 
 The current workflow overlay receives the explicit Spec Kit task selection through transient adapter input. It has no implicit whole-feature selection.
 
@@ -206,7 +217,9 @@ The Spec Kit preset is intentionally narrow.
 Its task-generation augmentation:
 
 - directs task refinement toward exact write declarations;
+- calls out required durable workflow records as explicit writes rather than implicit administrative state;
 - permits on-demand `boundary inspect`;
+- uses target inspection to surface ownership defects in the complete declared write projection before implementation entry;
 - keeps contract evolution separate;
 - requires fresh authorization after scope change.
 

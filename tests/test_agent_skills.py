@@ -61,6 +61,20 @@ class CanonicalBoundarySkillTests(unittest.TestCase):
         ):
             self.assertIn(marker, content)
 
+    def test_implementation_skill_requires_authorization_status_handoff(self):
+        content = self._content("boundary-implement")
+
+        for marker in (
+            "boundary status",
+            "selected task identities",
+            "authorized targets",
+            "Git HEAD",
+            "recorded baseline",
+            "mutable change-system task files",
+            "status capsule is query output",
+        ):
+            self.assertIn(marker, content)
+
     def test_implementation_skill_requires_explicit_scope_expansion(self):
         content = self._content("boundary-implement")
 

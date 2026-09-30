@@ -142,11 +142,28 @@ class RealSpecKitLinuxInstallTests(
         )
         self.assert_success(status)
         status_payload = json.loads(status.stdout)
-        self.assertEqual("boundary.status/v1", status_payload["schema"])
+        self.assertEqual("boundary.status/v2", status_payload["schema"])
         self.assertEqual(
             payload["operation"]["operationId"],
             status_payload["operation"]["operationId"],
         )
+        self.assertEqual(
+            ["T001"],
+            status_payload["operation"]["selectedTaskIds"],
+        )
+        self.assertEqual(
+            payload["operation"]["changeId"],
+            status_payload["operation"]["changeId"],
+        )
+        self.assertTrue(status_payload["operation"]["authorizedTargets"])
+
+        head = run(["git", "rev-parse", "HEAD"], cwd=project)
+        self.assert_success(head)
+        self.assertEqual(
+            head.stdout.strip(),
+            status_payload["freshness"]["currentHead"],
+        )
+        self.assertTrue(status_payload["freshness"]["headMatchesBaseline"])
 
 
 if __name__ == "__main__":
