@@ -1,1 +1,1 @@
-- Perform compatibility cleanup and final release verification. Canonical `boundary status` now emits the provider-neutral authorization handoff JSON directly (or `null` with no active operation); focused CLI coverage is in `tests/test_boundary_status_cli.py`.
+- Complete final release verification after the operation-record compatibility cleanup. Confirm that version-1 implementation evidence fails closed when explicit `selectedTaskIds` is missing or inconsistent, run the full test suite and native contract check, and remove this item when all release checks are green.

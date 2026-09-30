@@ -139,11 +139,13 @@ class OperationRecord:
                 )
 
     def _validate_task_selection(self) -> None:
+        selected = tuple(self.selected_task_ids)
         if self.kind == "contract-evolution":
-            if self.tasks or self.selected_task_ids:
+            if self.tasks or selected:
                 raise ValueError(
                     "contract-evolution operation must not contain task selection"
                 )
+            object.__setattr__(self, "selected_task_ids", selected)
             return
 
         task_ids = tuple(task.task_id for task in self.tasks)
@@ -155,7 +157,6 @@ class OperationRecord:
         canonical_ids = tuple(
             task_id for task_id in task_ids if task_id is not None
         )
-        selected = tuple(self.selected_task_ids) or canonical_ids
         if selected != canonical_ids:
             raise ValueError(
                 "selected task identities must match operation task evidence"
@@ -239,4 +240,5 @@ def contract_evolution_record(
         contract_graph_identity=authorization.contract_graph_identity,
         git_baseline=baseline,
         carried_forward=carried_forward,
+        selected_task_ids=(),
     )

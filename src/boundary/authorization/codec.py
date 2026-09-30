@@ -51,7 +51,7 @@ def operation_record_from_document(
         selected_task_ids = tuple(
             _string(task_id, "selected task id")
             for task_id in _list(
-                root.get("selectedTaskIds", []),
+                root.get("selectedTaskIds"),
                 "selectedTaskIds",
             )
         )
