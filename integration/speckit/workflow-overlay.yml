@@ -8,12 +8,12 @@ edits:
     step:
       id: boundary-authorize
       type: shell
-      run: 'command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; test -n "${BOUNDARY_TASK_IDS:-}" || { printf "%s\n" "boundary workflow gate: BOUNDARY_TASK_IDS must be a JSON array of explicitly selected task IDs" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py authorize'
+      run: 'test -n "${BOUNDARY_TASK_IDS:-}" || { printf "%s\n" "boundary workflow gate: BOUNDARY_TASK_IDS must be a JSON array of explicitly selected task IDs" >&2; exit 2; }; if test -x .boundary/bin/boundary; then .boundary/bin/boundary authorize; else command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py authorize; fi'
       timeout: 300
 
   - insert_after: implement
     step:
       id: boundary-verify
       type: shell
-      run: 'command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py verify'
+      run: 'if test -x .boundary/bin/boundary; then .boundary/bin/boundary verify; else command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py verify; fi'
       timeout: 300

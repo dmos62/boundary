@@ -158,6 +158,10 @@ Agents may request the raw canonical contract when the projection is insufficien
 
 Concrete change-system integrations use this query during planning and task refinement rather than creating a persisted context lifecycle state. For the Spec Kit adapter, candidate task paths are inspected on demand and only exact structured `Writes:` declarations become authorization input.
 
+Installed downstream projects expose the generated project-local `.boundary/bin/boundary` command for semantic operations such as `inspect`, `authorize`, `verify`, `status`, and `contracts check`. The command self-locates installed Boundary runtime and adapter state. Agents therefore do not reconstruct `PYTHONPATH`, package locations, adapter script paths, or UV cache configuration during ordinary downstream work.
+
+The project-local command is generated integration state rather than canonical skill content. Canonical skills continue to use product-level verbs so the procedure remains runtime-neutral.
+
 ## Bootstrap independence
 
 Boundary installation and normal operation do not initialize, read, or require a project-wide provider bootstrap as an agent-instruction source.
@@ -219,6 +223,8 @@ Differences that cannot be abstracted cleanly remain in the concrete adapter rat
 
 The Spec Kit adapter exposes only implementation-entry and implementation-exit wrappers. `speckit.boundary.authorize` projects fresh structured task scope into native Boundary authorization, and `speckit.boundary.verify` closes that operation from Git-derived actual writes. The workflow overlay, rather than extension hooks, owns those blocking transitions.
 
+The generated downstream semantic command delegates `authorize` and `verify` to the installed change-system adapter while keeping that adapter's script layout out of normal agent procedure.
+
 ## Failure behavior
 
 When deterministic tooling reports an unresolved owner, undeclared target, invalid contract graph, or stale operation:
@@ -243,4 +249,5 @@ The instruction architecture is tested for:
 - preservation of broader applicable constraints;
 - reduced always-loaded context;
 - clear provenance when a projected rule is questioned;
+- low-context access to installed semantic Boundary operations;
 - concrete portability through Codex and Claude Code materialization without generalized adapter machinery.

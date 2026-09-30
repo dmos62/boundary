@@ -42,7 +42,7 @@ class RealSpecKitLinuxInstallTests(
     def tearDown(self):
         self.tear_down_real_cli_fixture()
 
-    def test_clean_install_uses_shell_and_authorizes_without_powershell(self):
+    def test_clean_install_uses_semantic_entrypoint_without_powershell(self):
         source = self.source_checkout()
         project = self.project("clean")
         self.adopt(project, source)
@@ -55,6 +55,9 @@ class RealSpecKitLinuxInstallTests(
         self.assert_shell_mode(project)
         self.assert_gitignore(project)
         self.run_workflow_helper(project)
+
+        launcher = project / ".boundary" / "bin" / "boundary"
+        self.assertTrue(launcher.is_file())
 
         contract = project / "contracts" / "app.contract.md"
         contract.parent.mkdir()
@@ -95,13 +98,25 @@ class RealSpecKitLinuxInstallTests(
         )
         pwsh.chmod(0o755)
 
+        contracts = run(
+            [str(launcher), "contracts", "check"],
+            cwd=project,
+            env=self.env,
+        )
+        self.assert_success(contracts)
+
+        inspected = run(
+            [str(launcher), "inspect", "app.txt"],
+            cwd=project,
+            env=self.env,
+        )
+        self.assert_success(inspected)
+        self.assertIn("downstream-app", inspected.stdout)
+
         authorized = run(
             [
-                sys.executable,
-                ".specify/extensions/boundary/scripts/adapter_gate.py",
+                str(launcher),
                 "authorize",
-                "--root",
-                str(project),
                 "--task",
                 "T001",
             ],
@@ -118,6 +133,19 @@ class RealSpecKitLinuxInstallTests(
         self.assertEqual(
             ["T001"],
             payload["operation"]["selectedTaskIds"],
+        )
+
+        status = run(
+            [str(launcher), "status"],
+            cwd=project,
+            env=self.env,
+        )
+        self.assert_success(status)
+        status_payload = json.loads(status.stdout)
+        self.assertEqual("boundary.status/v1", status_payload["schema"])
+        self.assertEqual(
+            payload["operation"]["operationId"],
+            status_payload["operation"]["operationId"],
         )
 
 

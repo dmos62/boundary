@@ -86,12 +86,23 @@ Installation:
 1. validates the consumer's own Boundary source checkout;
 2. requires its revision to equal the committed lock;
 3. delegates installation to `scripts/install.sh` from that checkout;
-4. records generated installation provenance;
-5. maintains local Git exclusions for Boundary-owned generated state.
+4. materializes `.boundary/bin/boundary` from the matching checkout as the project's semantic Boundary command;
+5. records generated installation provenance;
+6. maintains local Git exclusions for Boundary-owned generated state.
 
 No Boundary source archive is downloaded or extracted.
 
-The generated Boundary runtime therefore comes directly from the exact checkout whose revision is recorded by the project.
+The generated Boundary runtime and project-local command therefore come directly from the exact checkout whose revision is recorded by the project.
+
+The generated command self-locates the installed runtime and change-system adapter. Normal downstream agent procedure can use:
+
+    .boundary/bin/boundary inspect <target...>
+    .boundary/bin/boundary authorize --task <task-id>
+    .boundary/bin/boundary verify
+    .boundary/bin/boundary status
+    .boundary/bin/boundary contracts check
+
+Callers do not need to provide `PYTHONPATH`, know adapter script paths, or choose a UV cache directory.
 
 Supported host lifecycle commands may also update host-owned persistent configuration or shareable generated state. Those changes remain visible according to [spec-distribution-state.md](spec-distribution-state.md).
 
@@ -113,9 +124,9 @@ The downstream consumer supports six explicit lifecycle operations.
 
 `install` materializes generated state from a checkout matching the committed lock.
 
-`check` confirms source-checkout identity, installed provenance, generated-state exclusions, and the health checks supplied by that Boundary revision.
+`check` confirms source-checkout identity, installed provenance, the project-local semantic command, generated-state exclusions, and the health checks supplied by that Boundary revision.
 
-`remove` removes the installed Boundary integration and its managed local exclusions using a checkout matching the committed lock.
+`remove` removes the installed Boundary integration, project-local command and caches, and managed local exclusions using a checkout matching the committed lock.
 
 `reinstall` removes and materializes the same locked version using a matching checkout.
 
@@ -137,7 +148,7 @@ The upgrade:
 
 1. reads the existing lock;
 2. validates the candidate checkout;
-3. installs the candidate source;
+3. installs the candidate source and its generated semantic command;
 4. replaces the lock only after candidate installation succeeds;
 5. records generated provenance for the new revision.
 
@@ -153,7 +164,7 @@ The lock therefore remains authoritative even when local upgrade work fails.
 
 `check` first verifies that the invoking Boundary checkout matches the project lock.
 
-It then verifies that generated installation provenance names the same revision and runs the health checks supplied by that checkout.
+It then verifies that generated installation provenance names the same revision, checks that `.boundary/bin/boundary` exactly matches the source supplied by that checkout, verifies generated-state exclusions, and runs the health checks supplied by that checkout.
 
 A checkout at a different revision cannot be used to declare a locked installation healthy.
 
@@ -164,6 +175,8 @@ Boundary source development continues to use `scripts/bootstrap.sh` or `scripts/
 Development installation is distinct from downstream locked-source lifecycle operations.
 
 The source installer may accept already materialized local source directories or local archives for development purposes. Those inputs do not define downstream distribution semantics.
+
+The downstream `.boundary/bin/boundary` command is consumer-managed generated state. Source-tree development may continue to invoke the core CLI or concrete adapter scripts directly where appropriate.
 
 ## Failure behavior
 
@@ -179,7 +192,7 @@ Downstream lifecycle work fails before installation when:
 
 The installer then fails when that Boundary revision's required source or local host prerequisites are incomplete.
 
-Health checking fails when installed provenance no longer equals the committed lock or when generated integration state is incomplete.
+Health checking fails when installed provenance no longer equals the committed lock, when the generated project-local command is missing or stale, or when generated integration state is incomplete.
 
 Upgrade failure does not advance the lock.
 

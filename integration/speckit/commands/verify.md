@@ -20,13 +20,14 @@ Current task text is not historical authorization evidence.
 
 1. Resolve the active Spec Kit feature through supported project state.
 2. Require the active Boundary operation to be an implementation operation for that same feature.
-3. Invoke the installed Boundary adapter gate:
+3. Invoke the generated project-local semantic command:
 
-       uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py verify
+       .boundary/bin/boundary verify
 
-4. The adapter classifies current Spec Kit feature artifacts and `.specify/` state as change-system bookkeeping.
-5. Boundary always keeps native contract paths and authorized implementation targets in deterministic verification even if an adapter classifier would otherwise exclude them.
-6. Boundary then:
+4. The project-local command self-locates the installed Boundary runtime and delegates change-system translation to the installed Spec Kit adapter.
+5. The adapter classifies current Spec Kit feature artifacts and `.specify/` state as change-system bookkeeping.
+6. Boundary always keeps native contract paths and authorized implementation targets in deterministic verification even if an adapter classifier would otherwise exclude them.
+7. Boundary then:
    - derives actual writes from the authorization-time Git baseline;
    - rejects a changed Git `HEAD`;
    - rejects undeclared implementation writes;

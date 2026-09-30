@@ -20,6 +20,8 @@ Provide reproducible Boundary development bootstrap and downstream installation 
 - Install, health-check, remove/reinstall, and deliberate upgrade operate from explicitly supplied Boundary checkouts.
 - Upgrade installs the candidate before replacing the committed lock and never advances the lock after candidate installation failure.
 - Generated Boundary integration state remains recreatable from matching source and is excluded locally rather than becoming downstream canonical source.
+- Downstream installation materializes one generated project-local semantic Boundary entrypoint that self-locates installed runtime and adapter state.
+- The project-local entrypoint does not encode an operator-local Boundary checkout path and is validated against the matching source checkout during health checking.
 - Host-owned persistent configuration and shareable generated state remain visible to Git rather than being hidden as Boundary-owned generated state.
 - Pinned Spec Kit project-state ownership follows Spec Kit's managed `.specify/.gitignore`; Boundary does not patch or broaden that policy.
 - The Spec Kit script mode selected by `.specify/init-options.json` is authoritative for execution.
@@ -44,3 +46,4 @@ Provide reproducible Boundary development bootstrap and downstream installation 
 
 - `scripts/consumer.py` manages downstream Boundary state using the Boundary checkout that contains the invoked script.
 - `scripts/install.sh` installs already materialized Boundary source for development or the downstream consumer.
+- `scripts/project_boundary.py` is the source form of the generated `.boundary/bin/boundary` downstream semantic entrypoint.

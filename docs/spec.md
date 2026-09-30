@@ -45,7 +45,7 @@ The Boundary-defined portion of downstream canonical state consists of:
 
 A host change system may own additional persistent project configuration or shareable generated state. Boundary does not reclassify such host-owned state merely because Boundary installation or integration lifecycle commands update it.
 
-Generated Boundary integration state, effective-context projections, installed Boundary skills, caches, install provenance, and operation evidence are not persistent system contracts.
+Generated Boundary integration state, effective-context projections, installed Boundary skills, the project-local Boundary launcher, caches, install provenance, and operation evidence are not persistent system contracts.
 
 Operation evidence is historical workflow state stored outside ordinary project source, preferably in current-worktree Git metadata.
 
@@ -171,7 +171,7 @@ Downstream lifecycle commands are executed from an operator-supplied Boundary so
 
 The downstream consumer does not fetch Boundary source, resolve releases, follow branches or tags, or reconstruct source from a remote locator stored in the project.
 
-Generated runtime, extension, preset, workflow, and Boundary skill state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
+Generated runtime, extension, preset, workflow, Boundary skill, and project-local launcher state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
 
 Adoption records the revision of the Boundary checkout being used. Upgrades are performed deliberately from a different clean Boundary checkout and replace the lock only after candidate installation succeeds.
 
@@ -231,7 +231,9 @@ The supported runtime no longer depends on:
 
 The Spec Kit adapter now requires explicit task selection and persists the selected task identities with the immutable operation target set.
 
-Remaining release work includes semantic entrypoint cleanup, compact authorization-state handoff, earlier workflow-record scope diagnostics, machine-readable lifecycle outcomes, compatibility cleanup, and final verification.
+Downstream installations now expose a generated project-local semantic Boundary command that hides runtime and adapter packaging from normal agent procedure.
+
+Remaining release work includes compact authorization-state handoff, earlier workflow-record scope diagnostics, machine-readable lifecycle outcomes, compatibility cleanup, and final verification.
 
 ## Summary invariant
 

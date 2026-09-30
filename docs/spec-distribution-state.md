@@ -14,7 +14,7 @@ Boundary-specific downstream canonical state is limited to:
 
 This Boundary-specific classification does not make host-owned project state disposable. A change system may own persistent project configuration and shareable generated integration state that remains part of the downstream repository.
 
-Installed Boundary runtime copies, Boundary extensions and presets, Boundary workflow overlays, materialized Boundary skills, caches, install provenance, and operation evidence are not canonical project semantics.
+Installed Boundary runtime copies, the project-local Boundary command and cache under `.boundary/`, Boundary extensions and presets, Boundary workflow overlays, materialized Boundary skills, caches, install provenance, and operation evidence are not canonical project semantics.
 
 ## Spec Kit project-state ownership
 
@@ -57,6 +57,7 @@ This avoids making project `.gitignore` or Spec Kit's managed `.specify/.gitigno
 
 The managed exclusions cover:
 
+- `.boundary/`, including the generated project-local command and its local execution cache;
 - materialized Boundary skills;
 - generated change-system Boundary command skills;
 - installed Boundary runtime source;

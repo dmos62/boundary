@@ -22,7 +22,10 @@ from consumer_source import (
 )
 from consumer_state import (
     ConsumerStateError,
+    install_project_entrypoint as _install_project_entrypoint,
+    remove_project_entrypoint as _remove_project_entrypoint,
     require_local_excludes as _require_local_excludes,
+    require_project_entrypoint as _require_project_entrypoint,
     require_provenance as _require_provenance,
     update_local_excludes as _update_local_excludes,
     write_provenance as _write_provenance,
@@ -134,6 +137,7 @@ def _install(
     source: BoundarySourceCheckout,
 ) -> None:
     _with_source(root, source, "install")
+    _install_project_entrypoint(root, source.root)
     _write_provenance(root, lock)
     _update_local_excludes(root, enabled=True)
 
@@ -145,11 +149,13 @@ def _check(
 ) -> None:
     _require_provenance(root, lock)
     _with_source(root, source, "check")
+    _require_project_entrypoint(root, source.root)
     _require_local_excludes(root)
 
 
 def _remove(root: Path, source: BoundarySourceCheckout) -> None:
     _with_source(root, source, "remove")
+    _remove_project_entrypoint(root)
     _update_local_excludes(root, enabled=False)
 
 

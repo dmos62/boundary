@@ -3,15 +3,23 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import shutil
+import stat
 import subprocess
 
 from consumer_lock import BoundaryLock
 
+
 PROVENANCE = Path(".specify") / "boundary-runtime" / "source-lock.json"
+PROJECT_STATE_ROOT = Path(".boundary")
+PROJECT_ENTRYPOINT = PROJECT_STATE_ROOT / "bin" / "boundary"
+PROJECT_ENTRYPOINT_SOURCE = Path("scripts") / "project_boundary.py"
 EXCLUDE_BEGIN = "# BEGIN Boundary generated state"
 EXCLUDE_END = "# END Boundary generated state"
 GENERATED_EXCLUDES = (
+    "/.boundary/",
     "/.agents/skills/boundary-scope/",
     "/.agents/skills/boundary-implement/",
     "/.agents/skills/boundary-contracts/",
@@ -55,6 +63,65 @@ def require_provenance(root: Path, lock: BoundaryLock) -> None:
         raise ConsumerStateError(
             "installed Boundary source does not match boundary.lock.json"
         )
+
+
+def install_project_entrypoint(
+    root: Path,
+    source_root: Path,
+) -> None:
+    source = source_root / PROJECT_ENTRYPOINT_SOURCE
+    target = root / PROJECT_ENTRYPOINT
+    try:
+        content = source.read_bytes()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+        target.chmod(
+            target.stat().st_mode
+            | stat.S_IXUSR
+            | stat.S_IXGRP
+            | stat.S_IXOTH
+        )
+    except OSError as exc:
+        raise ConsumerStateError(
+            f"could not install project-local Boundary entrypoint: {exc}"
+        ) from exc
+
+
+def require_project_entrypoint(
+    root: Path,
+    source_root: Path,
+) -> None:
+    source = source_root / PROJECT_ENTRYPOINT_SOURCE
+    target = root / PROJECT_ENTRYPOINT
+    try:
+        if source.read_bytes() != target.read_bytes():
+            raise ConsumerStateError(
+                "project-local Boundary entrypoint is missing or stale"
+            )
+        if os.name != "nt" and not os.access(target, os.X_OK):
+            raise ConsumerStateError(
+                "project-local Boundary entrypoint is not executable"
+            )
+    except FileNotFoundError as exc:
+        raise ConsumerStateError(
+            "project-local Boundary entrypoint is missing or stale"
+        ) from exc
+    except OSError as exc:
+        raise ConsumerStateError(
+            f"could not validate project-local Boundary entrypoint: {exc}"
+        ) from exc
+
+
+def remove_project_entrypoint(root: Path) -> None:
+    path = root / PROJECT_STATE_ROOT
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        raise ConsumerStateError(
+            f"could not remove project-local Boundary state: {exc}"
+        ) from exc
 
 
 def update_local_excludes(root: Path, *, enabled: bool) -> None:

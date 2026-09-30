@@ -1,29 +1,14 @@
 # Boundary follow-up plan
 
-Task-selected implementation units are now active in the native authorization model and the Spec Kit adapter. New implementation operations require explicit task selection, persist `selectedTaskIds`, authorize only selected-task writes, and preserve deterministic predecessor carry-forward.
+Task-selected implementation units are active in the native authorization model and the Spec Kit adapter. New implementation operations require explicit task selection, persist `selectedTaskIds`, authorize only selected-task writes, and preserve deterministic predecessor carry-forward.
 
-The remaining work should reduce mechanical integration cost and surface lifecycle state earlier without weakening the task-selected authorization model.
+Downstream installation now also materializes `.boundary/bin/boundary` as generated project-local integration state. It exposes semantic `inspect`, `authorize`, `verify`, `status`, and `contracts check` entrypoints, self-locates installed runtime and adapter state, and owns a local UV cache so callers no longer reconstruct packaging paths or cache configuration.
 
-## 1. Add stable semantic Boundary entrypoints
+The remaining work should make authorization handoff richer, surface lifecycle scope earlier, and provide stable orchestration outcomes without weakening task-selected authorization.
 
-Remove packaging/runtime discovery from normal agent procedure.
+## 1. Make authorization state cheap to hand off
 
-Required work:
-
-- provide one project-local semantic command surface for `inspect`, `authorize`, `verify`, `status`, and `contracts check`;
-- make the command self-locate the installed Boundary runtime without caller-managed `PYTHONPATH`, `uv` cache variables, or knowledge of adapter script paths;
-- keep change-system-specific translation behind the adapter while exposing lifecycle names that match Boundary semantics;
-- preserve explicit implementation-unit selection; the current Spec Kit gate accepts repeated `--task` values and the workflow overlay transports selection through the temporary `BOUNDARY_TASK_IDS` JSON value;
-- support the installed environments Boundary already supports rather than requiring PowerShell when Spec Kit is configured for Bash;
-- update generated skills and health checks to use and validate the semantic entrypoint;
-- classify the launcher as Boundary-generated integration state and keep it out of downstream canonical semantics;
-- add install/reinstall/check coverage once the command shape is settled.
-
-Do not add a global executable requirement or encode operator-local Boundary checkout paths in downstream state.
-
-## 2. Make authorization state cheap to hand off
-
-Expose a compact deterministic status/capsule suitable for coordinators and disposable workers.
+Expand the current minimal `boundary status` result into a compact deterministic status/capsule suitable for coordinators and disposable workers.
 
 It should report at least:
 
@@ -36,9 +21,9 @@ It should report at least:
 
 The representation should be query output derived from operation evidence and current repository state, not another persistent source-of-truth file.
 
-Update agent procedure so a delegated worker can establish its authority from this output instead of rediscovering Boundary packaging.
+Update agent procedure so a delegated worker can establish its authority from this output instead of rediscovering or rereading raw operation evidence.
 
-## 3. Surface workflow-record scope before implementation
+## 2. Surface workflow-record scope before implementation
 
 Keep durable project records as real writes rather than weakening verification or broadly classifying them as generated state.
 
@@ -52,7 +37,7 @@ Required work:
 
 Use the `specs/CONTINUATION.md` / `BOUNDARY-FEEDBACK.md` failure as regression guidance.
 
-## 4. Return machine-readable lifecycle outcomes
+## 3. Return machine-readable lifecycle outcomes
 
 Make blocking Boundary results distinguishable to orchestration layers without parsing prose.
 

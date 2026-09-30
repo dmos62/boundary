@@ -157,10 +157,13 @@ The canonical product-level command surface should converge toward:
     boundary contracts check
     boundary authorize
     boundary verify
+    boundary status
 
 Additional status/debugging commands may be introduced when justified.
 
 These commands use Boundary terminology and do not depend on a particular change system.
+
+Installed downstream projects materialize the semantic surface at `.boundary/bin/boundary`. That generated command self-locates installed Boundary runtime state and delegates change-system-specific authorization and verification translation to the active adapter. Its filesystem location is installation detail rather than a second product API.
 
 ## Spec Kit adapter
 
@@ -191,6 +194,8 @@ Planning and task augmentations may invoke Boundary skills and inspection, but t
 The supported Spec Kit integration uses one deterministic structural-enforcement mechanism: the workflow overlay.
 
 Its ordering and nonzero shell status make the authorization and verification transitions explicit.
+
+Installed downstream workflows invoke the generated semantic Boundary command when it is available. Development installations may fall back to the concrete adapter gate so source-development bootstrap remains separate from downstream consumer materialization.
 
 Extension hooks do not duplicate those gates.
 
