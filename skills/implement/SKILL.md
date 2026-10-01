@@ -46,6 +46,7 @@ When requested behavior cannot satisfy the applicable persistent contracts:
 ## Guardrails
 
 - Prompt instructions do not widen authorization.
+- The status capsule is query output only; the current product representation is the compact Boundary authorization handoff derived from historical evidence and current repository state.
 - A Boundary status handoff is query output derived from historical evidence and current repository state; it does not replace or widen the operation record.
 - A previously inspected target is not automatically authorized.
 - A target owned by an already represented owner is still undeclared unless it is in the authorized write set.

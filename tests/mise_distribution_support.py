@@ -42,7 +42,9 @@ def require_success(testcase, result: subprocess.CompletedProcess[str]) -> None:
 
 
 def make_boundary_source(root: Path) -> tuple[Path, str]:
-    source = root / "boundary-source"
+    # Match the supported mise pipx Git locator shape. The backend recognizes
+    # explicit Git URLs by their .git suffix before resolving `latest`.
+    source = root / "boundary-source.git"
     source.mkdir()
     shutil.copy2(REPO_ROOT / "pyproject.toml", source / "pyproject.toml")
     ignored = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
@@ -91,7 +93,12 @@ def advance_boundary_source(source: Path) -> str:
 def write_downstream_project(root: Path, source: Path) -> str:
     root.mkdir()
     _git_init(root, commit=False)
-    tool = f"pipx:git+{source.as_uri()}"
+    source_url = source.as_uri()
+    if not source_url.endswith(".git"):
+        raise AssertionError(
+            "Boundary Git fixture locator must use a .git suffix"
+        )
+    tool = f"pipx:git+{source_url}"
     (root / "mise.toml").write_text(
         'min_version = "2026.9.0"\n\n'
         "[tools]\n"
