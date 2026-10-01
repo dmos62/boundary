@@ -1,7 +1,8 @@
 @cli! bash -lic "mise run contracts-check"
-@cli! bash -lic "printf '%s\n' '--- Legacy distribution references outside history ---'; git grep -n -E 'boundary\\.lock\\.json|boundary\\.lock/v[0-9]+|scripts/consumer\\.py|\\.boundary/bin/boundary|scripts/install-(source|host)\\.sh|scripts/install\\.sh|adapter_gate\\.py' -- README.md docs contracts integration/speckit/commands integration/speckit/workflow-overlay.yml pyproject.toml mise.toml 2>/dev/null | grep -v '^docs/history/' || true"
-@cli! bash -lic "printf '%s\n' '--- Distribution invocation leaks ---'; git grep -n -E 'PYTHONPATH=|python -m boundary|uv run --no-project python .*boundary|adapter_gate\\.py' -- README.md docs integration/speckit/commands integration/speckit/workflow-overlay.yml 2>/dev/null | grep -v '^docs/history/' || true"
-@cli! bash -lic "mise run test-distribution"
+@cli! bash -lic "printf '%s\n' '--- Handoff and operation-state test evidence ---'; git grep -n -C 3 -E 'authorization-handoff|selectedTaskIds|selected_task_ids|read_authorization_handoff|headMatchesBaseline|NO_ACTIVE_OPERATION|OPERATION_CHANGED|status.*verified|kind.*implementation|kind.*contract-evolution' -- tests 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Lifecycle outcome test evidence ---'; git grep -n -C 3 -E 'scope-expansion-required|contract-evolution-required|missing-external-prerequisite|stale-authorization|verification-write-scope-failure|INVALID_TASK_SELECTION|UNDECLARED_WRITE|UNOWNED_WRITE_TARGET|CONTRACT_CONTEXT_CHANGED' -- tests 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Spec Kit status and feature-match implementation/tests ---'; git grep -n -C 3 -E 'handoff|status|change.*match|feature.*match|active.*feature|wrong.*kind|verified' -- integration/speckit/runtime tests 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Test files ---'; git ls-files 'tests/*.py'"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
