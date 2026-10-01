@@ -1,13 +1,16 @@
 # Agent Instruction Architecture
-Boundary uses progressive disclosure so agent context contains stable procedure plus only the project facts relevant to the current work.
 
-The architecture deliberately avoids replacing a legacy framework bootstrap with another large always-loaded instruction file.
+Boundary uses progressive disclosure so agent context contains stable procedure plus only the project facts relevant to current work.
+
+The architecture does not replace a legacy framework bootstrap with another large always-loaded instruction file.
 
 ## Instruction classes
+
 Boundary separates four kinds of information.
 
 ### Stable Boundary policy
-A very small set of product invariants may always be available:
+
+A small set of product invariants may always be available:
 
 - persistent contracts are canonical system constraints;
 - applicable contracts are additive;
@@ -15,83 +18,66 @@ A very small set of product invariants may always be available:
 - contract evolution is separate from dependent implementation;
 - deterministic authorization and verification are authoritative.
 
-This material should remain small, stable, and cache-friendly.
-
-It does not contain project-specific contracts.
+Stable policy contains no project-specific contracts or current operation state.
 
 ### Procedural skills
+
 Reusable agent procedure lives in canonical Boundary skills.
 
 Skills contain no current feature IDs, target paths, hashes, owners, tool versions, or generated operation state.
 
 ### Operation facts
+
 Current facts are derived on demand:
 
 - declared writes;
-- target owner;
-- applicable contracts;
-- relevant invariants and prohibitions;
-- dependency interfaces;
+- target owner and applicable contracts;
+- relevant invariants, prohibitions, and dependency interfaces;
 - authorization status;
 - selected implementation task identities and authorized targets;
 - current-versus-baseline Git freshness;
 - verification findings.
 
-These belong in deterministic tool output rather than stable skill text.
+These facts belong in deterministic tool output rather than stable skill text.
 
 ### Deterministic enforcement
-Scope, ownership, Git state, and operation-kind rules are enforced by code.
 
-Skills explain how an agent should behave around those mechanisms but are not the security or correctness boundary.
+Code enforces scope, ownership, Git state, and operation-kind rules.
+
+Skills explain agent behavior around those mechanisms but are not the authorization or correctness boundary.
 
 ## Canonical skills
+
 Boundary v1 defines three procedural capabilities.
 
 ### `boundary-scope`
+
 Use while planning implementation or refining tasks.
 
-Responsibilities:
+It identifies exact intended writes, separates implementation from contract evolution, inspects effective context, records structured write declarations, and keeps exploratory path mentions out of authorization scope.
 
-- identify exact intended write targets;
-- distinguish implementation writes from contract evolution;
-- query effective context for candidate targets;
-- record explicit write declarations in the active change system;
-- prefer owner-local task decomposition when it improves coherence;
-- keep legitimate coordinated multi-owner work representable;
-- avoid treating exploratory path mentions as authorization scope.
+It may prefer owner-local task decomposition where useful while keeping legitimate coordinated multi-owner work representable.
 
-This skill does not authorize implementation.
+It does not authorize implementation.
 
 ### `boundary-implement`
-Use when implementation begins under a successful authorization.
 
-Responsibilities:
+Use only after successful implementation authorization.
 
-- establish the current implementation authority from the deterministic Boundary status capsule rather than rediscovering raw operation evidence;
-- inspect relevant effective context before changing a target;
-- work only within the current authorized write set;
-- preserve broader and more-specific applicable constraints;
-- stop before writing an undeclared target;
-- initiate the explicit scope-expansion lifecycle when additional work is discovered;
-- recognize when requested behavior cannot satisfy current persistent contracts.
+It establishes current authority from deterministic `boundary status` output, inspects effective context before changing targets, preserves all applicable constraints, writes only authorized targets, stops before scope expansion, and transitions to contract evolution when required behavior cannot satisfy current contracts.
 
-This skill does not alter authorization evidence.
+It does not alter authorization evidence.
 
 ### `boundary-contracts`
+
 Use for deliberate persistent-contract evolution.
 
-Responsibilities:
+It identifies the smallest durable contract change, preserves additive scope semantics, modifies only contract files, runs structural contract validation, and requires fresh dependent implementation authorization afterward.
 
-- identify the smallest durable contract change;
-- preserve additive scope semantics;
-- modify only contract files in the contract-evolution operation;
-- run structural contract validation;
-- avoid implementation writes during the same operation;
-- require fresh implementation authorization afterward.
-
-This skill is not loaded during ordinary implementation unless the operation transitions to contract evolution.
+It is not part of ordinary implementation unless the lifecycle explicitly transitions to contract evolution.
 
 ## Skill source and materialization
+
 Canonical skill procedure is stored as plain Markdown in:
 
     skills/scope/SKILL.md
@@ -100,89 +86,77 @@ Canonical skill procedure is stored as plain Markdown in:
 
 Canonical files contain Boundary procedure only. They contain no runtime discovery frontmatter or runtime-specific paths.
 
-The concrete Codex adapter at `adapters/codex/materialize.py` produces:
+The concrete Codex adapter materializes the named skills under `.agents/skills/`. The concrete Claude Code adapter materializes the same named skills under `.claude/skills/`.
 
-    .agents/skills/boundary-scope/SKILL.md
-    .agents/skills/boundary-implement/SKILL.md
-    .agents/skills/boundary-contracts/SKILL.md
+Each materialized file consists only of fixed runtime discovery metadata followed by canonical skill bytes.
 
-The concrete Claude Code adapter at `adapters/claude/materialize.py` produces the same named skills under `.claude/skills/`.
-
-Each materialized file consists only of fixed runtime discovery metadata followed by the canonical skill bytes. Materialization is deterministic and idempotent: unrelated feature, task, authorization, or operation state cannot alter generated skill bytes.
+Materialization is deterministic and idempotent. Feature, task, authorization, and operation state cannot alter generated skill bytes.
 
 Generated materializations are not canonical source.
 
-The two concrete adapters intentionally do not share a generalized runtime-provider framework. The second implementation is maintained as portability evidence while concrete differences remain small.
+Codex and Claude Code remain concrete adapters rather than members of a generalized runtime-provider framework.
 
 ## Effective-context query
-Boundary provides an on-demand query conceptually equivalent to:
+
+Boundary provides an on-demand query equivalent to:
 
     boundary inspect <target>
 
-The agent-oriented representation should include only relevant facts, for example:
+The agent-oriented result includes only relevant facts, including target path, primary owner, applicable contracts, semantic items with provenance, relevant dependency interfaces, and canonical source identities.
 
-    Target: src/payments/providers/stripe/client.ts
-    Owner: stripe
+Agents may request raw canonical contracts when a projection is insufficient.
 
-    Applicable contracts:
-    - payments
-    - stripe
-    - payment-data-handling
+Planning and task refinement query this context on demand. They do not create a persisted planning-context lifecycle state.
 
-    Invariants:
-    - ...
-    - ...
+For the Spec Kit adapter, only exact structured `Writes:` declarations become authorization input.
 
-    Prohibitions:
-    - ...
+## Installed semantic command surface
 
-    Dependency interfaces:
-    - ...
+Installed downstream projects use the mise-installed `boundary` executable for semantic operations:
 
-    Sources:
-    - contracts/payments.contract.md
-    - contracts/stripe.contract.md
+    boundary inspect <target...>
+    boundary authorize --task <task-id>
+    boundary verify
+    boundary status
+    boundary contracts check
 
-Every projected semantic item retains provenance.
+Agents do not reconstruct Python import paths, package locations, adapter script paths, copied-runtime locations, or uv cache configuration during ordinary downstream work.
 
-Agents may request the raw canonical contract when the projection is insufficient.
+`boundary status` emits the compact `boundary.authorization-handoff/v1` document.
 
-Concrete change-system integrations use this query during planning and task refinement rather than creating a persisted context lifecycle state. For the Spec Kit adapter, candidate task paths are inspected on demand and only exact structured `Writes:` declarations become authorization input.
+When an operation exists, the handoff projects:
 
-Installed downstream projects expose the generated project-local `.boundary/bin/boundary` command for semantic operations such as `inspect`, `authorize`, `verify`, `status`, and `contracts check`. The command self-locates installed Boundary runtime and adapter state. Agents therefore do not reconstruct `PYTHONPATH`, package locations, adapter script paths, or UV cache configuration during ordinary downstream work.
+- operation and change identity;
+- operation kind and status;
+- selected task identities;
+- exact authorized target evidence;
+- contract-graph identity;
+- authorization-time Git HEAD;
+- current Git HEAD;
+- whether the two HEAD values match.
 
-`boundary status` emits the compact `boundary.status/v2` authorization capsule. When an operation exists, the capsule projects its operation identity and status, active change identity, selected task identities, exact authorized target evidence, and any separately recorded target-context evidence. It also reports the recorded Git baseline HEAD when available, the current repository HEAD, and whether those commits still match.
+The handoff is query output derived from historical operation evidence and current repository state. It does not reconstruct authority from mutable change-system planning files and does not become another persistent source of truth.
 
-The status capsule is query output derived from historical operation evidence and current repository state. It does not reconstruct authority from mutable change-system planning files and does not become another persistent source of truth. A delegated implementation worker should establish its current authority from this capsule before writing. Missing operation evidence, a non-implementation or non-active operation status, an unauthorized target, or a stale Git baseline must never be converted into permission by prompt interpretation.
+A delegated implementation worker requires an implementation operation with `status: authorized`, an authorized target, and a matching Git baseline before writing.
 
-The project-local command is generated integration state rather than canonical skill content. Canonical skills continue to use product-level verbs so the procedure remains runtime-neutral.
+The installed `boundary` command delegates `authorize` and `verify` to the packaged change-system adapter while keeping adapter module layout out of normal agent procedure.
 
 ## Bootstrap independence
-Boundary installation and normal operation do not initialize, read, or require a project-wide provider bootstrap as an agent-instruction source.
+
+Boundary installation and normal operation do not require a project-wide provider bootstrap as an instruction source.
 
 Historical repositories may contain legacy bootstrap files, but Boundary does not copy their instructions into a global prompt or consult them for native authorization.
 
-## No automatic full-contract loading
-Normal implementation must not automatically load:
+## Context loading limits
 
-- every project contract;
-- all dependency contracts recursively;
-- legacy framework bootstrap text;
-- generated authorization records;
-- historical feature artifacts unrelated to the operation.
+Normal implementation does not automatically load every project contract, all dependency contracts recursively, legacy bootstrap text, generated authorization records, or unrelated historical feature artifacts.
 
 A contract is loaded because its scope or direct dependency relationship makes it relevant.
 
-## No global project contract in always-on context
-Boundary v1 does not solve cross-component semantics by maintaining one global contract file that every agent always sees.
-
-Durable cross-component rules use explicit scoped relationship contracts.
-
-Development-process rules belong to the change system or stable Boundary procedure.
-
-This keeps project architecture progressively disclosed and prevents a new context monolith.
+Boundary v1 does not maintain a global catch-all project contract in always-on context. Durable cross-component rules use explicit scoped relationship contracts.
 
 ## Context ordering
+
 Where an agent runtime permits ordering, Boundary context should progress from stable to volatile:
 
 1. generic agent/runtime instructions;
@@ -191,52 +165,31 @@ Where an agent runtime permits ordering, Boundary context should progress from s
 4. effective project contract context;
 5. change/task state;
 6. active authorization facts;
-7. relevant source/tests;
+7. relevant source and tests;
 8. immediate user request and latest findings.
 
 Volatile identifiers and hashes must not be placed in stable skill files.
 
 ## Adapter portability
-Canonical skills use product-level verbs such as:
 
-- inspect target context;
-- declare write scope;
-- authorize implementation;
-- verify operation;
-- evolve contracts.
+Canonical skills use product-level verbs such as inspect target context, declare write scope, authorize implementation, verify operation, and evolve contracts.
 
 They do not require a specific agent function name or change-system command.
 
-A concrete runtime adapter may add discovery metadata or map those verbs to local invocation syntax.
+Concrete runtime differences remain in concrete adapters rather than leaking into canonical skill content.
 
-Differences that cannot be abstracted cleanly remain in the concrete adapter rather than leaking into canonical skill content.
-
-The Spec Kit adapter exposes only implementation-entry and implementation-exit wrappers. `speckit.boundary.authorize` projects fresh structured task scope into native Boundary authorization, and `speckit.boundary.verify` closes that operation from Git-derived actual writes. The workflow overlay, rather than extension hooks, owns those blocking transitions.
-
-The generated downstream semantic command delegates `authorize` and `verify` to the installed change-system adapter while keeping that adapter's script layout out of normal agent procedure.
+The Spec Kit adapter exposes only implementation-entry and implementation-exit wrappers. The workflow overlay owns those blocking transitions.
 
 ## Failure behavior
-When deterministic tooling reports an unresolved owner, undeclared target, invalid contract graph, or stale operation:
+
+When deterministic tooling reports an unresolved owner, undeclared target, invalid contract graph, stale operation, or other blocking state:
 
 - the agent does not infer permission;
-- the skill directs the agent to the appropriate lifecycle transition;
-- the runtime remains the blocking authority.
+- the relevant skill directs the supported lifecycle transition;
+- deterministic tooling remains authoritative.
 
-Prompt wording must never convert a deterministic failure into permission.
+Prompt wording never converts a deterministic failure into permission.
 
 ## Evaluation criteria
-The instruction architecture is tested for:
 
-- canonical skills remaining small and runtime-neutral;
-- concrete runtime discovery materialization;
-- preservation of the exact canonical procedure beneath runtime frontmatter;
-- stable materialized skill bytes across unrelated operations;
-- implementation workers establishing authority from compact status output rather than raw operation-record discovery;
-- implementation staying within explicit write scope;
-- reliable scope-expansion behavior;
-- correct transition to contract evolution;
-- preservation of broader applicable constraints;
-- reduced always-loaded context;
-- clear provenance when a projected rule is questioned;
-- low-context access to installed semantic Boundary operations;
-- concrete portability through Codex and Claude Code materialization without generalized adapter machinery.
+The instruction architecture is tested for small runtime-neutral canonical skills, deterministic materialization, stable skill bytes, compact worker handoff, explicit write-scope discipline, reliable scope expansion, correct contract-evolution transitions, additive constraint preservation, clear provenance, and low-context use of the installed semantic command surface.

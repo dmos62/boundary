@@ -57,9 +57,12 @@ Contributors should not need Python import-path configuration, module-level CLI 
 Use:
 
     mise run contracts-check
+    mise run test-distribution
     mise run test
 
-Additional focused tasks may separate native core, Spec Kit adapter, and distribution tests when that improves iteration speed.
+`test-distribution` runs the focused mise Git-source and installed-integration coverage. The complete suite remains authoritative before release.
+
+Additional focused tasks may separate native core and Spec Kit adapter tests when that improves iteration speed.
 
 Those tasks are repository-development conveniences rather than downstream product APIs.
 
@@ -70,6 +73,8 @@ The local Boundary checkout is authoritative for editing Boundary itself.
 The `dev-install` mise task installs that checkout into the repository's mise-managed development environment, using editable installation as a development convenience.
 
 That local-source workflow is not a downstream source-distribution protocol and its filesystem path is not portable project state.
+
+Focused distribution tests may create temporary local Git repositories to exercise Git-source locking without making local paths part of downstream guidance or committed consumer state.
 
 ## Spec Kit script mode
 

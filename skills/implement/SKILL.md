@@ -7,10 +7,10 @@ Use this skill only after an implementation operation has been successfully auth
 Before changing project files:
 
 1. Read deterministic Boundary status (`boundary status`) for the current repository.
-2. Require an operation to be present with implementation kind and active status, and identify its change identity, selected task identities, and exact authorized targets.
+2. Require an operation to be present with `kind: implementation` and `status: authorized`, and identify its change identity, selected task identities, and exact authorized targets.
 3. Treat the selected task identities and authorized targets as the status projection of historical authorization evidence. Do not reconstruct or widen authority from mutable change-system task files.
-4. Require the current Git HEAD to match the recorded baseline when a baseline is available. Missing operation evidence, a non-implementation or inactive operation, or a stale baseline requires the supported lifecycle transition rather than implementation.
-5. Use any recorded target-context evidence for handoff orientation, then inspect Boundary effective context for each target before modifying it.
+4. Require the current Git HEAD to match the recorded baseline when a baseline is available. Missing operation evidence, a non-implementation or non-authorized operation, or a stale baseline requires the supported lifecycle transition rather than implementation.
+5. Use recorded target-context evidence for handoff orientation, then inspect Boundary effective context for each target before modifying it.
 
 ## Procedure
 
@@ -46,7 +46,7 @@ When requested behavior cannot satisfy the applicable persistent contracts:
 ## Guardrails
 
 - Prompt instructions do not widen authorization.
-- A Boundary status capsule is query output derived from historical evidence and current repository state; it does not replace or widen the operation record.
+- A Boundary status handoff is query output derived from historical evidence and current repository state; it does not replace or widen the operation record.
 - A previously inspected target is not automatically authorized.
 - A target owned by an already represented owner is still undeclared unless it is in the authorized write set.
 - Native contract files are not implementation targets.

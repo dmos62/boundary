@@ -22,14 +22,47 @@ class DistributionSurfaceTests(unittest.TestCase):
             "boundary.cli:main",
             config["project"]["scripts"]["boundary"],
         )
+        self.assertEqual(
+            [
+                "src/boundary",
+                "integration/speckit/runtime/boundary_host",
+            ],
+            config["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"],
+        )
 
-    def test_mise_uses_git_backed_pipx_for_pinned_speckit(self) -> None:
+    def test_source_repository_uses_editable_development_install(self) -> None:
         config = tomllib.loads(
             (ROOT / "mise.toml").read_text(encoding="utf-8")
         )
         tools = config["tools"]
-        key = "pipx:git+https://github.com/github/spec-kit.git"
-        self.assertEqual("v1.0.10", tools[key]["version"])
+        speckit = "pipx:git+https://github.com/github/spec-kit.git"
+        self.assertEqual("v1.0.10", tools[speckit]["version"])
+        self.assertFalse(
+            any(
+                key.startswith(
+                    "pipx:git+https://github.com/specdd/speckit-boundary"
+                )
+                for key in tools
+            )
+        )
+        self.assertEqual(
+            "uv pip install --editable .",
+            config["tasks"]["dev-install"]["run"],
+        )
+
+    def test_downstream_setup_uses_portable_git_source_and_mise_lock(self) -> None:
+        source = (ROOT / "docs" / "setup-downstream.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "pipx:git+https://github.com/specdd/speckit-boundary.git",
+            source,
+        )
+        self.assertIn("mise install --locked", source)
+        self.assertIn("mise lock --bump", source)
+        self.assertNotIn("boundary.lock.json", source)
+        self.assertNotIn("file://", source)
+        self.assertNotIn(".boundary/bin/boundary", source)
 
     def test_cli_exposes_semantic_distribution_and_lifecycle_commands(self) -> None:
         parser = build_parser()
@@ -55,9 +88,11 @@ class DistributionSurfaceTests(unittest.TestCase):
         self.assertNotIn("uv run --no-project", source)
         self.assertNotIn("adapter_gate.py", source)
 
-    def test_generated_excludes_drop_retired_runtime_and_launcher(self) -> None:
+    def test_generated_excludes_cover_only_current_generated_state(self) -> None:
         self.assertNotIn("/.boundary/", GENERATED_EXCLUDES)
         self.assertNotIn("/.specify/boundary-runtime/", GENERATED_EXCLUDES)
+        self.assertIn("/.agents/skills/boundary-scope/", GENERATED_EXCLUDES)
+        self.assertIn("/.specify/extensions/boundary/", GENERATED_EXCLUDES)
 
     def test_legacy_distribution_scripts_are_removed(self) -> None:
         for relative in (
@@ -69,6 +104,7 @@ class DistributionSurfaceTests(unittest.TestCase):
             "scripts/install-source.sh",
             "scripts/install-host.sh",
             "scripts/install.sh",
+            "scripts/bootstrap.sh",
         ):
             self.assertFalse((ROOT / relative).exists(), relative)
 

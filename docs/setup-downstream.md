@@ -177,9 +177,9 @@ Mise remains authoritative for installation from committed mise state.
 
 Change the desired Boundary source selector in the project's mise configuration when necessary.
 
-Then update and install the mise lock through supported mise procedure:
+Then re-resolve only the Boundary selection and install from the resulting mise lock:
 
-    mise lock --upgrade
+    mise lock --bump 'pipx:git+https://github.com/specdd/speckit-boundary.git'
     mise install --locked
     boundary integration install
     boundary integration check

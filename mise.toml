@@ -1,7 +1,7 @@
 min_version = "2026.9.0"
 
 [tools]
-python = "3.12"
+python = "3.14.7"
 uv = "latest"
 "pipx:git+https://github.com/github/spec-kit.git" = { version = "v1.0.10", depends = ["python", "uv"] }
 
@@ -24,6 +24,11 @@ run = [
 description = "Validate native Boundary contracts."
 depends = ["dev-install"]
 run = "boundary contracts check"
+
+[tasks.test-distribution]
+description = "Run focused mise distribution and installed integration coverage."
+depends = ["dev-install"]
+run = "python -m unittest discover -s tests -p 'test_*distribution*.py'"
 
 [tasks.test]
 description = "Run the Boundary test suite."

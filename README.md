@@ -20,7 +20,7 @@ Boundary's durable concepts are:
 - persistent-contract evolution;
 - actual-write verification;
 - progressive agent instruction disclosure;
-- immutable downstream source reconstruction.
+- mise-managed downstream tool selection and installation.
 
 These concepts are independent of any one change system or agent runtime.
 
@@ -117,13 +117,20 @@ A downstream project commits:
 
 - its native contracts;
 - its change-system artifacts;
-- one `boundary.lock.json`.
+- its normal mise project configuration;
+- `mise.lock`.
 
-The lock identifies an exact Boundary Git commit archive and the SHA-256 of those exact archive bytes.
+The mise configuration identifies the Boundary Git source. `mise.lock` records the exact Boundary source identity selected for locked installation.
 
-Generated runtime copies, installed adapter state, materialized skills, caches, provenance records, and operation evidence are not canonical project semantics.
+Boundary does not define another revision lock, dependency lock, copied runtime, or project-local launcher.
 
-A fresh clone reconstructs tooling from the committed immutable lock.
+Generated integration state, materialized skills, caches, provenance records, and operation evidence are not canonical project semantics.
+
+A fresh clone reconstructs tooling through normal mise project state:
+
+    mise install --locked
+    boundary integration install
+    boundary integration check
 
 See [docs/spec-distribution.md](docs/spec-distribution.md) and [docs/setup-downstream.md](docs/setup-downstream.md).
 
@@ -131,15 +138,20 @@ See [docs/spec-distribution.md](docs/spec-distribution.md) and [docs/setup-downs
 
 Bootstrap the Boundary source repository with:
 
-    bash scripts/bootstrap.sh
-
-Check an existing development installation without intentionally changing canonical source with:
-
-    bash scripts/bootstrap.sh --check
+    mise install
+    mise run bootstrap
 
 Validate native contracts with:
 
-    PYTHONPATH=src uv run --no-project python -m boundary contracts check
+    mise run contracts-check
+
+Run the focused distribution coverage with:
+
+    mise run test-distribution
+
+Run the complete test suite with:
+
+    mise run test
 
 Additional development and test commands are documented in [docs/setup-development.md](docs/setup-development.md).
 
@@ -154,12 +166,13 @@ The current architecture is split by responsibility:
 - [docs/spec-authorization.md](docs/spec-authorization.md): operation evidence, Git baselines, and verification.
 - [docs/spec-change-adapter.md](docs/spec-change-adapter.md): provider-neutral change-system integration.
 - [docs/spec-lifecycle.md](docs/spec-lifecycle.md): authorization, implementation, verification, and contract evolution.
-- [docs/spec-distribution.md](docs/spec-distribution.md): immutable downstream locks and reconstruction.
-- [docs/TODO.md](docs/TODO.md): remaining implementation and release work.
+- [docs/spec-distribution.md](docs/spec-distribution.md): mise-managed downstream installation and source identity.
+- [docs/spec-distribution-state.md](docs/spec-distribution-state.md): downstream state ownership and generated-state exclusions.
+- [TODO.md](TODO.md): remaining implementation and release work.
 - [docs/history/README.md](docs/history/README.md): explicitly historical migration material.
 
 ## Summary invariant
 
 Boundary remains coherent while:
 
-> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is reconstructed from an immutable committed source lock.
+> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream Boundary tooling is selected, locked, installed, and upgraded through mise using normal project tooling state.

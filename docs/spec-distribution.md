@@ -156,12 +156,12 @@ Whether the requested Boundary tool source can be installed under the committed 
 
 A Boundary upgrade changes mise-managed tool selection.
 
-The operator changes the desired Boundary source selector when necessary, asks mise to update the relevant lock state, and installs from the resulting lock.
+The operator changes the desired Boundary source selector when necessary, asks mise to re-resolve the relevant fuzzy selection, and installs from the resulting lock.
 
 Conceptually:
 
-    update Boundary selection in mise project state
-    mise lock --upgrade
+    update Boundary selection in mise project state when necessary
+    mise lock --bump <Boundary tool>
     mise install --locked
     boundary integration install
     boundary integration check
