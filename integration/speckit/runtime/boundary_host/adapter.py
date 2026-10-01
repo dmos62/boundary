@@ -99,7 +99,7 @@ def preflight_declared_scope(
             "declared-scope preflight found unowned declared targets: "
             + ", ".join(unowned),
             code="UNOWNED_WRITE_TARGET",
-        ) from exc
+        )
     return contexts
 
 
