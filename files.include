@@ -4,46 +4,35 @@
 @glob README.md
 
 @glob docs/spec.md
+@glob docs/spec-agent-instructions.md
 @glob docs/spec-authorization.md
 @glob docs/spec-change-adapter.md
 @glob docs/spec-contracts.md
 @glob docs/spec-lifecycle.md
 
+@glob contracts/boundary-agent-procedure.contract.md
 @glob contracts/boundary-authorization.contract.md
 @glob contracts/boundary-change-adapter.contract.md
-@glob contracts/boundary-context.contract.md
-@glob contracts/boundary-core.contract.md
 @glob contracts/boundary-native-contracts.contract.md
-@glob contracts/boundary-operation-lifecycle.contract.md
 @glob contracts/boundary-verification.contract.md
 
-@glob src/boundary/authorization/**
+@# these files are not there, uncomment if they are reintroduced
+@#glob skills/boundary-scope/**
+
 @glob src/boundary/contracts/**
 @glob src/boundary/context/**
-@glob src/boundary/outcomes.py
 @glob src/boundary/repository/**
-@glob src/boundary/verification/**
+@glob src/boundary/verification/checks.py
+@glob src/boundary/verification/model.py
 
-@glob integration/speckit/extension.yml
-@glob integration/speckit/commands/**
-@glob integration/speckit/workflow-overlay.yml
 @glob integration/speckit-preset/**
-@glob integration/speckit/runtime/boundary_host/__init__.py
 @glob integration/speckit/runtime/boundary_host/adapter.py
-@glob integration/speckit/runtime/boundary_host/commands.py
-@glob integration/speckit/runtime/boundary_host/discovery.py
-@glob integration/speckit/runtime/boundary_host/errors.py
-@glob integration/speckit/runtime/boundary_host/outcomes.py
 @glob integration/speckit/runtime/boundary_host/tasks.py
 
-@glob tests/test_authorization_lifecycle.py
-@glob tests/test_authorization_model.py
-@glob tests/test_fresh_authorization.py
+@glob tests/test_agent_skills.py
 @glob tests/test_lifecycle_outcomes.py
 @glob tests/test_native_verification.py
-@glob tests/test_operation_record_task_selection.py
 @glob tests/test_spec_kit_runtime_projection.py
-@glob tests/test_task_selected_units.py
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
@@ -53,7 +42,6 @@
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
 @globexclude docs/history/**
-@globexclude docs/spec-agent-instructions.md
 @globexclude docs/spec-architecture.md
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
@@ -62,35 +50,50 @@
 @globexclude docs/*.sdd
 @globexclude **/*.sdd
 
-@globexclude contracts/boundary-agent-procedure.contract.md
 @globexclude contracts/boundary-cli.contract.md
+@globexclude contracts/boundary-context.contract.md
+@globexclude contracts/boundary-core.contract.md
+@globexclude contracts/boundary-operation-lifecycle.contract.md
 @globexclude contracts/boundary-repository-tooling.contract.md
 @globexclude contracts/boundary-repository.contract.md
 @globexclude contracts/boundary-tests.contract.md
 
 @globexclude src/boundary/__main__.py
+@globexclude src/boundary/authorization/**
 @globexclude src/boundary/cli/**
+@globexclude src/boundary/outcomes.py
 
-@globexclude skills/**
+@globexclude skills/boundary-contracts/**
+@globexclude skills/boundary-implement/**
 @globexclude adapters/**
 
+@globexclude integration/speckit/extension.yml
+@globexclude integration/speckit/commands/**
+@globexclude integration/speckit/workflow-overlay.yml
+@globexclude integration/speckit/runtime/boundary_host/__init__.py
 @globexclude integration/speckit/runtime/boundary_host/__pycache__/**
 @globexclude integration/speckit/runtime/boundary_host/assets.py
+@globexclude integration/speckit/runtime/boundary_host/commands.py
+@globexclude integration/speckit/runtime/boundary_host/discovery.py
+@globexclude integration/speckit/runtime/boundary_host/errors.py
 @globexclude integration/speckit/runtime/boundary_host/generated_state.py
 @globexclude integration/speckit/runtime/boundary_host/host_check.py
 @globexclude integration/speckit/runtime/boundary_host/host_install.py
 @globexclude integration/speckit/runtime/boundary_host/host_runtime.py
 @globexclude integration/speckit/runtime/boundary_host/integration.py
+@globexclude integration/speckit/runtime/boundary_host/outcomes.py
 
 @globexclude tests/mise_distribution_support.py
 @globexclude tests/native_contract_cli_test_support.py
 @globexclude tests/preset_test_support.py
 @globexclude tests/test_agent_skill_materialization.py
-@globexclude tests/test_agent_skills.py
 @globexclude tests/test_authorization_handoff.py
+@globexclude tests/test_authorization_lifecycle.py
+@globexclude tests/test_authorization_model.py
 @globexclude tests/test_boundary_core_layout.py
 @globexclude tests/test_boundary_status_cli.py
 @globexclude tests/test_distribution_surface.py
+@globexclude tests/test_fresh_authorization.py
 @globexclude tests/test_mise_distribution_integration.py
 @globexclude tests/test_mise_distribution_lock.py
 @globexclude tests/test_native_contract_cli.py
@@ -100,6 +103,8 @@
 @globexclude tests/test_native_contract_parsing.py
 @globexclude tests/test_native_contract_repository.py
 @globexclude tests/test_operation_record.py
+@globexclude tests/test_operation_record_task_selection.py
+@globexclude tests/test_task_selected_units.py
 
 @globexclude .agents/**
 @globexclude .boundary/**

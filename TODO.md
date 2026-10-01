@@ -68,23 +68,26 @@ The mechanical improvement should remain distinct in the final review from the i
 
 No current README/specification correction was demonstrated by this pass. The remaining concrete follow-ups are the separately tracked operation-record consistency gap and Spec Kit adapter-status specification drift.
 
-## 3. Review Spec Kit adapter scope projection and lifecycle gates
+## Evidence carried forward from the completed Spec Kit adapter scope review
 
-Inspect the current adapter implementation, command wrappers, workflow overlay, and relevant tests.
+Current specification, runtime source, integration text, and focused tests agree on the supported Spec Kit authorization path:
 
-Verify that:
+- only directly attached structured `Writes:` metadata becomes implementation-scope input; path-looking task prose is ignored;
+- `ChangeWriteSet` rejects duplicate task identities, duplicate writes within a task, repeated writes across tasks, and noncanonical write paths;
+- implementation authorization requires an explicit non-empty task selection, rejects duplicate or unknown selected IDs, and normalizes selected tasks back into canonical host order;
+- the workflow overlay transports the explicit selection through transient `BOUNDARY_TASK_IDS` JSON and invokes `boundary authorize`; the runtime reads that transport only when repeated `--task` arguments were not supplied;
+- authorization resolves only the selected tasks through `change.select_tasks(...)`; the feature-wide `change.writes` union remains a planning/preflight projection and is not an authorization fallback;
+- verification reads the active historical operation record and does not call `project_change` or otherwise reinterpret current `tasks.md`;
+- Spec Kit bookkeeping classification cannot hide a native contract or a path already present in `authorizedTargets`, because core verification forces both classes back into checked writes before consulting the adapter classifier;
+- declared-scope preflight reparses the current structured change, loads the current native contract graph, resolves the complete declared write union, and blocks malformed, ambiguously owned, or unowned targets without creating authority.
 
-- structured task writes are the only implementation-scope input;
-- incidental path-looking prose is ignored for authorization;
-- explicit task selection is required;
-- duplicate/unknown/empty task selections fail deterministically;
-- the workflow transport preserves explicit selected task IDs rather than reconstructing feature-wide scope;
-- implementation entry and exit remain the only blocking Boundary lifecycle transitions;
-- current task state is not reused as historical authorization evidence during verification;
-- adapter bookkeeping classification cannot hide an authorized target or native contract write;
-- declared-scope preflight can expose malformed, unowned, or ambiguously owned writes before implementation entry.
+The old Review1 behavior—flattening every task in the active feature into one implicit authorization—does not exist in the supported path. A feature-wide ordered union still exists as `ChangeWriteSet.writes` for planning and declared-scope preflight, but `authorize_implementation()` derives its target list only from the explicit selected task IDs. Omitted selection is a blocking error rather than an all-feature default.
 
-Compare this directly with Review1's description of the old feature-wide flattened authorization and state whether that behavior still exists anywhere in the supported path.
+The workflow overlay still has only two blocking Boundary transitions around implementation: `boundary-authorize` before the host implementation step and `boundary-verify` after it. Declared-scope preflight is task-readiness work and may fail when invoked, but it is neither operation evidence nor another Boundary authorization phase.
+
+Focused adapter/authorization coverage passed 40 tests. Relevant regressions include directly attached `Writes:` parsing, explicit/canonical task selection, T009/T012 selected-unit behavior, sequential units within one change, same-owner undeclared-write rejection, adapter-bookkeeping exclusion, and machine-readable unowned-write outcomes.
+
+This pass found no new current-source contradiction. The previously tracked operation-record self-consistency gap and Spec Kit adapter-status specification drift remain separate follow-ups for the drift pass.
 
 ## 4. Review workflow/process-record treatment
 
