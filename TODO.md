@@ -31,21 +31,17 @@ The T012 / `clipboard.rs` regression is answered directly by current semantics: 
 
 One implementation-integrity gap was found. Normal authorization constructs internally consistent records, but persisted-record decoding and `OperationRecord` validation do not currently prove that an implementation record's `authorizedTargets` exactly equal the selected tasks' write union, and do not require `owner` plus `effectiveContextIdentity` on implementation target evidence. A syntactically valid but internally inconsistent operation document can therefore be loaded even though it could not be produced by the supported authorization path. Track this as a concrete follow-up rather than treating normal-path construction as proof that persisted authority is self-validating.
 
-## 1. Review active-worker authority and handoff semantics
+## Evidence carried forward from the active-worker authority review
 
-Answer Review1's questions about what authorizes an active worker and what state should be transferred between agents.
+Current specification, source, and focused tests agree that the active `OperationRecord` is the authority-bearing historical evidence for one epoch. Implementation records persist the explicit selected task identities and exact authorized target evidence; verification consumes that record rather than re-reading current task scope. The record model is frozen in memory, and verification closure preserves the authority fields while changing only lifecycle status and final-state evidence.
 
-Verify:
+`boundary status` is a read-only projection of the current record plus a fresh Git `HEAD` read. Its `boundary.authorization-handoff/v1` document exposes operation/change identity, kind, lifecycle status, selected task identities, exact target evidence, contract-graph identity, authorization-time `HEAD`, current `HEAD`, and `headMatchesBaseline`. This is sufficient for a delegated worker to identify the current operation and write scope without rediscovering adapter scripts or runtime package paths. The handoff does not select tasks, widen authority, refresh contract context, or close an epoch.
 
-- the operation record is the immutable authority source;
-- selected task identities and exact authorized targets are persisted with the operation;
-- mutable task state cannot retroactively widen an existing operation;
-- `boundary status` exposes only a derived compact authorization handoff;
-- the handoff contains enough information for another agent to identify the active operation and authorized scope without rediscovering packaging/runtime details;
-- status/handoff output is not itself an authority source or lifecycle transition;
-- stale, closed, wrong-kind, or feature-mismatched operations remain distinguishable.
+Provider-neutral handoff fields keep stale, closed, and wrong-kind operations distinguishable: stale Git state is visible through `headMatchesBaseline`, closure through `status: verified`, and operation kind through `kind`. The Spec Kit verification path also blocks a feature mismatch with `OPERATION_CHANGED`. However, the concrete Spec Kit runtime currently has no implementation of the non-blocking adapter `status` query described in `docs/spec-change-adapter.md` that would pair the handoff with an active-feature match result. Treat that as current specification/implementation drift to resolve during the drift pass rather than as evidence that the authority model itself is unclear.
 
-Check the provider-neutral outcome model and Spec Kit adapter outcome model for stable machine-readable states. Determine whether Review1's desired distinction between scope/contract decisions, ordinary implementation failures, and external prerequisite failures was actually implemented, partially represented, or deliberately left to a higher-level controller.
+Machine-readable blocking outcomes are implemented through `boundary.lifecycle-outcome/v1`. Provider-neutral classification and the Spec Kit adapter distinguish invalid adapter state, missing external prerequisites, stale authorization, verification write-scope failures, scope-expansion transitions, and contract-evolution transitions without parsing diagnostic prose. Focused lifecycle-outcome tests cover invalid task selection, missing prerequisites, and unowned verification writes.
+
+Review1's broader controller distinction is intentionally only partly a Boundary concern. Boundary classifies Boundary lifecycle failures and can identify required Boundary transitions, but it does not classify ordinary implementation/test failures or decide whether an outer controller should pause, retry, ask a human, or continue. `docs/spec-lifecycle.md` assigns those orchestration decisions to the higher-level controller.
 
 ## 2. Review lifecycle and mechanical invocation overhead
 
@@ -167,6 +163,8 @@ Search outside `docs/history/`. Historical material may describe those concepts 
 Any discovered current-source contradiction should become a concrete follow-up TODO item rather than being papered over in the review.
 
 Resolve the operation-record internal-consistency gap found during implementation-unit review: determine whether persisted implementation records must reject `authorizedTargets` that do not exactly match the selected task-write union or that omit required owner/effective-context evidence. If corrected, add focused regression coverage and reflect the resulting status in the final review.
+
+Resolve the concrete Spec Kit status-query drift found during the active-worker review: `docs/spec-change-adapter.md` says the adapter exposes a non-blocking handoff plus active-feature match, while the current runtime implements authorization/verification and product-level `boundary status` but no adapter status projection. Either implement the documented adapter query with focused coverage or narrow the specification if provider-neutral status plus lifecycle feature checks are the intended final design.
 
 ## 8. Produce the follow-up review
 

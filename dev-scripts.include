@@ -1,9 +1,10 @@
 @cli! bash -lic "mise run contracts-check"
-@cli! bash -lic "printf '%s\n' '--- Handoff and operation-state test evidence ---'; git grep -n -C 3 -E 'authorization-handoff|selectedTaskIds|selected_task_ids|read_authorization_handoff|headMatchesBaseline|NO_ACTIVE_OPERATION|OPERATION_CHANGED|status.*verified|kind.*implementation|kind.*contract-evolution' -- tests 2>/dev/null || true"
-@cli! bash -lic "printf '%s\n' '--- Lifecycle outcome test evidence ---'; git grep -n -C 3 -E 'scope-expansion-required|contract-evolution-required|missing-external-prerequisite|stale-authorization|verification-write-scope-failure|INVALID_TASK_SELECTION|UNDECLARED_WRITE|UNOWNED_WRITE_TARGET|CONTRACT_CONTEXT_CHANGED' -- tests 2>/dev/null || true"
-@cli! bash -lic "printf '%s\n' '--- Spec Kit status and feature-match implementation/tests ---'; git grep -n -C 3 -E 'handoff|status|change.*match|feature.*match|active.*feature|wrong.*kind|verified' -- integration/speckit/runtime tests 2>/dev/null || true"
-@cli! bash -lic "printf '%s\n' '--- Test files ---'; git ls-files 'tests/*.py'"
+@cli! bash -lic "mise run test-distribution"
+@cli! bash -lic "printf '%s\n' '--- Installed CLI and package asset evidence ---'; git grep -n -C 3 -E 'boundary[[:space:]]*=|project\.scripts|console_scripts|package-data|include-package-data|boundary_host|integration/speckit|adapters/(codex|claude)' -- pyproject.toml src integration adapters 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Stable downstream command surface ---'; git grep -n -E 'boundary (inspect|authorize|verify|status|contracts check|integration (install|check|remove))' -- README.md docs integration tests 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Legacy invocation and copied-runtime leak search ---'; git grep -n -E 'PYTHONPATH|python -m boundary|UV_CACHE_DIR|adapter_gate\.py|boundary-runtime|boundary\.lock|project-local launcher|operator-supplied Boundary checkout' -- ':!docs/history/**' ':!TODO.md' ':!dev-scripts.include' 2>/dev/null || true"
+@cli! bash -lic "printf '%s\n' '--- Distribution-focused test files ---'; git ls-files 'tests/test_distribution_surface.py' 'tests/test_mise_distribution_integration.py' 'tests/test_mise_distribution_lock.py' 'tests/test_agent_skill_materialization.py' 'tests/test_boundary_core_layout.py'"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"
-@cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
+@cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "\*.py" "\*.md" "\*.toml" "\*.yml" "\*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"

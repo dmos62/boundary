@@ -5,37 +5,38 @@
 
 @glob docs/spec.md
 @glob docs/spec-architecture.md
-@glob docs/spec-authorization.md
-@glob docs/spec-change-adapter.md
 @glob docs/spec-agent-instructions.md
 @glob docs/spec-lifecycle.md
+@glob docs/spec-distribution.md
+@glob docs/spec-distribution-state.md
+@glob docs/setup-development.md
+@glob docs/setup-downstream.md
 
 @glob contracts/boundary-agent-procedure.contract.md
-@glob contracts/boundary-authorization.contract.md
 @glob contracts/boundary-change-adapter.contract.md
 @glob contracts/boundary-cli.contract.md
 @glob contracts/boundary-core.contract.md
-@glob contracts/boundary-operation-lifecycle.contract.md
-@glob contracts/boundary-verification.contract.md
 
-@glob src/boundary/authorization/codec.py
-@glob src/boundary/authorization/git.py
-@glob src/boundary/authorization/handoff.py
-@glob src/boundary/authorization/model.py
-@glob src/boundary/authorization/record.py
-@glob src/boundary/authorization/record_document.py
-@glob src/boundary/authorization/record_validation.py
-@glob src/boundary/authorization/service.py
-@glob src/boundary/authorization/storage.py
-@glob src/boundary/verification/**
-@glob src/boundary/outcomes.py
-@glob src/boundary/cli/main.py
-@glob src/boundary/cli/status.py
+@glob pyproject.toml
+@glob mise.toml
 
-@glob skills/implement/SKILL.md
+@glob src/boundary/__main__.py
+@glob src/boundary/cli/**
+
+@glob skills/**
+@glob adapters/**
+
+@glob integration/speckit/extension.yml
 @glob integration/speckit/commands/**
 @glob integration/speckit/workflow-overlay.yml
 @glob integration/speckit/runtime/boundary_host/**
+
+@glob tests/mise_distribution_support.py
+@glob tests/test_agent_skill_materialization.py
+@glob tests/test_boundary_core_layout.py
+@glob tests/test_distribution_surface.py
+@glob tests/test_mise_distribution_integration.py
+@glob tests/test_mise_distribution_lock.py
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
@@ -45,47 +46,51 @@
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
 @globexclude docs/history/**
+@globexclude docs/spec-authorization.md
+@globexclude docs/spec-change-adapter.md
 @globexclude docs/spec-contracts.md
-@globexclude docs/spec-distribution.md
-@globexclude docs/spec-distribution-state.md
-@globexclude docs/setup-development.md
-@globexclude docs/setup-downstream.md
 @globexclude docs/*.sdd
 @globexclude **/*.sdd
 
-@globexclude pyproject.toml
-@globexclude mise.toml
-@globexclude dev-scripts.include
-
+@globexclude contracts/boundary-authorization.contract.md
 @globexclude contracts/boundary-context.contract.md
 @globexclude contracts/boundary-native-contracts.contract.md
+@globexclude contracts/boundary-operation-lifecycle.contract.md
 @globexclude contracts/boundary-repository-tooling.contract.md
 @globexclude contracts/boundary-repository.contract.md
 @globexclude contracts/boundary-tests.contract.md
+@globexclude contracts/boundary-verification.contract.md
 
-@globexclude src/boundary/repository/**
+@globexclude src/boundary/authorization/**
 @globexclude src/boundary/contracts/**
 @globexclude src/boundary/context/**
-@globexclude src/boundary/authorization/__init__.py
-@globexclude src/boundary/authorization/engine.py
-@globexclude src/boundary/authorization/identities.py
-@globexclude src/boundary/cli/__init__.py
-@globexclude src/boundary/cli/__main__.py
-@globexclude src/boundary/cli/contracts.py
-@globexclude src/boundary/cli/inspection.py
+@globexclude src/boundary/outcomes.py
+@globexclude src/boundary/repository/**
+@globexclude src/boundary/verification/**
 
-@globexclude integration/speckit/extension.yml
-@globexclude integration/speckit/runtime/boundary_host/__init__.py
-@globexclude integration/speckit/runtime/boundary_host/assets.py
-@globexclude integration/speckit/runtime/boundary_host/generated_state.py
-@globexclude integration/speckit/runtime/boundary_host/host_check.py
-@globexclude integration/speckit/runtime/boundary_host/host_install.py
-@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
-@globexclude integration/speckit/runtime/boundary_host/integration.py
 @globexclude integration/speckit/runtime/boundary_host/__pycache__/**
 
-@globexclude adapters/**
-@globexclude tests/**
+@globexclude tests/native_contract_cli_test_support.py
+@globexclude tests/preset_test_support.py
+@globexclude tests/test_agent_skills.py
+@globexclude tests/test_authorization_handoff.py
+@globexclude tests/test_authorization_lifecycle.py
+@globexclude tests/test_authorization_model.py
+@globexclude tests/test_boundary_status_cli.py
+@globexclude tests/test_fresh_authorization.py
+@globexclude tests/test_lifecycle_outcomes.py
+@globexclude tests/test_native_contract_cli.py
+@globexclude tests/test_native_contract_context.py
+@globexclude tests/test_native_contract_graph.py
+@globexclude tests/test_native_contract_inspect.py
+@globexclude tests/test_native_contract_parsing.py
+@globexclude tests/test_native_contract_repository.py
+@globexclude tests/test_native_verification.py
+@globexclude tests/test_operation_record.py
+@globexclude tests/test_operation_record_task_selection.py
+@globexclude tests/test_spec_kit_runtime_projection.py
+@globexclude tests/test_task_selected_units.py
+
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**
