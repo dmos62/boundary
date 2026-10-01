@@ -2,8 +2,9 @@
 @glob AGENTS.md
 @glob TODO.md
 @glob README.md
+@glob pyproject.toml
 
-@# next focus: current-source drift plus operation-record and Spec Kit status follow-ups
+@# next focus: produce the standalone source-backed follow-up review
 @glob docs/spec.md
 @glob docs/spec-architecture.md
 @glob docs/spec-authorization.md
@@ -20,22 +21,41 @@
 
 @glob skills/*/SKILL.md
 
-@glob src/boundary/authorization/**
-@glob src/boundary/cli/**
-@glob src/boundary/context/**
-@glob src/boundary/contracts/**
-@glob src/boundary/repository/**
-@glob src/boundary/verification/**
+@glob src/boundary/authorization/model.py
+@glob src/boundary/authorization/engine.py
+@glob src/boundary/authorization/record.py
+@glob src/boundary/authorization/record_validation.py
+@glob src/boundary/authorization/handoff.py
+@glob src/boundary/authorization/service.py
+@glob src/boundary/cli/main.py
+@glob src/boundary/cli/status.py
+@glob src/boundary/verification/checks.py
+@glob src/boundary/verification/service.py
 @glob src/boundary/outcomes.py
 
-@glob integration/speckit/runtime/boundary_host/*.py
+@glob integration/speckit/commands/*.md
+@glob integration/speckit/workflow-overlay.yml
+@glob integration/speckit/runtime/boundary_host/adapter.py
+@glob integration/speckit/runtime/boundary_host/commands.py
+@glob integration/speckit/runtime/boundary_host/discovery.py
+@glob integration/speckit/runtime/boundary_host/tasks.py
+@glob integration/speckit/runtime/boundary_host/host_install.py
+@glob integration/speckit/runtime/boundary_host/host_runtime.py
+@glob integration/speckit/runtime/boundary_host/generated_state.py
 
-@glob tests/test_authorization_handoff.py
-@glob tests/test_boundary_status_cli.py
+@glob adapters/*/materialize.py
+
+@glob tests/test_task_selected_units.py
+@glob tests/test_authorization_lifecycle.py
 @glob tests/test_native_verification.py
-@glob tests/test_operation_record.py
 @glob tests/test_operation_record_task_selection.py
+@glob tests/test_spec_kit_status_projection.py
 @glob tests/test_spec_kit_runtime_projection.py
+@glob tests/test_lifecycle_outcomes.py
+@glob tests/test_spec_kit_script_modes.py
+@glob tests/test_distribution_surface.py
+@glob tests/test_mise_distribution_integration.py
+@glob tests/test_mise_distribution_lock.py
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
@@ -51,29 +71,10 @@
 @globexclude src/boundary/**/__pycache__/**
 @globexclude src/boundary/**/*.pyc
 
-@globexclude adapters/**
 @globexclude integration/speckit/runtime/boundary_host/__pycache__/**
-
 @globexclude tests/mise_distribution_support.py
 @globexclude tests/native_contract_cli_test_support.py
 @globexclude tests/preset_test_support.py
-@globexclude tests/test_agent_skill_materialization.py
-@globexclude tests/test_agent_skills.py
-@globexclude tests/test_authorization_lifecycle.py
-@globexclude tests/test_boundary_core_layout.py
-@globexclude tests/test_distribution_surface.py
-@globexclude tests/test_fresh_authorization.py
-@globexclude tests/test_lifecycle_outcomes.py
-@globexclude tests/test_mise_distribution_integration.py
-@globexclude tests/test_mise_distribution_lock.py
-@globexclude tests/test_native_contract_cli.py
-@globexclude tests/test_native_contract_context.py
-@globexclude tests/test_native_contract_graph.py
-@globexclude tests/test_native_contract_inspect.py
-@globexclude tests/test_native_contract_parsing.py
-@globexclude tests/test_native_contract_repository.py
-@globexclude tests/test_spec_kit_script_modes.py
-@globexclude tests/test_task_selected_units.py
 
 @globexclude .agents/**
 @globexclude .boundary/**

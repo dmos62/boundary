@@ -29,7 +29,7 @@ Scope discovery never widens the active operation. A path declared by an unselec
 
 The T012 / `clipboard.rs` regression is answered directly by current semantics: selecting only T012-like task scope would authorize only T012's declared writes. A `clipboard.rs` path declared only by T009 would remain unauthorized even when both tasks resolve to the same architectural owner. Writing it would be an `UNDECLARED_WRITE` at verification. The supported transition is to verify and close the current unit, then fresh-authorize a unit explicitly selecting T009 or another task set that declares the path.
 
-One implementation-integrity gap was found. Normal authorization constructs internally consistent records, but persisted-record decoding and `OperationRecord` validation do not currently prove that an implementation record's `authorizedTargets` exactly equal the selected tasks' write union, and do not require `owner` plus `effectiveContextIdentity` on implementation target evidence. A syntactically valid but internally inconsistent operation document can therefore be loaded even though it could not be produced by the supported authorization path. Track this as a concrete follow-up rather than treating normal-path construction as proof that persisted authority is self-validating.
+One implementation-integrity gap was found during this pass: persisted implementation records did not independently prove that `authorizedTargets` exactly equaled selected task writes or require owner/effective-context evidence. That gap is resolved in the current-source drift pass described below.
 
 ## Evidence carried forward from the active-worker authority review
 
@@ -37,7 +37,7 @@ Current specification, source, and focused tests agree that the active `Operatio
 
 `boundary status` is a read-only projection of the current record plus a fresh Git `HEAD` read. Its `boundary.authorization-handoff/v1` document exposes operation/change identity, kind, lifecycle status, selected task identities, exact target evidence, contract-graph identity, authorization-time `HEAD`, current `HEAD`, and `headMatchesBaseline`. This is sufficient for a delegated worker to identify the current operation and write scope without rediscovering adapter scripts or runtime package paths. The handoff does not select tasks, widen authority, refresh contract context, or close an epoch.
 
-Provider-neutral handoff fields keep stale, closed, and wrong-kind operations distinguishable: stale Git state is visible through `headMatchesBaseline`, closure through `status: verified`, and operation kind through `kind`. The Spec Kit verification path also blocks a feature mismatch with `OPERATION_CHANGED`. However, the concrete Spec Kit runtime currently has no implementation of the non-blocking adapter `status` query described in `docs/spec-change-adapter.md` that would pair the handoff with an active-feature match result. Treat that as current specification/implementation drift to resolve during the drift pass rather than as evidence that the authority model itself is unclear.
+Provider-neutral handoff fields keep stale, closed, and wrong-kind operations distinguishable: stale Git state is visible through `headMatchesBaseline`, closure through `status: verified`, and operation kind through `kind`. The Spec Kit verification path also blocks a feature mismatch with `OPERATION_CHANGED`.
 
 Machine-readable blocking outcomes are implemented through `boundary.lifecycle-outcome/v1`. Provider-neutral classification and the Spec Kit adapter distinguish invalid adapter state, missing external prerequisites, stale authorization, verification write-scope failures, scope-expansion transitions, and contract-evolution transitions without parsing diagnostic prose. Focused lifecycle-outcome tests cover invalid task selection, missing prerequisites, and unowned verification writes.
 
@@ -66,7 +66,7 @@ The legacy-invocation search still finds retired invocation strings inside gener
 
 The mechanical improvement should remain distinct in the final review from the implementation-unit improvement. Review1's feature-wide authorization problem was answered by task-selected authorization semantics. Its repeated command/path discovery problem was answered by conventional packaging, mise-managed installation, packaged integration assets, and one installed semantic CLI. Neither improvement depends on treating architectural ownership as implementation-unit membership.
 
-No current README/specification correction was demonstrated by this pass. The remaining concrete follow-ups are the separately tracked operation-record consistency gap and Spec Kit adapter-status specification drift.
+No current README/specification correction was demonstrated by this pass.
 
 ## Evidence carried forward from the completed Spec Kit adapter scope review
 
@@ -87,7 +87,7 @@ The workflow overlay still has only two blocking Boundary transitions around imp
 
 Focused adapter/authorization coverage passed 40 tests. Relevant regressions include directly attached `Writes:` parsing, explicit/canonical task selection, T009/T012 selected-unit behavior, sequential units within one change, same-owner undeclared-write rejection, adapter-bookkeeping exclusion, and machine-readable unowned-write outcomes.
 
-This pass found no new current-source contradiction. The previously tracked operation-record self-consistency gap and Spec Kit adapter-status specification drift remain separate follow-ups for the drift pass.
+This pass found no new current-source contradiction.
 
 ## Evidence carried forward from the completed workflow/process-record review
 
@@ -135,34 +135,17 @@ The intentionally retained friction is therefore part of the current enforcement
 
 The supplied validation for this pass remained clean: native contract validation passed with 15 contracts, the focused lifecycle/authorization/verification run passed 41 tests, and `git diff --check` passed. No new README, specification, contract, source, or test correction was demonstrated by this review.
 
-These supported-path results do not close the separately tracked persisted-operation-record consistency gap. A malformed implementation record can still be internally inconsistent in ways normal authorization would never construct. That integrity issue remains a concrete item for the drift pass, alongside the Spec Kit adapter-status specification drift.
+## Evidence carried forward from the completed current-source drift review
 
-## 7. Check documentation, contracts, implementation, and tests for drift
+The current-source drift pass found no surviving Review1-era behavior presented as active semantics outside historical/generated material. Current references to feature-wide authorization, synthetic task authority, Change Boundaries, copied runtimes, revision locks, project-local launchers, and PowerShell are either explicit descriptions of retired behavior, negative requirements, compatibility cleanup, or legitimate mode-specific runtime handling.
 
-After the semantic review, compare the public README, focused specifications, native contracts, canonical skills, Spec Kit integration text, implementation, and tests.
+The persisted-operation integrity gap is now corrected in `OperationRecord` validation. An implementation record must have a non-empty selected task write set, preserve its task order, have `authorizedTargets` exactly equal the ordered selected-task write union, and include both owner and effective-context identity for every implementation target. Because JSON decoding constructs an `OperationRecord`, malformed persisted evidence now fails closed even when its individual fields are syntactically valid. Focused regression coverage checks mismatched and reordered target sets, missing target evidence, and empty implementation write evidence.
 
-Look specifically for stale concepts from Review1's old model:
+The Spec Kit status-query drift is also resolved in implementation rather than by weakening the specification. `status_feature()` projects the provider-neutral authorization handoff and reports whether its historical `changeId` matches the active feature identity. It does not read task scope, select tasks, mutate evidence, authorize writes, or verify an operation. Focused coverage checks absent, matching, and mismatched operation state. The existing `boundary status` command remains the product-level provider-neutral handoff surface.
 
-- feature-wide flattened authorization;
-- synthetic task authority identities;
-- persisted feature Change Boundaries;
-- refresh-time context fingerprint sidecars;
-- a separate validation lifecycle stage;
-- copied runtime discovery;
-- Boundary-owned revision locks;
-- project-local launchers;
-- PowerShell-only adapter assumptions;
-- implicit scope expansion.
+No README correction or additional current-source contradiction was demonstrated by this pass.
 
-Search outside `docs/history/`. Historical material may describe those concepts but must not define current behavior.
-
-Any discovered current-source contradiction should become a concrete follow-up TODO item rather than being papered over in the review.
-
-Resolve the operation-record internal-consistency gap found during implementation-unit review: determine whether persisted implementation records must reject `authorizedTargets` that do not exactly match the selected task-write union or that omit required owner/effective-context evidence. If corrected, add focused regression coverage and reflect the resulting status in the final review.
-
-Resolve the concrete Spec Kit status-query drift found during the active-worker review: `docs/spec-change-adapter.md` says the adapter exposes a non-blocking handoff plus active-feature match, while the current runtime implements authorization/verification and product-level `boundary status` but no adapter status projection. Either implement the documented adapter query with focused coverage or narrow the specification if provider-neutral status plus lifecycle feature checks are the intended final design.
-
-## 8. Produce the follow-up review
+## 7. Produce the follow-up review
 
 Create a new standalone review document at `BOUNDARY-FEEDBACK-REVIEW2.md`. Do not overwrite or extend `BOUNDARY-FEEDBACK-REVIEW1.md`; Review1 remains historical evidence.
 
@@ -184,7 +167,7 @@ For each substantive status claim, identify the current specification and concre
 
 Keep recommendations limited to gaps actually demonstrated by current evidence. Do not reopen design questions that the approved current specification has already answered unless implementation or tests contradict it.
 
-## 9. Final consistency and validation
+## 8. Final consistency and validation
 
 After the review is complete:
 

@@ -54,6 +54,72 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
         ):
             operation_record_from_document(document)
 
+    def test_authorized_targets_must_match_selected_task_writes(self) -> None:
+        document = _implementation_document()
+        document["authorizedTargets"][0]["path"] = "src/other.py"
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "authorized targets must exactly match selected task writes",
+        ):
+            operation_record_from_document(document)
+
+    def test_authorized_targets_must_preserve_selected_write_order(self) -> None:
+        document = _implementation_document()
+        document["tasks"][0]["writes"] = [
+            "src/example.py",
+            "src/other.py",
+        ]
+        document["authorizedTargets"] = [
+            {
+                "path": "src/other.py",
+                "owner": "example-owner",
+                "effectiveContextIdentity": "sha256:other-context",
+            },
+            {
+                "path": "src/example.py",
+                "owner": "example-owner",
+                "effectiveContextIdentity": "sha256:context",
+            },
+        ]
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "authorized targets must exactly match selected task writes",
+        ):
+            operation_record_from_document(document)
+
+    def test_implementation_target_requires_owner_evidence(self) -> None:
+        document = _implementation_document()
+        del document["authorizedTargets"][0]["owner"]
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "must include owner and effective context identity",
+        ):
+            operation_record_from_document(document)
+
+    def test_implementation_target_requires_context_identity(self) -> None:
+        document = _implementation_document()
+        del document["authorizedTargets"][0]["effectiveContextIdentity"]
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "must include owner and effective context identity",
+        ):
+            operation_record_from_document(document)
+
+    def test_implementation_task_evidence_requires_a_write(self) -> None:
+        document = _implementation_document()
+        document["tasks"][0]["writes"] = []
+        document["authorizedTargets"] = []
+
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "must declare at least one write target",
+        ):
+            operation_record_from_document(document)
+
     def test_operation_record_does_not_infer_missing_selection(self) -> None:
         task = TaskWriteSet(
             order=0,

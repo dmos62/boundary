@@ -10,6 +10,7 @@ from .model import (
 )
 from .record_document import operation_record_to_document
 from .record_validation import (
+    validate_implementation_record_authority as _validate_implementation_record_authority,
     validate_nonempty as _validate_nonempty,
     validate_operation_id as _validate_operation_id,
     validate_path as _validate_path,
@@ -115,6 +116,11 @@ class OperationRecord:
             self.authorized_targets,
             "authorized target",
         )
+        if self.kind == "implementation":
+            _validate_implementation_record_authority(
+                self.tasks,
+                self.authorized_targets,
+            )
         _validate_unique_paths(
             self.carried_forward,
             "carried-forward path",

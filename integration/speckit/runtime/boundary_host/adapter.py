@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
 from boundary.authorization import (
+    AuthorizationHandoff,
     ChangeWriteSet,
     OperationRecord,
     WriteSetError,
     authorize_implementation_operation,
+    read_authorization_handoff,
     read_current_operation,
 )
 from boundary.context import TargetContext, resolve_target_context
@@ -23,6 +26,14 @@ from boundary.verification import finalize_operation_verification
 
 from .errors import SpecKitAdapterError
 from .tasks import parse_tasks
+
+
+@dataclass(frozen=True, slots=True)
+class SpecKitAuthorizationStatus:
+    """Read-only Boundary handoff plus its relationship to the active feature."""
+
+    handoff: AuthorizationHandoff | None
+    change_matches_active_feature: bool | None
 
 
 def project_change(
@@ -88,8 +99,25 @@ def preflight_declared_scope(
             "declared-scope preflight found unowned declared targets: "
             + ", ".join(unowned),
             code="UNOWNED_WRITE_TARGET",
-        )
+        ) from exc
     return contexts
+
+
+def status_feature(
+    root: Path,
+    feature_dir: Path,
+) -> SpecKitAuthorizationStatus:
+    """Return current Boundary handoff and active-feature match state."""
+
+    handoff = read_authorization_handoff(root)
+    return SpecKitAuthorizationStatus(
+        handoff=handoff,
+        change_matches_active_feature=(
+            None
+            if handoff is None
+            else handoff.change_id == feature_dir.name
+        ),
+    )
 
 
 def authorize_feature(
