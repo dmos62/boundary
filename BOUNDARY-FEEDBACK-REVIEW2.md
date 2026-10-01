@@ -10,29 +10,131 @@ The follow-up separates specified semantics, concrete implementation, automated 
 
 ## 1. Executive status
 
-| Review1 concern or question | Status | Current answer and evidence |
-|---|---|---|
-| Feature-wide flattened authorization obscured the active implementation unit. | addressed | `docs/spec.md`, `docs/spec-authorization.md`, and `docs/spec-change-adapter.md` define an implementation unit as an explicit non-empty task selection. `ChangeWriteSet.select_tasks()` and `authorize_implementation()` authorize only selected task writes. `tests/test_task_selected_units.py` covers sequential and multi-task units. |
-| Task provenance existed but did not constrain authority. | addressed | Selected task identities are now authority input and persisted evidence. `OperationRecord` stores `selectedTaskIds`, selected task evidence, and exact targets; `record_validation.py` requires targets to equal the selected-task write union. `tests/test_operation_record_task_selection.py` exercises malformed persisted evidence. |
-| A feature should be able to contain several implementation units. | addressed | The lifecycle permits multiple verified authorization epochs for one change. `authorization/service.py` requires predecessor closure and supports exact carry-forward; `tests/test_task_selected_units.py` and `tests/test_authorization_lifecycle.py` cover sequential units. |
-| Implementation units should map cleanly to architectural owners. | superseded / intentionally out of scope | Current specs explicitly separate unit membership from ownership. A selected unit may span multiple owners, and ownership is resolved per target. Ownership never widens selection. |
-| Coordinated multi-owner work needs a synthetic task/owner authority identity. | superseded / intentionally out of scope | A selected unit may directly span several owners. `tests/test_task_selected_units.py` verifies that each selected target records its own owner without introducing synthetic authority. |
-| Every task or architectural owner should require its own Boundary operation. | superseded / intentionally out of scope | Boundary permits explicit multi-task and multi-owner selections when they form one coherent implementation unit. It requires explicit selection, not one-operation-per-task or one-operation-per-owner structure. |
-| T012 should not receive `clipboard.rs` authority merely because another feature task declared it. | addressed | Selected-task authorization removes the old behavior. A T012-only authorization contains only T012 writes; a write to a path declared only by T009 is an `UNDECLARED_WRITE`. Same-owner status does not change this. |
-| Same-owner scope expansion should have implicit permission or lighter authority semantics. | superseded / intentionally out of scope | The specs allow different coordination diagnostics but deliberately require the same authority transition: close the current epoch, update/select structured scope, and fresh-authorize. `tests/test_native_verification.py` covers same-owner undeclared-write rejection. |
-| Cross-owner scope expansion requires a distinct permission model. | superseded / intentionally out of scope | Cross-owner discovery may justify different coordination diagnostics, but it does not change write authority. Fresh explicit selection and authorization are required in both cases. |
-| Common Boundary operations required rediscovery of Python paths, uv plumbing, copied runtimes, or adapter scripts. | addressed | `pyproject.toml` exposes the installed `boundary` console script. `src/boundary/cli/main.py` provides inspect, authorize, verify, status, contracts check, and integration lifecycle commands. Distribution tests verify the installed CLI outside the consumer repository. |
-| Semantic lifecycle phases were not obvious or uniform. | addressed | `docs/spec-lifecycle.md` defines `authorize → implement → verify`; contract evolution is separate. Canonical skills and integration wrappers use the installed semantic CLI instead of private runtime paths. |
-| Authorization state was expensive to hand to workers. | addressed | `authorization/handoff.py` projects `boundary.authorization-handoff/v1` from the current historical operation plus fresh Git HEAD. `boundary status` exposes it directly, and `status_feature()` adds active-feature match state. Focused status tests cover absent, matching, and mismatched operations. |
-| Cross-task work within one architectural component is necessarily an architectural violation. | superseded / intentionally out of scope | Cross-task work is permitted when the next explicit unit selects the relevant task set. Architectural ownership supplies context and constraints but is not task membership. |
-| Workflow/process records needed predictable treatment. | superseded / intentionally out of scope | Boundary intentionally has no universal workflow-record authority category. Durable checkpoints and feedback files are ordinary writes unless the change system genuinely owns them. `boundary-scope` requires exact declaration, and declared-scope preflight resolves their ownership when declared. |
-| Late discovery of unowned durable records should be reduced. | partially addressed | Planning guidance and `preflight_declared_scope()` catch invalid, ambiguous, or unowned declared writes before authorization. They cannot discover a required path that task generation omitted entirely. This limitation is explicit in the current lifecycle model. |
-| Boundary outcomes should help orchestration distinguish lifecycle failures. | addressed | `boundary.lifecycle-outcome/v1` classifies invalid adapter state, missing prerequisites, stale authorization, verification write-scope failures, and required Boundary transitions. `tests/test_lifecycle_outcomes.py` covers representative mappings. |
-| Boundary should decide whether a controller pauses, retries, asks a human, or continues. | superseded / intentionally out of scope | `docs/spec-lifecycle.md` assigns those policy decisions to the outer controller. Boundary reports deterministic state and required Boundary transitions but does not classify ordinary test failures or choose controller policy. |
-| Undeclared administrative writes should be permitted to reduce friction. | superseded / intentionally out of scope | Current verification intentionally rejects ordinary undeclared writes, including same-owner writes and durable project records. `tests/test_native_verification.py` preserves this enforcement. |
-| Contract edits and dependent implementation could be combined for convenience. | superseded / intentionally out of scope | Operation-kind separation remains deliberate. Implementation rejects native contract writes; contract evolution rejects ordinary project writes; dependent implementation requires fresh authorization afterward. |
-| Runtime setup should respect the configured Spec Kit script mode instead of requiring PowerShell in Bash mode. | addressed | `boundary_host.discovery` dispatches Bash, PowerShell, or Python prerequisite scripts from `.specify/init-options.json`; `host_runtime.require_script_runtime()` requires only the selected runtime. `tests/test_spec_kit_script_modes.py` covers routing and transitions. |
-| The Spec Kit `BRANCH` metadata ambiguity should be fixed by Boundary. | superseded / intentionally out of scope | Boundary does not consume that field. Active-feature discovery uses `SPECIFY_FEATURE_DIRECTORY` or host `FEATURE_DIR`; the adapter treats the resolved feature-directory name as opaque change identity. |
+### Feature-wide flattened authorization obscured the active implementation unit
+
+**Status:** addressed
+
+`docs/spec.md`, `docs/spec-authorization.md`, and `docs/spec-change-adapter.md` define an implementation unit as an explicit non-empty task selection. `ChangeWriteSet.select_tasks()` and `authorize_implementation()` authorize only selected task writes. `tests/test_task_selected_units.py` covers sequential and multi-task units.
+
+### Task provenance existed but did not constrain authority
+
+**Status:** addressed
+
+Selected task identities are now authority input and persisted evidence. `OperationRecord` stores `selectedTaskIds`, selected task evidence, and exact targets; `record_validation.py` requires targets to equal the selected-task write union. `tests/test_operation_record_task_selection.py` exercises malformed persisted evidence.
+
+### A feature should be able to contain several implementation units
+
+**Status:** addressed
+
+The lifecycle permits multiple verified authorization epochs for one change. `authorization/service.py` requires predecessor closure and supports exact carry-forward; `tests/test_task_selected_units.py` and `tests/test_authorization_lifecycle.py` cover sequential units.
+
+### Implementation units should map cleanly to architectural owners
+
+**Status:** superseded / intentionally out of scope
+
+Current specs explicitly separate unit membership from ownership. A selected unit may span multiple owners, and ownership is resolved per target. Ownership never widens selection.
+
+### Coordinated multi-owner work needs a synthetic task/owner authority identity
+
+**Status:** superseded / intentionally out of scope
+
+A selected unit may directly span several owners. `tests/test_task_selected_units.py` verifies that each selected target records its own owner without introducing synthetic authority.
+
+### Every task or architectural owner should require its own Boundary operation
+
+**Status:** superseded / intentionally out of scope
+
+Boundary permits explicit multi-task and multi-owner selections when they form one coherent implementation unit. It requires explicit selection, not one-operation-per-task or one-operation-per-owner structure.
+
+### T012 should not receive `clipboard.rs` authority merely because another feature task declared it
+
+**Status:** addressed
+
+Selected-task authorization removes the old behavior. A T012-only authorization contains only T012 writes; a write to a path declared only by T009 is an `UNDECLARED_WRITE`. Same-owner status does not change this.
+
+### Same-owner scope expansion should have implicit permission or lighter authority semantics
+
+**Status:** superseded / intentionally out of scope
+
+The specs allow different coordination diagnostics but deliberately require the same authority transition: close the current epoch, update/select structured scope, and fresh-authorize. `tests/test_native_verification.py` covers same-owner undeclared-write rejection.
+
+### Cross-owner scope expansion requires a distinct permission model
+
+**Status:** superseded / intentionally out of scope
+
+Cross-owner discovery may justify different coordination diagnostics, but it does not change write authority. Fresh explicit selection and authorization are required in both cases.
+
+### Common Boundary operations required rediscovery of Python paths, uv plumbing, copied runtimes, or adapter scripts
+
+**Status:** addressed
+
+`pyproject.toml` exposes the installed `boundary` console script. `src/boundary/cli/main.py` provides inspect, authorize, verify, status, contracts check, and integration lifecycle commands. Distribution tests verify the installed CLI outside the consumer repository.
+
+### Semantic lifecycle phases were not obvious or uniform
+
+**Status:** addressed
+
+`docs/spec-lifecycle.md` defines `authorize → implement → verify`; contract evolution is separate. Canonical skills and integration wrappers use the installed semantic CLI instead of private runtime paths.
+
+### Authorization state was expensive to hand to workers
+
+**Status:** addressed
+
+`authorization/handoff.py` projects `boundary.authorization-handoff/v1` from the current historical operation plus fresh Git HEAD. `boundary status` exposes it directly, and `status_feature()` adds active-feature match state. Focused status tests cover absent, matching, and mismatched operations.
+
+### Cross-task work within one architectural component is necessarily an architectural violation
+
+**Status:** superseded / intentionally out of scope
+
+Cross-task work is permitted when the next explicit unit selects the relevant task set. Architectural ownership supplies context and constraints but is not task membership.
+
+### Workflow/process records needed predictable treatment
+
+**Status:** superseded / intentionally out of scope
+
+Boundary intentionally has no universal workflow-record authority category. Durable checkpoints and feedback files are ordinary writes unless the change system genuinely owns them. `boundary-scope` requires exact declaration, and declared-scope preflight resolves their ownership when declared.
+
+### Late discovery of unowned durable records should be reduced
+
+**Status:** partially addressed
+
+Planning guidance and `preflight_declared_scope()` catch invalid, ambiguous, or unowned declared writes before authorization. They cannot discover a required path that task generation omitted entirely. This limitation is explicit in the current lifecycle model.
+
+### Boundary outcomes should help orchestration distinguish lifecycle failures
+
+**Status:** addressed
+
+`boundary.lifecycle-outcome/v1` classifies invalid adapter state, missing prerequisites, stale authorization, verification write-scope failures, and required Boundary transitions. `tests/test_lifecycle_outcomes.py` covers representative mappings.
+
+### Boundary should decide whether a controller pauses, retries, asks a human, or continues
+
+**Status:** superseded / intentionally out of scope
+
+`docs/spec-lifecycle.md` assigns those policy decisions to the outer controller. Boundary reports deterministic state and required Boundary transitions but does not classify ordinary test failures or choose controller policy.
+
+### Undeclared administrative writes should be permitted to reduce friction
+
+**Status:** superseded / intentionally out of scope
+
+Current verification intentionally rejects ordinary undeclared writes, including same-owner writes and durable project records. `tests/test_native_verification.py` preserves this enforcement.
+
+### Contract edits and dependent implementation could be combined for convenience
+
+**Status:** superseded / intentionally out of scope
+
+Operation-kind separation remains deliberate. Implementation rejects native contract writes; contract evolution rejects ordinary project writes; dependent implementation requires fresh authorization afterward.
+
+### Runtime setup should respect the configured Spec Kit script mode instead of requiring PowerShell in Bash mode
+
+**Status:** addressed
+
+`boundary_host.discovery` dispatches Bash, PowerShell, or Python prerequisite scripts from `.specify/init-options.json`; `host_runtime.require_script_runtime()` requires only the selected runtime. `tests/test_spec_kit_script_modes.py` covers routing and transitions.
+
+### The Spec Kit `BRANCH` metadata ambiguity should be fixed by Boundary
+
+**Status:** superseded / intentionally out of scope
+
+Boundary does not consume that field. Active-feature discovery uses `SPECIFY_FEATURE_DIRECTORY` or host `FEATURE_DIR`; the adapter treats the resolved feature-directory name as opaque change identity.
 
 ## 2. Current implementation-unit model
 
