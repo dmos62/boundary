@@ -56,7 +56,7 @@ The current package and CLI surface provide stable semantic entrypoints for all 
 - `boundary contracts check` for native-contract validation;
 - `boundary integration install`, `check`, and `remove` for generated integration lifecycle.
 
-This surface is concrete implementation rather than documentation-only intent. `pyproject.toml` exposes `boundary = "boundary.cli:main"` as the installed console script. The wheel contains the provider-neutral `boundary` package and the concrete `boundary_host` runtime, and force-includes canonical skills, runtime materializers, Spec Kit commands, extension metadata, workflow overlay, and preset assets. `src/boundary/cli/main.py` parses the semantic command surface and delegates host-specific authorization, verification, and integration work to the packaged Spec Kit runtime without exposing its package location to callers.
+This surface is concrete implementation rather than documentation-only intent. `pyproject.toml` exposes `boundary = "boundary.cli:main"` as the installed console script. The wheel contains the provider-neutral `boundary` package and the concrete `boundary_host` runtime, and force-includes canonical skills, runtime materializers, Spec Kit commands, extension metadata, workflow overlay, and preset assets.
 
 Focused distribution coverage supplies runtime evidence. The mise Git-source integration test installs Boundary into mise-managed tool state, resolves the installed executable outside the consumer repository, invokes its command surface, installs/checks/removes generated integration, and confirms that no project-local `.boundary` runtime, `.specify/boundary-runtime`, or `boundary.lock.json` is required. The lock test separately verifies that `mise.lock` preserves exact Boundary Git source identity until an explicit mise lock bump. The current distribution-focused suite passes 9 tests, and the complete suite passes 101 tests.
 
@@ -89,27 +89,17 @@ Focused adapter/authorization coverage passed 40 tests. Relevant regressions inc
 
 This pass found no new current-source contradiction. The previously tracked operation-record self-consistency gap and Spec Kit adapter-status specification drift remain separate follow-ups for the drift pass.
 
-## 4. Review workflow/process-record treatment
+## Evidence carried forward from the completed workflow/process-record review
 
-Revisit Review1 section 9 and the original `specs/CONTINUATION.md` / `BOUNDARY-FEEDBACK.md` incident.
+Current specifications and canonical procedure intentionally do not introduce a universal Boundary "workflow record" ownership category. A checkpoint, continuation record, feedback record, or similar durable project artifact is an ordinary repository write unless the active change system genuinely owns the path as its bookkeeping. Native ownership remains generic explicit contract ownership; cross-feature location, workflow importance, and document type do not create special authority.
 
-Determine whether the current system now prevents that class of surprise early enough by examining:
+The supported planning path now addresses the original late-surprise problem before authorization when task refinement follows the current contract. `boundary-scope` guidance and the Spec Kit task preset require implementation tasks to include durable project/workflow records in exact structured `Writes:` metadata. The declared-scope preflight then projects the complete ordered write union, loads the fresh native contract graph, resolves every declared target through Boundary context, and rejects invalid, ambiguously owned, or unowned targets. The concrete `preflight_declared_scope()` implementation performs those checks, and focused tests cover the declared union plus an unowned declared target. The supplied focused run covering the scope skill, Spec Kit projection, native verification, and lifecycle outcomes passed 21 tests.
 
-- scope-planning skill guidance;
-- Spec Kit task-generation guidance/preset material;
-- declared-scope preflight;
-- ownership requirements for every implementation target;
-- treatment of change-system bookkeeping versus ordinary repository writes.
+This is earlier detection, not automatic discovery or ownership. Declared-scope preflight is deliberately not a heuristic search for every file implementation might later decide to edit. If task generation omits a required durable record entirely, preflight has no undeclared target to inspect; the path remains unauthorized and an actual write is still rejected by Git-derived verification. The intended prevention mechanism is therefore explicit planning plus preflight, while deterministic verification remains the final enforcement layer.
 
-Answer explicitly:
+Spec Kit bookkeeping classification does not special-case cross-feature workflow records. The concrete classifier treats `.specify/**` and the active feature tree as change-system state; a path such as the historical `specs/CONTINUATION.md` outside the active feature remains an ordinary write. Core verification also prevents adapter classification from hiding native contract files or explicitly authorized targets. Cross-feature records therefore receive no product-level exemption or alternate permission semantics.
 
-- whether Boundary introduced any first-class universal "workflow record" ownership category;
-- whether such files instead remain ordinary project-authored targets requiring explicit contract ownership and structured task writes;
-- whether the updated planning/preflight path is sufficient to catch missing ownership before implementation authorization;
-- whether cross-feature records receive any special treatment;
-- whether the original project-local `project-records` contract remains the expected kind of solution rather than a product-level special case.
-
-If the concern is intentionally solved by earlier detection rather than automatic ownership, state that distinction.
+The historical project-local `project-records` contract remains the expected kind of solution: the project deliberately gives its durable records explicit native ownership and task generation declares their exact writes. That contract is a project semantic choice, not a Boundary built-in category. Review1 section 9 is therefore addressed by a stable ordinary-write model plus earlier task-generation/preflight detection, rather than by automatic workflow-record ownership. No current README/specification correction or new implementation gap was demonstrated by this pass.
 
 ## 5. Close the original runtime/setup incidents that informed the review
 
