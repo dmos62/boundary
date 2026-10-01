@@ -1,4 +1,4 @@
-"""Machine-readable blocking outcomes for the Spec Kit adapter gate."""
+"""Machine-readable blocking outcomes for the installed Spec Kit adapter."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from boundary.outcomes import (
 )
 from boundary.verification import VerificationError
 
-from spec_kit_errors import SpecKitAdapterError
+from .errors import SpecKitAdapterError
 
 
 def outcome_for_error(
@@ -35,7 +35,7 @@ def outcome_for_error(
         code=codes[0],
         message=str(error),
         change_id=change_id,
-        operation_id=None if stage == "preflight" else operation_id,
+        operation_id=operation_id,
         required_transition=classification.required_transition,
         diagnostics=diagnostics,
     )

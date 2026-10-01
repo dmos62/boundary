@@ -4,69 +4,97 @@ This guide is for contributors working on Boundary source itself.
 
 Downstream project installation is documented separately in [setup-downstream.md](setup-downstream.md).
 
+## Development model
+
+Boundary source development uses mise as the repository tool-environment entry point.
+
+The repository `mise.toml` selects the development Python and uv tools, pins the supported Spec Kit CLI, activates the project virtual environment, and exposes repository tasks.
+
+Contributors should not need to reconstruct Python import paths, direct uv commands, copied runtime locations, or source-checkout consumer commands for normal development.
+
+The development environment exposes the same installed `boundary` console command used by downstream projects.
+
 ## Bootstrap the source repository
 
-Run:
+Install the repository tools and run the bootstrap task:
 
-    bash scripts/bootstrap.sh
+    mise install
+    mise run bootstrap
 
-Development bootstrap deliberately reinitializes Spec Kit through its supported `specify init --here --force` lifecycle before reinstalling Boundary. Boundary does not pass a script mode by default, so the pinned Spec Kit selects its platform default: `sh` on Linux/macOS and `ps` on Windows.
+The bootstrap task installs the current checkout into the mise-managed development environment, materializes Boundary-owned Spec Kit/Codex integration through the installed CLI, and checks that integration.
 
-This regeneration repairs development checkouts that were initialized by older Boundary bootstrap code that always selected PowerShell.
+Codex must already be available on `PATH`.
 
-To deliberately use a non-default script mode, set `BOUNDARY_SPECKIT_SCRIPT` for the bootstrap run:
+For a project that is not yet initialized with Spec Kit, Boundary lets pinned Spec Kit choose its platform-default script mode.
 
-    BOUNDARY_SPECKIT_SCRIPT=ps bash scripts/bootstrap.sh
+For an existing Spec Kit setup, Boundary preserves the selected script mode unless the contributor deliberately requests a transition.
 
-Accepted values are `sh`, `ps`, and `py`. An explicit `ps` selection requires `pwsh` on `PATH`.
+Set:
 
-Check an existing development installation with:
+    BOUNDARY_SPECKIT_SCRIPT=sh|ps|py mise run bootstrap
 
-    bash scripts/bootstrap.sh --check
+only when intentionally changing that mode through the supported Spec Kit lifecycle.
 
-The check validates the currently selected Spec Kit runtime; it does not change script mode.
+An explicit `ps` selection requires `pwsh` on `PATH`.
 
-## Reinstall local source directly
+## Boundary CLI during development
 
-For development iterations, run:
+Normal development uses the installed semantic CLI.
 
-    bash scripts/install.sh --source .
+Examples:
 
-The source installer preserves an existing Spec Kit script mode. Set `BOUNDARY_SPECKIT_SCRIPT=sh|ps|py` only when intentionally asking Spec Kit to change that mode through its supported integration lifecycle.
+    boundary contracts check
+    boundary inspect <target...>
+    boundary status
+    boundary integration check
 
-The source installer accepts an already materialized local Boundary directory or local archive.
+Repository mise tasks provide repeatable project-wide entry points.
 
-It does not fetch unchecked remote Boundary source. Downstream repositories do not reconstruct Boundary source from the lock. Operators supply a clean Boundary checkout at the exact revision recorded in `boundary.lock.json` and invoke that checkout's `scripts/consumer.py`.
+Contributors should not need Python import-path configuration, module-level CLI invocation, direct uv environment plumbing, or generated project-local launchers for routine work.
 
 ## Core checks
 
-Validate native contracts:
+Use:
 
-    PYTHONPATH=src uv run --no-project python -m boundary contracts check
+    mise run contracts-check
+    mise run test
 
-Run native Boundary tests:
+Additional focused tasks may separate native core, Spec Kit adapter, and distribution tests when that improves iteration speed.
 
-    PYTHONPATH=src uv run --no-project \
-      python -m unittest discover -s tests -p 'test_native_*.py'
+Those tasks are repository-development conveniences rather than downstream product APIs.
 
-Run Spec Kit adapter tests:
+## Local source development
 
-    PYTHONPATH=src:integration/speckit/scripts uv run --no-project \
-      python -m unittest discover -s tests -p 'test_spec_kit_adapter*.py'
+The local Boundary checkout is authoritative for editing Boundary itself.
 
-Run downstream lock tests:
+The `dev-install` mise task installs that checkout into the repository's mise-managed development environment, using editable installation as a development convenience.
 
-    PYTHONPATH=src uv run --no-project \
-      python -m unittest discover -s tests -p 'test_consumer*.py'
+That local-source workflow is not a downstream source-distribution protocol and its filesystem path is not portable project state.
 
-Run script-mode lifecycle tests:
+## Spec Kit script mode
 
-    uv run --no-project python -m unittest tests.test_install_host_script_mode
+Boundary development integration respects the script mode selected in `.specify/init-options.json`.
+
+A project selecting `"script": "ps"` requires PowerShell.
+
+A project selecting `"script": "sh"` requires Bash.
+
+A project selecting `"script": "py"` uses the Python interpreter available to the installed Boundary integration.
+
+An intentional script-mode transition goes through Spec Kit's supported lifecycle rather than direct edits to generated scripts.
+
+Inactive script variants retained by Spec Kit after a transition remain non-authoritative host-generated residue.
 
 ## Source and generated state
 
-Canonical Boundary source includes `src/boundary/`, canonical skills, concrete adapters, integration source, scripts, contracts, and documentation.
+Canonical Boundary source includes `src/boundary/`, package metadata, canonical skills, concrete adapters, integration source, contracts, and documentation.
 
-Generated `.specify/` installation state and materialized `.agents/skills/` outputs are not replacements for that source.
+The installed package also carries the canonical integration assets needed by `boundary integration ...`; those packaged copies are build artifacts, not a second source of project semantics.
 
-The Boundary source repository therefore uses local-source development procedures rather than treating its own downstream consumer lock as its development bootstrap.
+Generated `.specify/` installation state and materialized agent skills are not replacements for canonical source.
+
+Repository mise configuration and tasks define development tooling.
+
+Downstream projects separately select Boundary through their own Git-backed mise configuration and lock state.
+
+The development checkout therefore has no Boundary-specific consumer lock, source-checkout matching protocol, copied Boundary runtime, or generated project-local launcher.

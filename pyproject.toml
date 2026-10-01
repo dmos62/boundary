@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "boundary-cli"
+version = "0.1.0"
+description = "Persistent project contracts and operation authorization for coding agents."
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = []
+
+[project.scripts]
+boundary = "boundary.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/boundary",
+  "integration/speckit/runtime/boundary_host",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "boundary_assets/skills"
+"adapters" = "boundary_assets/adapters"
+"integration/speckit/commands" = "boundary_assets/integration/speckit/commands"
+"integration/speckit/extension.yml" = "boundary_assets/integration/speckit/extension.yml"
+"integration/speckit/workflow-overlay.yml" = "boundary_assets/integration/speckit/workflow-overlay.yml"
+"integration/speckit-preset" = "boundary_assets/integration/speckit-preset"

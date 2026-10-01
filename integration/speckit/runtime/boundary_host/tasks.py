@@ -6,7 +6,7 @@ import re
 
 from boundary.authorization import TaskWriteSet
 
-from spec_kit_errors import SpecKitAdapterError
+from .errors import SpecKitAdapterError
 
 _TASK_RE = re.compile(
     r"^\s*-\s+\[[ xX]\]\s+(?P<id>\S+)(?:\s+(?P<body>.*))?$"

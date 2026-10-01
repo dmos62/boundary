@@ -14,6 +14,8 @@ Each implementation authorization operates on one explicitly selected implementa
 
 Planning and task generation may use Boundary context, but they do not establish implementation authority. Persisted context refresh and separate validation gates are not part of the supported Boundary lifecycle.
 
+Tool installation and generated project integration are prerequisites around this lifecycle rather than authorization phases.
+
 ## Planning
 
 During planning an agent may inspect candidate target contracts, identify ownership, discover applicable invariants and interfaces, classify likely contract evolution, and refine implementation paths.
@@ -30,7 +32,9 @@ A checkpoint, continuation record, feedback record, or similar durable project a
 
 After structured task writes are available, the host integration should run a non-authorizing declared-scope preflight over their deterministic ordered union. It uses Boundary target inspection to surface invalid, unowned, or ambiguously owned targets before implementation entry.
 
-Declared-scope preflight is task-readiness information only. It creates no operation record, captures no Git authorization baseline, selects no implementation unit, and grants no authority. Later authorization independently reloads current task state, contracts, and Git state and considers only explicitly selected tasks.
+Declared-scope preflight is task-readiness information only. It creates no operation record, captures no Git authorization baseline, selects no implementation unit, and grants no authority.
+
+Later authorization independently reloads current task state, contracts, and Git state and considers only explicitly selected tasks.
 
 A user story or coordinated task may span several owners. Boundary v1 does not require a synthetic task authority identity.
 
@@ -40,9 +44,13 @@ Authorization is the blocking transition into implementation.
 
 It uses a fresh ordered change-task projection, explicit selected task identities, only the structured writes of those selected tasks, fresh native contracts, and current Git state.
 
-It does not refresh an earlier boundary or reuse an earlier planning or declared-scope diagnostic as authorization evidence. Missing task selection is a failure; omission never means the complete active change.
+It does not refresh an earlier boundary or reuse an earlier planning or declared-scope diagnostic as authorization evidence.
 
-Successful authorization creates the historical operation record consumed by verification. An existing unverified operation cannot be silently replaced by another authorization epoch.
+Missing task selection is a failure; omission never means the complete active change.
+
+Successful authorization creates the historical operation record consumed by verification.
+
+An existing unverified operation cannot be silently replaced by another authorization epoch.
 
 ## Implementation
 
@@ -50,7 +58,9 @@ Implementation runs under one active implementation operation.
 
 The implementation skill directs the agent to inspect relevant effective contract context, modify only authorized targets, stop before scope expansion, and transition out of implementation when persistent contracts need evolution.
 
-Deterministic checks remain authoritative even if an agent fails to follow the skill. A Git `HEAD` transition during an active operation invalidates the baseline and prevents successful verification.
+Deterministic checks remain authoritative even if an agent fails to follow the skill.
+
+A Git `HEAD` transition during an active operation invalidates the baseline and prevents successful verification.
 
 ## Scope expansion
 
@@ -63,7 +73,9 @@ When implementation discovers another required target:
 5. authorize a new operation;
 6. carry forward verified predecessor state only when its exact Git state is unchanged.
 
-A verified predecessor is archived only when the successor actually relies on carry-forward evidence. Scope expansion preserves valid completed work but always requires an explicit authorization epoch transition, regardless of whether the discovered target shares the current unit's owner.
+A verified predecessor is archived only when the successor actually relies on carry-forward evidence.
+
+Scope expansion preserves valid completed work but always requires an explicit authorization epoch transition, regardless of whether the discovered target shares the current unit's owner.
 
 ## Verification
 
@@ -71,7 +83,11 @@ Verification compares actual Git changes with the historical operation record.
 
 It does not use current task prose, current task selection, current planning projections, or a regenerated feature boundary.
 
-Verification reports authorization correctness only. Successful verification closes the current epoch by marking its operation record verified and recording final dirty-state identities for authorized targets. Those identities are the only provenance accepted for dirty-target carry-forward.
+Verification reports authorization correctness only.
+
+Successful verification closes the current epoch by marking its operation record verified and recording final dirty-state identities for authorized targets.
+
+Those identities are the only provenance accepted for dirty-target carry-forward.
 
 Feature correctness and broader convergence are separate.
 
@@ -90,7 +106,11 @@ Stable categories include:
 - `stale-authorization`;
 - `verification-write-scope-failure`.
 
-Verification keeps its historical semantics when producing these outcomes. An undeclared or unowned actual write remains a verification failure; current mutable task state is not consulted to reinterpret or authorize it. The outcome may additionally identify the required Boundary transition.
+Verification keeps its historical semantics when producing these outcomes.
+
+An undeclared or unowned actual write remains a verification failure; current mutable task state is not consulted to reinterpret or authorize it.
+
+The outcome may additionally identify the required Boundary transition.
 
 Declared-scope preflight uses the same vocabulary where applicable but never contains an operation identity because preflight creates no operation.
 
@@ -122,11 +142,13 @@ Boundary distinguishes:
 - semantic system correctness: implementation respects applicable prose contracts;
 - development governance: the active change system's process rules are satisfied.
 
-Only the first two are fully deterministic Boundary-core concerns in v1. A concrete change system may impose additional governance without making it a Boundary architectural layer.
+Only the first two are fully deterministic Boundary-core concerns in v1.
+
+A concrete change system may impose additional governance without making it a Boundary architectural layer.
 
 ## Product CLI direction
 
-The canonical product-level command surface should converge toward:
+The canonical installed product-level command surface includes:
 
     boundary inspect <target...>
     boundary contracts check
@@ -134,13 +156,25 @@ The canonical product-level command surface should converge toward:
     boundary verify
     boundary status
 
-Additional status or debugging commands may be introduced when justified. These commands use Boundary terminology and do not depend on a particular change system.
+Boundary-specific generated integration is managed separately through:
 
-`boundary status` is a read-only query. It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists. It does not select tasks, create operation evidence, or replace authorization or verification.
+    boundary integration install
+    boundary integration check
+    boundary integration remove
 
-Installed downstream projects materialize the semantic surface at `.boundary/bin/boundary`. That generated command self-locates installed Boundary runtime state and delegates change-system-specific authorization and verification translation to the active adapter. Its filesystem location is installation detail rather than a second product API.
+These commands use Boundary terminology and do not depend on callers knowing Python module paths, uv invocation details, copied runtime locations, or adapter script paths.
 
-Declared-scope preflight composes the existing `boundary inspect` query over structured targets. It does not add another mandatory Boundary lifecycle phase or require a persisted preflight artifact.
+`boundary status` is a read-only query.
+
+It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists.
+
+It does not select tasks, create operation evidence, replace authorization or verification, or act as installation health checking.
+
+`boundary integration check` owns integration health reporting and does not duplicate mise's source-lock behavior.
+
+Declared-scope preflight composes the existing `boundary inspect` query over structured targets.
+
+It does not add another mandatory Boundary lifecycle phase or require a persisted preflight artifact.
 
 ## Spec Kit adapter
 
@@ -160,7 +194,9 @@ The Spec Kit workflow integration enforces a repeatable unit lifecycle:
       → boundary-verify
       → next selected unit when needed
 
-Before that lifecycle begins, Spec Kit task refinement should inspect the complete structured write projection and surface ownership defects. This readiness check remains outside the blocking Boundary lifecycle and supplies no authorization evidence.
+Before that lifecycle begins, Spec Kit task refinement should inspect the complete structured write projection and surface ownership defects.
+
+This readiness check remains outside the blocking Boundary lifecycle and supplies no authorization evidence.
 
 The workflow overlay receives explicit task selection through transient adapter input and has no implicit whole-feature selection.
 
@@ -172,7 +208,9 @@ The supported Spec Kit integration uses one deterministic structural-enforcement
 
 Its ordering and nonzero shell status make authorization and verification transitions explicit.
 
-Installed downstream workflows invoke the generated semantic Boundary command when available. Development installations may fall back to the concrete adapter gate so source-development bootstrap remains separate from downstream consumer materialization.
+Installed downstream workflows invoke the installed `boundary` executable.
+
+Development workflows use the same semantic command surface through repository mise tooling.
 
 Extension hooks do not duplicate those gates.
 
@@ -188,4 +226,4 @@ It does not create planning context state, a validation phase, or convergence-ti
 
 Replacing Spec Kit must require only a new change-system adapter that can provide the active change identity, ordered structured tasks and exact writes, explicit implementation-unit task selection, lifecycle calls around implementation, and classification of its own generated or change artifacts.
 
-Native contracts, skills, authorization semantics, and Git verification remain unchanged.
+Native contracts, skills, authorization semantics, Git verification, and mise-owned Boundary installation remain independent concerns.

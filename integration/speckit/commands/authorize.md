@@ -26,12 +26,12 @@ It does not maintain a separate context or validation lifecycle state.
 6. Reject malformed, empty, duplicate, or ambiguously repeated structured write declarations.
 7. Ignore incidental path-looking prose for authorization scope.
 8. Require an explicit non-empty implementation task selection.
-9. For direct invocation, use the generated project-local Boundary command and pass each selected task through a repeated `--task` argument:
+9. For direct invocation, use the installed Boundary command and pass each selected task through a repeated `--task` argument:
 
-       .boundary/bin/boundary authorize --task <task-id> [--task <task-id> ...]
+       boundary authorize --task <task-id> [--task <task-id> ...]
 
 10. When authorization is entered through the workflow overlay, use its transient `BOUNDARY_TASK_IDS` JSON-array transport instead of reconstructing feature-wide scope.
-11. The project-local command self-locates the installed Boundary runtime and delegates change-system translation to the installed Spec Kit adapter.
+11. The installed Boundary command delegates change-system translation to the packaged Spec Kit adapter without locating copied runtime source or a project-local launcher.
 12. Boundary then:
    - validates the selected task identities against the fresh task projection;
    - projects only the selected tasks' structured writes;

@@ -1,20 +1,37 @@
 # Downstream Project-State Ownership
 
-Boundary distinguishes durable project semantics, host-owned project state, and Boundary-owned generated integration state.
+Boundary distinguishes durable project semantics, project tooling state, host-owned project state, and Boundary-owned generated integration state.
 
-This distinction applies even when a supported Boundary lifecycle command causes the host change system to regenerate files.
+This distinction applies even when a supported Boundary integration command causes the host change system to regenerate files.
 
-## Canonical downstream state
+## Canonical downstream semantics
 
-Boundary-specific downstream canonical state is limited to:
+Boundary-specific persistent project semantics are limited to:
 
 - native project contracts under `contracts/`;
-- change-system artifacts that describe active product work;
-- `boundary.lock.json`.
+- change-system artifacts that describe active product work.
 
-This Boundary-specific classification does not make host-owned project state disposable. A change system may own persistent project configuration and shareable generated integration state that remains part of the downstream repository.
+Boundary distribution configuration in `mise.toml` or other applicable mise configuration, together with `mise.lock`, is normal project/tooling state.
 
-Installed Boundary runtime copies, the project-local Boundary command and cache under `.boundary/`, Boundary extensions and presets, Boundary workflow overlays, materialized Boundary skills, caches, install provenance, and operation evidence are not canonical project semantics.
+That mise state may be committed and is authoritative for Boundary tool selection, but it is not a Boundary persistent contract and does not create a Boundary-owned lock format.
+
+Boundary does not maintain a second project-local revision or dependency lock.
+
+Installed Boundary packages, generated Boundary integration state, materialized Boundary skills, caches, and operation evidence are not persistent project semantics.
+
+## Mise project-state ownership
+
+The project owns its mise configuration and lock state as ordinary tooling configuration.
+
+Boundary may document, inspect, or intentionally update the Boundary-related portion of that state through supported workflows, but the file formats and locking behavior remain mise-owned.
+
+Portable mise state may identify a stable Boundary Git source.
+
+Portable project state must not depend on an operator-local Boundary checkout path.
+
+The exact Boundary source identity used for locked installation comes from mise-managed lock state.
+
+Boundary does not require that mise state freeze the complete transitive Python dependency graph of the Boundary package.
 
 ## Spec Kit project-state ownership
 
@@ -45,9 +62,26 @@ Machine-local Spec Kit state includes the entries intentionally excluded by the 
 
 Boundary accepts that managed ignore file as the host ownership policy. Boundary does not replace it, broaden it to cover `.specify/`, or add Boundary-specific rules to it.
 
-A supported script-mode transition can leave a directory for the formerly active script variant. Such an inactive directory is non-authoritative host-generated residue. The selected mode in `.specify/init-options.json` and the regenerated active integration determine execution. Boundary does not delete the inactive directory, dynamically change Spec Kit's ignore policy for it, or require previously tracked residue to be untracked.
+A supported script-mode transition can leave a directory for the formerly active script variant. Such an inactive directory is non-authoritative host-generated residue. The selected mode in `.specify/init-options.json` and the regenerated active integration determine execution.
+
+Boundary does not delete the inactive directory, dynamically change Spec Kit's ignore policy for it, or require previously tracked residue to be untracked.
 
 Boundary-owned generated paths remain governed by Boundary's local exclusion policy even when they live underneath host-owned directories.
+
+## Boundary-owned generated state
+
+Boundary-owned generated integration state may include:
+
+- materialized Boundary skills;
+- generated change-system Boundary command skills;
+- the Boundary extension;
+- the Boundary preset;
+- the Boundary workflow overlay;
+- machine-local caches required by Boundary integration.
+
+A copied Boundary runtime and a generated project-local launcher are not part of the target distribution model.
+
+The installed Boundary executable comes from mise-managed tool installation rather than from generated project state.
 
 ## Generated-state exclusion
 
@@ -55,18 +89,12 @@ Boundary-owned generated integration state is kept out of normal downstream Git 
 
 This avoids making project `.gitignore` or Spec Kit's managed `.specify/.gitignore` part of Boundary's installation semantics.
 
-The managed exclusions cover:
-
-- `.boundary/`, including the generated project-local command and its local execution cache;
-- materialized Boundary skills;
-- generated change-system Boundary command skills;
-- installed Boundary runtime source;
-- the Boundary extension;
-- the Boundary preset;
-- the Boundary workflow overlay.
+Managed exclusions cover only Boundary-owned generated paths that still exist under the target integration architecture.
 
 Change-system feature artifacts are not broadly ignored.
 
-Persistent Spec Kit configuration and shareable Spec Kit-generated state remain visible. In particular, Boundary does not locally hide Spec Kit integration metadata, registries, the active script variant, the managed `.specify/.gitignore`, or materialized core `speckit-*` skills.
+Persistent Spec Kit configuration and shareable Spec Kit-generated state remain visible.
 
-Clean-consumer coverage therefore distinguishes Boundary-owned generated paths from host-owned state: Boundary-owned generated paths must not appear in Git status after installation, while host-owned shared state remains explicit and reviewable.
+In particular, Boundary does not locally hide Spec Kit integration metadata, registries, the active script variant, the managed `.specify/.gitignore`, or materialized core `speckit-*` skills.
+
+Clean-consumer coverage therefore distinguishes Boundary-owned generated paths from host-owned state: Boundary-owned generated paths must not appear in Git status after integration materialization, while host-owned shared state remains explicit and reviewable.

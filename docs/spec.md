@@ -1,6 +1,6 @@
 # Boundary Specification
 
-Status: target architecture approved; native Boundary runtime active; task-selected implementation units active
+Status: target architecture approved; native Boundary runtime active; task-selected implementation units active; mise-native distribution transition approved
 
 Project type: persistent-contract and operation-authorization infrastructure for coding agents
 
@@ -31,25 +31,24 @@ Boundary has the following durable concepts:
 - persistent-contract evolution;
 - actual-write verification;
 - progressive agent instruction disclosure;
-- source-revision-pinned downstream installation.
+- mise-managed downstream tool selection and installation.
 
 These concepts must remain meaningful if the current change system or agent runtime is replaced.
 
 ## Canonical state
 
-The Boundary-defined portion of downstream canonical state consists of:
+Boundary-defined persistent downstream semantics consist of:
 
 - change-system artifacts that define the requested change;
-- native Boundary contracts under `contracts/`;
-- one `boundary.lock.json` pinning the exact Boundary Git revision adopted by the project.
+- native Boundary contracts under `contracts/`.
 
 A host change system may own additional persistent project configuration or shareable generated state. Boundary does not reclassify such host-owned state merely because Boundary installation or integration lifecycle commands update it.
 
-Generated Boundary integration state, effective-context projections, installed Boundary skills, the project-local Boundary launcher, caches, install provenance, and operation evidence are not persistent system contracts.
+Project tooling may also contain Boundary distribution configuration in mise-managed files such as `mise.toml` and `mise.lock`. Those files are normal project/tooling state, not Boundary persistent contracts and not a second Boundary-owned contract format.
+
+Generated Boundary integration state, effective-context projections, installed Boundary skills, caches, and operation evidence are not persistent system contracts.
 
 Operation evidence is historical workflow state stored outside ordinary project source, preferably in current-worktree Git metadata.
-
-The Boundary lock records the expected Boundary source revision but is not a source-distribution locator. Operators supply a Boundary source checkout separately when running downstream lifecycle commands.
 
 Current Spec Kit project-state ownership and generated-state boundaries are defined in [spec-distribution-state.md](spec-distribution-state.md).
 
@@ -165,19 +164,21 @@ The change-system adapter projects ordered structured tasks and accepts explicit
 
 Boundary does not introduce a generalized runtime provider-plugin framework merely to abstract these implementations. Concrete adapters are preferred until actual implementations demonstrate a useful stable shared interface.
 
-## Downstream source-checkout invariant
+## Mise-managed distribution invariant
 
-A downstream repository records the exact Boundary Git revision it expects but does not carry canonical Boundary implementation source.
+Boundary is a conventional mise-installable CLI.
 
-Downstream lifecycle commands are executed from an operator-supplied Boundary source checkout. Except when first adopting or deliberately upgrading Boundary, that checkout must be clean and its exact Git revision must equal the committed lock.
+Downstream projects use mise configuration and `mise.lock` as their Boundary installation and version-selection state.
 
-The downstream consumer does not fetch Boundary source, resolve releases, follow branches or tags, or reconstruct source from a remote locator stored in the project.
+The selected Git-backed mise installation model must preserve an exact Boundary Git source identity for locked installation. Boundary does not define another revision lock, dependency lock, source-checkout matching protocol, or package-service bridge.
 
-Generated runtime, extension, preset, workflow, Boundary skill, and project-local launcher state is recreated from the supplied matching checkout and does not become canonical Boundary implementation source in the consumer project.
+The complete transitive Python dependency graph is not a Boundary downstream locking requirement. Boundary package metadata defines compatible runtime dependencies, and the mise-selected installation backend resolves those dependencies.
 
-Adoption records the revision of the Boundary checkout being used. Upgrades are performed deliberately from a different clean Boundary checkout and replace the lock only after candidate installation succeeds.
+Normal downstream use does not require an operator-supplied Boundary checkout. A local Boundary checkout is a development input rather than portable downstream project state.
 
-Detailed downstream lifecycle semantics are defined in [spec-distribution.md](spec-distribution.md), with project-state ownership defined in [spec-distribution-state.md](spec-distribution-state.md).
+The installed `boundary` executable is the canonical downstream command surface. Generated project-local launchers must not exist solely to locate copied Boundary runtime packages.
+
+Detailed distribution semantics are defined in [spec-distribution.md](spec-distribution.md), with project-state ownership defined in [spec-distribution-state.md](spec-distribution-state.md).
 
 ## Non-goals
 
@@ -197,8 +198,10 @@ Boundary does not:
 - automatically evolve persistent contracts to make implementation pass;
 - infer an implementation unit from architectural ownership;
 - silently authorize every task in the active change;
-- fetch or discover Boundary source on behalf of a downstream project;
-- encode operator-local Boundary checkout paths in canonical project state.
+- define a second Boundary-owned revision or dependency lock beside mise;
+- require portable project state to contain operator-local source paths;
+- require a frozen transitive Python dependency graph for the Boundary tool;
+- wrap mise with a second package-management protocol.
 
 ## Focused specifications
 
@@ -210,8 +213,8 @@ The design is split by responsibility:
 - [spec-authorization.md](spec-authorization.md): explicit writes, implementation-unit authorization, operation records, Git baselines, epochs, verification, and authorization-state handoff.
 - [spec-change-adapter.md](spec-change-adapter.md): provider-neutral change-system projection, task-selected implementation units, and Spec Kit integration.
 - [spec-lifecycle.md](spec-lifecycle.md): integration with change systems, contract evolution, implementation-unit transitions, and convergence.
-- [spec-distribution.md](spec-distribution.md): source-checkout-driven downstream adoption, installation, health checking, removal, and upgrades.
-- [spec-distribution-state.md](spec-distribution-state.md): downstream canonical state, Spec Kit project-state ownership, and Boundary generated-state exclusions.
+- [spec-distribution.md](spec-distribution.md): mise-managed downstream installation, source identity, integration materialization, health checking, removal, and upgrades.
+- [spec-distribution-state.md](spec-distribution-state.md): downstream canonical semantics, project tooling state, Spec Kit ownership, and Boundary generated-state exclusions.
 
 Historical migration material is isolated under [history/](history/) and is not part of the current product architecture.
 
@@ -233,16 +236,16 @@ The supported runtime no longer depends on:
 
 The Spec Kit adapter now requires explicit task selection and persists the selected task identities with the immutable operation target set.
 
-Downstream installations now expose a generated project-local semantic Boundary command that hides runtime and adapter packaging from normal agent procedure.
-
-Declared-scope preflight now surfaces invalid, unowned, or ambiguously owned structured writes before implementation entry, and blocking adapter results expose stable machine-readable lifecycle outcomes.
+Declared-scope preflight surfaces invalid, unowned, or ambiguously owned structured writes before implementation entry, and blocking adapter results expose stable machine-readable lifecycle outcomes.
 
 A compact provider-neutral authorization-state handoff is available to integrations without creating another authorization artifact or lifecycle stage.
 
-Canonical `boundary status` now exposes that compact handoff directly. Remaining release work is compatibility cleanup and final verification.
+Canonical `boundary status` exposes that compact handoff directly.
+
+The approved distribution transition replaces Boundary-owned revision locking and copied-runtime discovery with mise-managed Git source selection and an installed `boundary` console entry point.
 
 ## Summary invariant
 
 Boundary remains coherent while:
 
-> project contracts are canonical and independently scoped; change systems provide explicit change intent and ordered task writes; implementation authority is limited to explicitly selected task units; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream tooling is supplied from a clean Boundary checkout whose revision matches the project's committed source pin.
+> project contracts are canonical and independently scoped; change systems provide explicit change intent and ordered task writes; implementation authority is limited to explicitly selected task units; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream Boundary tooling is selected, locked, installed, and upgraded through mise using normal project tooling state.

@@ -1,4 +1,4 @@
-"""Errors raised by the concrete Spec Kit change-system adapter."""
+"""Errors raised by the concrete installed Spec Kit integration."""
 
 
 class SpecKitAdapterError(ValueError):
@@ -12,3 +12,7 @@ class SpecKitAdapterError(ValueError):
     ) -> None:
         self.code = code
         super().__init__(message)
+
+
+class IntegrationError(RuntimeError):
+    """Raised when Boundary-owned host integration cannot be maintained."""

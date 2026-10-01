@@ -1,6 +1,6 @@
 # Boundary Architecture
 
-This document defines Boundary's target structural architecture. Contract semantics, agent instruction delivery, authorization evidence, and lifecycle transitions are documented separately.
+This document defines Boundary's target structural architecture. Contract semantics, agent instruction delivery, authorization evidence, lifecycle transitions, and distribution are documented separately.
 
 ## Architectural boundaries
 
@@ -135,9 +135,9 @@ Historical evidence for one authorized operation:
 
 One operation is represented by one atomic document.
 
-## Source layout direction
+## Source and package layout direction
 
-The canonical implementation should migrate toward a provider-neutral layout similar to:
+The canonical implementation should retain provider-neutral package boundaries similar to:
 
     src/boundary/
       contracts/
@@ -160,9 +160,25 @@ The canonical implementation should migrate toward a provider-neutral layout sim
 
     schemas/
 
-The exact packaging may change while downstream reproducibility work is underway, but provider names must not define core package boundaries.
+Boundary source must also carry conventional Python package metadata exposing the `boundary` console entry point.
 
-Installed/generated integration state remains separate from this canonical source.
+Repository mise configuration and tasks own the source-development tool environment.
+
+Downstream mise configuration owns selection of the installed Boundary tool and is not copied into Boundary core semantics.
+
+Installed/generated integration state remains separate from canonical source.
+
+## Distribution boundary
+
+Mise owns downstream Boundary source selection and tool installation.
+
+Boundary's package metadata owns Python dependency compatibility declarations.
+
+The installed `boundary` executable owns the public Boundary command surface.
+
+Boundary integration code may materialize generated change-system and agent-runtime state, but it does not own a second package manager, source lock, or copied-runtime locator.
+
+A local Boundary source checkout is a development concern rather than a required downstream runtime input.
 
 ## Deterministic versus agentic responsibility
 
@@ -224,7 +240,7 @@ A generalized abstraction is justified only when concrete implementations demons
 
 ## Portability invariant
 
-Replacing Spec Kit, Codex, or Claude Code must not require redesigning:
+Replacing Spec Kit, Codex, Claude Code, or the concrete mise backend must not require redesigning:
 
 - native contract semantics;
 - target effective-context composition;
@@ -235,3 +251,5 @@ Replacing Spec Kit, Codex, or Claude Code must not require redesigning:
 - contract-evolution separation.
 
 Those are Boundary concepts.
+
+Changing the distribution backend may change project tooling state and installation procedure, but must not introduce a second Boundary-owned source or dependency lock.

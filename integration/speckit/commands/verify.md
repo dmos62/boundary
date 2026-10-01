@@ -20,11 +20,11 @@ Current task text is not historical authorization evidence.
 
 1. Resolve the active Spec Kit feature through supported project state.
 2. Require the active Boundary operation to be an implementation operation for that same feature.
-3. Invoke the generated project-local semantic command:
+3. Invoke the installed semantic command:
 
-       .boundary/bin/boundary verify
+       boundary verify
 
-4. The project-local command self-locates the installed Boundary runtime and delegates change-system translation to the installed Spec Kit adapter.
+4. The installed Boundary command delegates change-system translation to the packaged Spec Kit adapter without locating copied runtime source or a project-local launcher.
 5. The adapter classifies current Spec Kit feature artifacts and `.specify/` state as change-system bookkeeping.
 6. Boundary always keeps native contract paths and authorized implementation targets in deterministic verification even if an adapter classifier would otherwise exclude them.
 7. Boundary then:

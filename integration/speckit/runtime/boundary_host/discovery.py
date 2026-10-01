@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from spec_kit_errors import SpecKitAdapterError
+from .errors import SpecKitAdapterError
 
 
 def resolve_repository_root(value: str | Path | None = None) -> Path:

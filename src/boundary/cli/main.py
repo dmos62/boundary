@@ -47,10 +47,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repository-relative target path.",
     )
 
+    authorize_parser = commands.add_parser(
+        "authorize",
+        help="Authorize one explicitly selected implementation unit.",
+    )
+    authorize_parser.add_argument(
+        "--task",
+        action="append",
+        dest="task_ids",
+        default=[],
+        help="Select one implementation task; repeat for multi-task units.",
+    )
+
+    commands.add_parser(
+        "verify",
+        help="Verify actual writes against current authorization.",
+    )
     commands.add_parser(
         "status",
         help="Show current Boundary authorization state.",
     )
+
+    integration_parser = commands.add_parser(
+        "integration",
+        help="Manage Boundary-owned project integration.",
+    )
+    integration_commands = integration_parser.add_subparsers(
+        dest="integration_command",
+        required=True,
+    )
+    for action, help_text in (
+        ("install", "Materialize Boundary-owned project integration."),
+        ("check", "Validate Boundary-owned project integration."),
+        ("remove", "Remove Boundary-owned project integration."),
+    ):
+        integration_commands.add_parser(action, help=help_text)
 
     return parser
 
@@ -81,6 +112,28 @@ def main(
             return run_inspect(root, args.targets, output)
         if args.command == "status":
             return run_status(root, output)
+        if args.command == "authorize":
+            from boundary_host.commands import run_authorize
+
+            return run_authorize(
+                root,
+                args.task_ids,
+                output,
+                errors,
+            )
+        if args.command == "verify":
+            from boundary_host.commands import run_verify
+
+            return run_verify(root, output, errors)
+        if args.command == "integration":
+            from boundary_host.integration import run_integration
+
+            return run_integration(
+                root,
+                args.integration_command,
+                output,
+                errors,
+            )
     except (
         AuthorizationError,
         ContractParseError,

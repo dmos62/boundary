@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""Concrete Spec Kit change-system projection for native Boundary."""
+"""Concrete Spec Kit change-system projection for installed Boundary."""
 
 from __future__ import annotations
 
@@ -22,9 +21,8 @@ from boundary.contracts import (
 )
 from boundary.verification import finalize_operation_verification
 
-from spec_kit_discovery import active_feature, resolve_repository_root
-from spec_kit_errors import SpecKitAdapterError
-from task_projection import parse_tasks
+from .errors import SpecKitAdapterError
+from .tasks import parse_tasks
 
 
 def project_change(

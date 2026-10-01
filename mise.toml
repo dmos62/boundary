@@ -1,0 +1,31 @@
+min_version = "2026.9.0"
+
+[tools]
+python = "3.12"
+uv = "latest"
+"pipx:git+https://github.com/github/spec-kit.git" = { version = "v1.0.10", depends = ["python", "uv"] }
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.dev-install]
+description = "Install Boundary from this checkout into the mise-managed development environment."
+run = "uv pip install --editable ."
+
+[tasks.bootstrap]
+description = "Install Boundary locally and materialize the repository integration."
+depends = ["dev-install"]
+run = [
+  "boundary integration install",
+  "boundary integration check",
+]
+
+[tasks.contracts-check]
+description = "Validate native Boundary contracts."
+depends = ["dev-install"]
+run = "boundary contracts check"
+
+[tasks.test]
+description = "Run the Boundary test suite."
+depends = ["dev-install"]
+run = "python -m unittest discover -s tests"

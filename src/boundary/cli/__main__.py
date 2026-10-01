@@ -1,4 +1,4 @@
-"""Run the Boundary CLI with ``python -m boundary.cli``."""
+"""Module entry point for the Boundary CLI package."""
 
 from .main import main
 

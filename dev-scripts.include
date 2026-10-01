@@ -1,2 +1,6 @@
-@cli! bash -lic "PYTHONPATH=src uv run --no-project python -m boundary contracts check"
-@cli! bash -lic "printf '%s\n' '--- Current non-historical distribution references ---'; git grep -l -E 'boundary\\.lock\\.json|boundary\\.lock/v[0-9]+|source-checkout|source checkout|committed lock|matching checkout|Boundary source revision|source pin' -- 'docs/*.md' 'contracts/*.md' README.md ':(exclude)docs/history/**' 2>/dev/null | sort || true"
+@cli! bash -lic "mise run contracts-check"
+@cli! bash -lic "printf '%s\n' '--- Legacy distribution references outside history ---'; git grep -n -E 'boundary\\.lock\\.json|boundary\\.lock/v[0-9]+|scripts/consumer\\.py|\\.boundary/bin/boundary|\\.specify/boundary-runtime' -- README.md docs contracts src integration pyproject.toml mise.toml 2>/dev/null | grep -v '^docs/history/' || true"
+@cli! bash -lic "printf '%s\n' '--- Distribution invocation leaks ---'; git grep -n -E 'PYTHONPATH|python -m boundary|uv run --no-project|adapter_gate\\.py' -- README.md docs src integration 2>/dev/null | grep -v '^docs/history/' || true"
+@cli! bash -lic "mise run test"
+@cli! bash -lic "printf '%s\n' '--- Changed-focus line counts ---'; wc -l docs/setup-development.md docs/setup-downstream.md src/boundary/cli/main.py integration/speckit/runtime/boundary_host/*.py tests/test_distribution_surface.py"
+@cli! bash -lic "git status --short"

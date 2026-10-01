@@ -1,211 +1,237 @@
 # Downstream Distribution and Installation
 
-Boundary downstream installation is driven by an operator-supplied Boundary source checkout whose exact Git revision is recorded by the consumer project.
+Boundary is distributed downstream as a conventional Git-backed Python CLI installed through mise.
 
-Boundary does not fetch its own source or require a downstream repository to encode a remote distribution location.
+Mise owns Boundary version selection and installation. Boundary owns Boundary-specific project integration and runtime semantics.
 
 Downstream project-state ownership and generated-state exclusion are defined separately in [spec-distribution-state.md](spec-distribution-state.md).
 
-## Boundary lock
+## Distribution guarantees
 
-The target downstream lock uses schema `boundary.lock/v2`.
+The downstream distribution model requires:
 
-Its source record contains exactly:
+- a stable Git source locator for Boundary;
+- an exact Boundary Git source identity in locked mise state;
+- portable committed mise configuration and lock state;
+- an installed `boundary` console entry point;
+- no Boundary-specific revision or dependency lock;
+- no operator-local source path in portable project state.
 
-- `revision`: the exact 40-character Git commit identity of the Boundary source adopted by the project.
+The complete transitive Python dependency graph is not part of Boundary's downstream locking guarantee.
 
-A lock has this shape:
+Boundary package metadata defines compatible Python dependencies. The installation backend selected by mise resolves those dependencies when installing the locked Boundary source.
 
-    {
-      "schema": "boundary.lock/v2",
-      "source": {
-        "revision": "<40-character Boundary commit>"
-      }
-    }
+This intentionally distinguishes exact Boundary source identity from complete Python-environment reproduction.
 
-The lock records source identity only.
+## Mise-owned project state
 
-It does not contain:
+Boundary distribution uses normal mise project state.
 
-- a GitHub archive URL;
-- an archive checksum;
-- a branch or tag;
-- an operator-local checkout path;
-- generated integration configuration.
+The applicable mise configuration records the Boundary Git source and tool selection.
 
-The lock is therefore not sufficient to retrieve Boundary source. The operator or surrounding development environment is responsible for supplying a Boundary checkout at the recorded revision.
+`mise.lock` records the exact source identity selected by mise for locked installation.
 
-## Source checkout
+These files are project/tooling state owned through mise. They are not Boundary persistent contracts and Boundary does not define an additional lock format beside them.
 
-Downstream lifecycle commands run from the Boundary repository containing the invoked `scripts/consumer.py`.
+Boundary must not duplicate mise state into another revision pin, dependency lock, install-provenance document, or copied runtime manifest.
 
-The consumer derives its source root from its own location and validates that source as a Git checkout.
+## Git source identity
 
-Except during first adoption or deliberate upgrade, the source checkout must:
+The configured Boundary source must be portable for the intended consumers.
 
-- be at an exact Git commit;
-- be clean;
-- have a revision equal to `boundary.lock.json`.
+A stable repository locator may be committed in mise configuration.
 
-A dirty checkout is not accepted for downstream lifecycle work because the bytes being installed would no longer be identified solely by the recorded revision.
+An operator-local checkout path must not be required by portable downstream state.
 
-Operator-local checkout paths never become downstream canonical state.
+The configuration may use a source selector supported by the chosen mise backend. Locked installation authority comes from the exact source identity recorded by mise rather than from the mutability of a branch or tag selector.
 
-Boundary does not fetch, clone, download, or otherwise discover a matching checkout automatically.
+Updating the selected Boundary source identity is a mise lock transition.
 
-## Adoption
+## Dependency policy
 
-A project adopts Boundary by running the consumer from the clean Boundary checkout it intends to use:
+Boundary does not require mise to persist a native frozen uv graph for the Git-backed installation.
 
-    python /path/to/boundary/scripts/consumer.py \
-      --root /path/to/project \
-      adopt
+Runtime dependency compatibility is instead part of Boundary's Python package metadata and release/test discipline.
 
-Adoption:
+A later installation of the same Boundary source may therefore resolve a newer compatible transitive dependency when the declared constraints permit it.
 
-1. validates the Boundary source checkout;
-2. requires that the downstream project does not already have a Boundary lock;
-3. writes `boundary.lock.json` with the checkout's exact revision.
+That behavior is accepted by the downstream distribution contract.
 
-Adoption changes canonical project state.
+Projects that require complete environment reproduction may impose broader environment-management policy of their own, but Boundary does not create a second project-local dependency lock for itself.
 
-It does not infer or generate project architectural contracts. Native contracts remain project-authored persistent semantics.
+## Boundary package and executable
 
-Adoption and local installation remain separate operations so that creating canonical project configuration is distinct from materializing disposable Boundary state.
+Boundary source must be a conventional installable Python package.
 
-## Installation
+Its package metadata must expose one console entry point:
 
-After adoption, or in a fresh clone of an already adopted project, installation is run from a clean Boundary checkout at the locked revision:
+    boundary
 
-    python /path/to/boundary/scripts/consumer.py \
-      --root /path/to/project \
-      install
+The installed executable is the canonical downstream command surface.
 
-Installation:
+Normal downstream procedure uses commands such as:
 
-1. validates the consumer's own Boundary source checkout;
-2. requires its revision to equal the committed lock;
-3. delegates installation to `scripts/install.sh` from that checkout;
-4. materializes `.boundary/bin/boundary` from the matching checkout as the project's semantic Boundary command;
-5. records generated installation provenance;
-6. maintains local Git exclusions for Boundary-owned generated state.
+    boundary inspect <target...>
+    boundary authorize --task <task-id>
+    boundary verify
+    boundary status
+    boundary contracts check
 
-No Boundary source archive is downloaded or extracted.
+Callers do not provide `PYTHONPATH`, invoke Boundary through `python -m`, know adapter script paths, choose a uv cache directory, or locate copied Boundary source.
 
-The generated Boundary runtime and project-local command therefore come directly from the exact checkout whose revision is recorded by the project.
+A project-local launcher must not be generated merely to locate Boundary's Python runtime.
 
-The generated command self-locates the installed runtime and change-system adapter. Normal downstream agent procedure can use:
+## Project integration
 
-    .boundary/bin/boundary inspect <target...>
-    .boundary/bin/boundary authorize --task <task-id>
-    .boundary/bin/boundary verify
-    .boundary/bin/boundary status
-    .boundary/bin/boundary contracts check
+Tool installation and Boundary project integration are separate responsibilities.
 
-`status` returns the compact `boundary.status/v2` authorization capsule. It projects the current operation identity and status, active change identity, selected task identities, authorized target evidence, optional recorded target-context evidence, and current-versus-baseline Git HEAD freshness from operation evidence plus current repository state.
+Mise installs the Boundary executable.
 
-Callers do not need to provide `PYTHONPATH`, know adapter script paths, or choose a UV cache directory.
+Boundary then materializes or updates Boundary-owned integration state through the installed CLI:
 
-Supported host lifecycle commands may also update host-owned persistent configuration or shareable generated state. Those changes remain visible according to [spec-distribution-state.md](spec-distribution-state.md).
+    boundary integration install
+
+That operation may invoke supported host lifecycle mechanisms to materialize change-system and agent-runtime integration state.
+
+It does not select or lock the Boundary version.
+
+Generated integration state remains recreatable and non-canonical where defined by [spec-distribution-state.md](spec-distribution-state.md).
+
+## First-time adoption
+
+A project adopts Boundary distribution by configuring the desired Git-backed Boundary tool in mise project configuration.
+
+The operator then creates or updates mise's lock state and performs a locked installation using supported mise commands.
+
+Conceptually:
+
+    configure Boundary Git source in mise project state
+    mise lock
+    mise install --locked
+    boundary integration install
+
+Adoption does not create a Boundary-specific source pin.
+
+Adoption does not infer or generate native architectural contracts. Native contracts remain project-authored persistent semantics.
 
 ## Fresh clone setup
 
-A fresh downstream clone does not reconstruct Boundary source from `boundary.lock.json`.
+A fresh clone uses committed mise project state.
 
-The operator first obtains a Boundary checkout at the revision named by the lock, using whatever source-management process is appropriate for the environment.
+The normal sequence is:
 
-The operator then runs that checkout's consumer against the downstream project.
+    mise install --locked
+    boundary integration install
 
-This external source-supply requirement is intentional. Boundary's downstream lock pins source identity without also acting as a package registry or source-distribution protocol.
+No separate Boundary checkout is required.
 
-## Lifecycle commands
+No Boundary source revision is read from a Boundary-owned lock.
 
-The downstream consumer supports six explicit lifecycle operations.
+No source tree is copied into the project merely to make the CLI executable.
 
-`adopt` records the current clean Boundary checkout's revision as the project's initial source pin.
+If the configured Git source is unavailable, locked installation fails as an external distribution prerequisite rather than falling back to an operator-local checkout.
 
-`install` materializes generated state from a checkout matching the committed lock.
+## Integration health checking
 
-`check` confirms source-checkout identity, installed provenance, the project-local semantic command, generated-state exclusions, and the health checks supplied by that Boundary revision.
+Boundary validates the state it owns through:
 
-`remove` removes the installed Boundary integration, project-local command and caches, and managed local exclusions using a checkout matching the committed lock.
+    boundary integration check
 
-`reinstall` removes and materializes the same locked version using a matching checkout.
+Integration checking verifies applicable concerns such as:
 
-`upgrade` is run from the clean candidate Boundary checkout. It validates and installs that candidate before replacing the committed lock with the candidate revision.
+- required host runtimes;
+- generated Boundary integration state;
+- materialized Boundary skills;
+- configured change-system integration;
+- Boundary-owned generated-state exclusions;
+- compatibility of generated integration state with the running Boundary CLI.
 
-No lifecycle operation fetches a remote release or follows a branch, tag, or latest-release selector.
+It does not duplicate mise's source-lock verification.
+
+Whether the requested Boundary tool source can be installed under the committed mise lock is mise's responsibility.
+
+`boundary status` remains the authorization-state query defined by the lifecycle specification and is not overloaded with distribution health semantics.
 
 ## Upgrade behavior
 
-A deliberate upgrade is initiated from the Boundary checkout that should become the new project pin:
+A Boundary upgrade changes mise-managed tool selection.
 
-    python /path/to/new-boundary/scripts/consumer.py \
-      --root /path/to/project \
-      upgrade
+The operator changes the desired Boundary source selector when necessary, asks mise to update the relevant lock state, and installs from the resulting lock.
 
-The candidate checkout must be clean and must differ from the currently locked revision.
+Conceptually:
 
-The upgrade:
+    update Boundary selection in mise project state
+    mise lock --upgrade
+    mise install --locked
+    boundary integration install
+    boundary integration check
 
-1. reads the existing lock;
-2. validates the candidate checkout;
-3. installs the candidate source and its generated semantic command;
-4. replaces the lock only after candidate installation succeeds;
-5. records generated provenance for the new revision.
+The mise lock transition is authoritative for the selected Boundary source identity.
 
-If candidate installation fails, the committed lock remains unchanged.
+Boundary does not maintain an old source pin for rollback.
 
-Because Boundary does not retrieve or retain old source distributions, upgrade does not promise automatic restoration of the previous installation. A failed candidate may leave local generated or shared host state requiring repair.
+If the upgraded Boundary integration fails, the project may restore prior mise configuration and lock state through normal version-control or tooling procedures and reinstall that state.
 
-Restoring the previous installation requires a Boundary checkout at the still-locked previous revision followed by `reinstall` or `install`, as appropriate.
+Boundary must not claim rollback guarantees beyond what the project's mise and version-control state provide.
 
-The lock therefore remains authoritative even when local upgrade work fails.
+## Removal
 
-## Health checking
+Boundary-owned generated integration state is removed through:
 
-`check` first verifies that the invoking Boundary checkout matches the project lock.
+    boundary integration remove
 
-It then verifies that generated installation provenance names the same revision, checks that `.boundary/bin/boundary` exactly matches the source supplied by that checkout, verifies generated-state exclusions, and runs the health checks supplied by that checkout.
+Removing the tool itself is a mise configuration operation.
 
-A checkout at a different revision cannot be used to declare a locked installation healthy.
+A complete removal therefore consists of:
+
+- removing Boundary-owned integration state;
+- removing the Boundary tool declaration from mise project configuration;
+- updating mise lock state through supported mise procedure.
+
+Removal must not delete host-owned persistent configuration or shareable generated state merely because Boundary previously caused that state to be generated.
+
+## Operator-local source repositories
+
+A local Boundary checkout remains useful for Boundary development, testing, and preparing commits.
+
+It is not part of the portable downstream distribution contract.
+
+Downstream configuration must not depend on the checkout's filesystem path.
+
+A local repository may be used in focused development or test fixtures when explicitly testing local source behavior, but such a path must not become ordinary committed consumer state.
 
 ## Development installation
 
-Boundary source development continues to use `scripts/bootstrap.sh` or `scripts/install.sh --source <local-source>`.
+Boundary source development uses repository-owned mise configuration and tasks.
 
-Development installation is distinct from downstream locked-source lifecycle operations.
+Development commands should expose the same installed CLI surface used by consumers instead of teaching contributors private Python module invocation.
 
-The source installer may accept already materialized local source directories or local archives for development purposes. Those inputs do not define downstream distribution semantics.
+Repository tasks may bootstrap editable/local development state, run tests, validate contracts, and exercise integrations.
 
-The downstream `.boundary/bin/boundary` command is consumer-managed generated state. Source-tree development may continue to invoke the core CLI or concrete adapter scripts directly where appropriate.
+Development convenience does not redefine downstream distribution semantics.
 
 ## Failure behavior
 
-Downstream lifecycle work fails before installation when:
+Distribution or integration work fails clearly when:
 
-- the lock schema is malformed;
-- the lock revision is malformed;
-- the invoking Boundary checkout cannot be identified;
-- the invoking Boundary checkout is dirty;
-- a locked lifecycle command is run from a checkout at a different revision;
-- adoption is attempted when a lock already exists;
-- upgrade is attempted from the already locked revision.
+- mise project configuration for Boundary is missing or invalid;
+- the configured Git source cannot be reached when installation requires it;
+- locked installation cannot reproduce the exact Boundary source identity recorded by mise;
+- Boundary package metadata cannot produce an executable `boundary` command;
+- required host runtimes are unavailable;
+- generated Boundary integration state is incomplete or stale;
+- integration removal cannot distinguish Boundary-owned state from host-owned state.
 
-The installer then fails when that Boundary revision's required source or local host prerequisites are incomplete.
+Failure must not cause Boundary to create an alternate revision lock, dependency lock, local checkout pin, or hidden package-management path.
 
-Health checking fails when installed provenance no longer equals the committed lock, when the generated project-local command is missing or stale, or when generated integration state is incomplete.
+## Source and package boundary
 
-Upgrade failure does not advance the lock.
+Boundary deliberately relies on mise for tool source selection and installation.
 
-## Source-supply boundary
+Boundary package metadata owns Python compatibility constraints.
 
-Boundary deliberately does not define how operators obtain the required source checkout.
+Boundary integration code owns generated project integration.
 
-That responsibility may be satisfied by a developer clone, a monorepo toolchain checkout, a package prepared by an organization, a CI cache, or another source-management process.
+These responsibilities remain separate:
 
-Those mechanisms are outside Boundary's downstream canonical state.
-
-The downstream contract is only:
-
-> use a clean Boundary checkout at the exact revision recorded by the project.
+> mise selects and installs Boundary; the installed Boundary CLI manages Boundary-specific project integration; Boundary contracts and authorization semantics remain independent of both.
