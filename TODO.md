@@ -43,32 +43,30 @@ Machine-readable blocking outcomes are implemented through `boundary.lifecycle-o
 
 Review1's broader controller distinction is intentionally only partly a Boundary concern. Boundary classifies Boundary lifecycle failures and can identify required Boundary transitions, but it does not classify ordinary implementation/test failures or decide whether an outer controller should pause, retry, ask a human, or continue. `docs/spec-lifecycle.md` assigns those orchestration decisions to the higher-level controller.
 
-## 2. Review lifecycle and mechanical invocation overhead
+## Evidence carried forward from the lifecycle/distribution ergonomics review
 
-Evaluate Review1 sections 4, 5, and 6 against the current CLI and distribution model.
+The mechanical-discovery concern from Review1 is addressed independently of the implementation-unit redesign.
 
-Confirm that normal use now has stable semantic entrypoints for:
+The current package and CLI surface provide stable semantic entrypoints for all normal Boundary operations involved in the review:
 
-- effective-context inspection;
-- implementation authorization;
-- verification;
-- current authorization status;
-- contract validation;
-- integration install/check/remove.
+- `boundary inspect <target...>` for effective-context inspection;
+- `boundary authorize --task <task-id>` with repeated `--task` arguments for explicit implementation-unit authorization;
+- `boundary verify` for operation verification;
+- `boundary status` for the current authorization handoff;
+- `boundary contracts check` for native-contract validation;
+- `boundary integration install`, `check`, and `remove` for generated integration lifecycle.
 
-Verify that normal downstream use no longer requires:
+This surface is concrete implementation rather than documentation-only intent. `pyproject.toml` exposes `boundary = "boundary.cli:main"` as the installed console script. The wheel contains the provider-neutral `boundary` package and the concrete `boundary_host` runtime, and force-includes canonical skills, runtime materializers, Spec Kit commands, extension metadata, workflow overlay, and preset assets. `src/boundary/cli/main.py` parses the semantic command surface and delegates host-specific authorization, verification, and integration work to the packaged Spec Kit runtime without exposing its package location to callers.
 
-- `PYTHONPATH`;
-- direct `python -m boundary` invocation;
-- uv cache plumbing;
-- locating `adapter_gate.py`;
-- locating copied Boundary runtime source;
-- a generated project-local Boundary launcher;
-- an operator-supplied Boundary checkout.
+Focused distribution coverage supplies runtime evidence. The mise Git-source integration test installs Boundary into mise-managed tool state, resolves the installed executable outside the consumer repository, invokes its command surface, installs/checks/removes generated integration, and confirms that no project-local `.boundary` runtime, `.specify/boundary-runtime`, or `boundary.lock.json` is required. The lock test separately verifies that `mise.lock` preserves exact Boundary Git source identity until an explicit mise lock bump. The current distribution-focused suite passes 9 tests, and the complete suite passes 101 tests.
 
-Trace the installed CLI through package metadata and packaged integration assets sufficiently to show that the documented command surface is real rather than merely aspirational.
+Normal downstream use therefore no longer requires `PYTHONPATH`, direct `python -m boundary` invocation, caller-managed uv cache plumbing, locating `adapter_gate.py`, locating copied Boundary runtime source, a generated project-local Boundary launcher, or an operator-supplied Boundary checkout. The retained Python module entrypoints are compatibility/conventional package entrypoints rather than required downstream procedure. The `UV_CACHE_DIR` occurrence in the distribution test helper is isolated test-environment plumbing, not part of the consumer command contract.
 
-Classify the mechanical-discovery concern separately from the implementation-unit concern so the review does not conflate architectural improvement with packaging improvement.
+The legacy-invocation search still finds retired invocation strings inside generated `.agents/` and `.specify/` material in the source checkout, plus negative assertions and normative text describing what must not be required. Project policy explicitly makes generated `.agents/` and `.specify/` material noncanonical; current behavior must be judged from `skills/`, `integration/`, packaged runtime source, and tests rather than those generated snapshots. The canonical integration assets and current workflow overlay invoke the installed `boundary` command directly.
+
+The mechanical improvement should remain distinct in the final review from the implementation-unit improvement. Review1's feature-wide authorization problem was answered by task-selected authorization semantics. Its repeated command/path discovery problem was answered by conventional packaging, mise-managed installation, packaged integration assets, and one installed semantic CLI. Neither improvement depends on treating architectural ownership as implementation-unit membership.
+
+No current README/specification correction was demonstrated by this pass. The remaining concrete follow-ups are the separately tracked operation-record consistency gap and Spec Kit adapter-status specification drift.
 
 ## 3. Review Spec Kit adapter scope projection and lifecycle gates
 
@@ -168,9 +166,11 @@ Resolve the concrete Spec Kit status-query drift found during the active-worker 
 
 ## 8. Produce the follow-up review
 
-Write one focused review document that is understandable without replaying the original session.
+Create a new standalone review document at `BOUNDARY-FEEDBACK-REVIEW2.md`. Do not overwrite or extend `BOUNDARY-FEEDBACK-REVIEW1.md`; Review1 remains historical evidence.
 
-Structure it around:
+The new review must be understandable without replaying the original session and must identify Review1 as a historical input rather than current authority.
+
+Structure `BOUNDARY-FEEDBACK-REVIEW2.md` around:
 
 1. an executive status table mapping every Review1 concern/question to `addressed`, `partially addressed`, `superseded / intentionally out of scope`, or `unresolved`;
 2. the current implementation-unit model;
