@@ -117,19 +117,25 @@ The historical Spec Kit `BRANCH` field ambiguity is not a Boundary semantic. Cur
 
 No current README/specification contradiction was demonstrated by this pass. The final review should distinguish the fully implemented script-runtime fixes from the conditional nature of undeclared setup-file detection and should describe the `BRANCH` observation as host-owned metadata outside Boundary's authority model.
 
-## 6. Verify persistent-contract and scope-expansion separation
+## Evidence carried forward from the completed persistent-contract and scope-expansion separation review
 
-Use the current lifecycle, authorization, and contract specifications plus implementation/tests to verify the safety properties Review1 wanted preserved:
+Current lifecycle, authorization, verification, and contract specifications agree with the concrete implementation on the enforcement properties Review1 wanted preserved.
 
-- undeclared writes are still rejected;
-- contract files cannot be modified by implementation operations;
-- contract evolution cannot simultaneously authorize dependent implementation;
-- changed contract/ownership context can block verification;
-- additional required writes require a deliberate transition and fresh authorization;
-- current planning state cannot rewrite historical authorization;
-- verification remains Git-derived and historical rather than trust-based.
+Undeclared ordinary writes remain blocked independently of architectural ownership. Verification derives the actual Git write set from the authorization baseline, forces native contract paths and explicitly authorized paths through core checking, and emits `UNDECLARED_WRITE` for an ordinary write absent from the historical target set. The same-owner regression is covered directly by `test_rejects_undeclared_write_in_same_owner`.
 
-This section should make clear which friction was intentionally retained because it is part of Boundary's enforcement model.
+Implementation and persistent-contract evolution are mechanically disjoint at both entry and exit. Implementation authorization rejects native contract targets, implementation verification rejects actual native contract changes, contract-evolution authorization accepts only native contract targets, and contract-evolution verification rejects ordinary project writes. There is no supported operation kind that can use a contract edit to authorize dependent implementation in the same epoch. Dependent implementation must enter a later implementation authorization, which reloads and validates the resulting contract graph fresh.
+
+Additional required writes never widen the active operation. An unverified operation cannot be replaced, and successor authorization occurs only after predecessor closure. Verified dirty output may cross an epoch only when its exact Git state matches the predecessor's recorded final state. The task-selected lifecycle tests demonstrate sequential units and explicit fresh selection, while the authorization-lifecycle tests demonstrate the required verification boundary and exact carry-forward provenance.
+
+Verification remains historical and Git-derived rather than trust-based. It reads the persisted active `OperationRecord`, compares current Git state with its captured baseline, fails closed when `HEAD` changes, and does not consult current task selection or re-project current task scope. Current planning changes therefore cannot retroactively rescue an unauthorized write or rewrite the active epoch's authority.
+
+Contract and ownership context are also re-evaluated during verification for actual implementation targets. Verification reloads the native contract graph, fresh-resolves ownership and effective context, and compares those results with the historical target evidence. Ownership loss, ambiguity, invalid graph state, or changed owner/effective-context identity blocks closure rather than silently accepting the new context. Focused verification coverage demonstrates `CONTRACT_CONTEXT_CHANGED` after canonical contract context changes.
+
+The intentionally retained friction is therefore part of the current enforcement model rather than an unresolved usability defect: same-owner discoveries still require a scope transition; contract edits still require a separate operation; verified closure is required before successor authorization; and a Git `HEAD` transition invalidates an active baseline. Review1's suggested distinction between same-owner and cross-owner scope expansion survives only as a possible coordination/diagnostic distinction, not as different write authority.
+
+The supplied validation for this pass remained clean: native contract validation passed with 15 contracts, the focused lifecycle/authorization/verification run passed 41 tests, and `git diff --check` passed. No new README, specification, contract, source, or test correction was demonstrated by this review.
+
+These supported-path results do not close the separately tracked persisted-operation-record consistency gap. A malformed implementation record can still be internally inconsistent in ways normal authorization would never construct. That integrity issue remains a concrete item for the drift pass, alongside the Spec Kit adapter-status specification drift.
 
 ## 7. Check documentation, contracts, implementation, and tests for drift
 
