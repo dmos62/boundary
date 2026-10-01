@@ -101,22 +101,21 @@ Spec Kit bookkeeping classification does not special-case cross-feature workflow
 
 The historical project-local `project-records` contract remains the expected kind of solution: the project deliberately gives its durable records explicit native ownership and task generation declares their exact writes. That contract is a project semantic choice, not a Boundary built-in category. Review1 section 9 is therefore addressed by a stable ordinary-write model plus earlier task-generation/preflight detection, rather than by automatic workflow-record ownership. No current README/specification correction or new implementation gap was demonstrated by this pass.
 
-## 5. Close the original runtime/setup incidents that informed the review
+## Evidence carried forward from the completed runtime/setup incident review
 
-Cross-check the source `BOUNDARY-FEEDBACK.md` incidents against current behavior.
+The concrete Spec Kit script-runtime failures recorded in `BOUNDARY-FEEDBACK.md` are addressed by current integration behavior rather than by documentation promises alone.
 
-Investigate:
+For a fresh Spec Kit project, Boundary invokes the pinned host lifecycle without forcing a script mode unless `BOUNDARY_SPECKIT_SCRIPT` is explicitly supplied. For an existing project, the selected mode in `.specify/init-options.json` is preserved unless that explicit override requests a deliberate transition. The override accepts only `sh`, `ps`, or `py`; when the active integration is already Codex and the requested mode differs, Boundary uses Spec Kit's supported forced integration-upgrade lifecycle and then verifies that the requested mode became authoritative.
 
-- Spec Kit script-mode selection and preservation;
-- Bash mode not requiring PowerShell;
-- deliberate `BOUNDARY_SPECKIT_SCRIPT=sh|ps|py` transitions;
-- runtime prerequisite validation for the selected mode;
-- supported host lifecycle use instead of direct generated-script patching;
-- treatment of inactive script variants after a mode transition;
-- the `.gitignore` scope-discovery incident and whether current planning/preflight guidance would surface such an undeclared/unowned target earlier;
-- the Spec Kit `BRANCH`/feature-name metadata ambiguity and whether it is a Boundary concern, a host semantic, or now irrelevant to Boundary's active-feature projection.
+Active-feature discovery reads the configured script mode and dispatches to the corresponding host prerequisite script: Bash through `bash`, PowerShell through `pwsh`, and Python through the running Boundary interpreter. Runtime validation has the same mode-specific behavior: Bash requires `bash`, PowerShell requires `pwsh`, and Python mode uses the already-running Python executable. Bash mode therefore no longer has the historical Boundary-side PowerShell dependency. Focused regression coverage in `tests/test_spec_kit_script_modes.py` pins fresh/default handling, mode-specific prerequisite routing, runtime prerequisite selection, deliberate supported transitions, and preservation of inactive script-variant residue.
 
-Do not claim Boundary solved a host-owned Spec Kit behavior unless Boundary now has an explicit contract or adapter dependency that removes the ambiguity.
+Boundary integration installation and checking use supported Spec Kit lifecycle commands for initialization, integration switching/upgrading, extension/preset installation, and workflow overlays. Boundary does not patch Spec Kit's generated core scripts to change modes. A formerly active script directory may remain after a supported transition; current project-state semantics deliberately classify it as non-authoritative host-generated residue. The selected mode in `.specify/init-options.json` plus regenerated active integration controls execution, and Boundary neither deletes the inactive variant nor adds mode-dependent ignore rules for it.
+
+The historical `.gitignore` incident has a narrower closure. Current scope guidance requires exact intended repository writes, and declared-scope preflight detects ownership defects for every path that task refinement actually declares. It does not heuristically discover omitted setup writes. A future required `.gitignore` modification that is never included in structured `Writes:` metadata would therefore remain invisible to preflight until implementation discovers it; at that point the normal explicit scope-expansion and, when needed, contract-evolution transitions still apply. The improvement is earlier detection for correctly planned scope, not automatic setup-file discovery.
+
+The historical Spec Kit `BRANCH` field ambiguity is not a Boundary semantic. Current Boundary active-feature projection consumes `SPECIFY_FEATURE_DIRECTORY` when explicitly supplied or the host prerequisite result's `FEATURE_DIR`; the adapter then uses the resolved feature directory name as its opaque change identity. Boundary does not consume the plan setup `BRANCH` metadata field and therefore should not claim to have corrected its host-defined meaning.
+
+No current README/specification contradiction was demonstrated by this pass. The final review should distinguish the fully implemented script-runtime fixes from the conditional nature of undeclared setup-file detection and should describe the `BRANCH` observation as host-owned metadata outside Boundary's authority model.
 
 ## 6. Verify persistent-contract and scope-expansion separation
 
