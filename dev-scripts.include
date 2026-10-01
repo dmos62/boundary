@@ -1,9 +1,8 @@
 @cli! bash -lic "mise run contracts-check"
 @cli! bash -lic "printf '%s\n' '--- Legacy distribution references outside history ---'; git grep -n -E 'boundary\\.lock\\.json|boundary\\.lock/v[0-9]+|scripts/consumer\\.py|\\.boundary/bin/boundary|scripts/install-(source|host)\\.sh|scripts/install\\.sh|adapter_gate\\.py' -- README.md docs contracts integration/speckit/commands integration/speckit/workflow-overlay.yml pyproject.toml mise.toml 2>/dev/null | grep -v '^docs/history/' || true"
 @cli! bash -lic "printf '%s\n' '--- Distribution invocation leaks ---'; git grep -n -E 'PYTHONPATH=|python -m boundary|uv run --no-project python .*boundary|adapter_gate\\.py' -- README.md docs integration/speckit/commands integration/speckit/workflow-overlay.yml 2>/dev/null | grep -v '^docs/history/' || true"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_agent_skills.py'"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_mise_distribution_integration.py'"
 @cli! bash -lic "mise run test-distribution"
 @cli! bash -lic "mise run test"
-@cli! bash -lic "printf '%s\n' '--- Changed-focus line counts ---'; wc -l README.md docs/spec-distribution.md docs/spec-agent-instructions.md docs/setup-development.md docs/setup-downstream.md skills/implement/SKILL.md src/boundary/cli/main.py integration/speckit/workflow-overlay.yml integration/speckit/runtime/boundary_host/*.py tests/mise_distribution_support.py tests/preset_test_support.py tests/test_distribution_surface.py tests/test_mise_distribution_*.py tests/test_lifecycle_outcomes.py tests/test_spec_kit_runtime_projection.py"
+@cli! bash -lic "git diff --check"
+@cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"

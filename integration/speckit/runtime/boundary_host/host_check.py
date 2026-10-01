@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import shutil
+import sys
 
 from .errors import IntegrationError
 from .host_runtime import (
@@ -66,11 +67,10 @@ def check_host(root: Path, assets: Path) -> None:
     for skill in (
         "speckit-boundary-authorize",
         "speckit-boundary-verify",
-        "boundary-scope",
-        "boundary-implement",
-        "boundary-contracts",
     ):
         _require_skill(root, skill)
+
+    _check_boundary_skills(root, assets)
 
     tasks_skill = _require_skill(root, "speckit-tasks")
     if "## Boundary Write Scope" not in tasks_skill.read_text(
@@ -144,6 +144,29 @@ def _require_same_file(
             "Boundary generated integration state is stale: "
             f"{installed.relative_to(root)}"
         )
+
+
+def _check_boundary_skills(root: Path, assets: Path) -> None:
+    """Validate materialized Boundary skills against canonical package assets."""
+
+    materializer = assets / "adapters" / "codex" / "materialize.py"
+    if not materializer.is_file():
+        raise IntegrationError(
+            "installed Codex Boundary skill materializer is missing"
+        )
+
+    run(
+        root,
+        [
+            sys.executable,
+            str(materializer),
+            "--source-root",
+            str(assets),
+            "--project-root",
+            str(root),
+            "--check",
+        ],
+    )
 
 
 def _check_workflow_overlay(root: Path) -> None:
