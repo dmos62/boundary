@@ -1,21 +1,17 @@
 @filegroup
 @glob AGENTS.md
 @glob TODO.md
-@glob DEBUGGING.md
+@glob HUMAN-REQUEST.md
 @glob docs/spec.md
-@glob docs/spec-architecture.md
 @glob docs/spec-distribution.md
 @glob docs/spec-distribution-state.md
+@glob docs/spec-architecture.md
 @glob docs/spec-lifecycle.md
 @glob docs/setup-development.md
 @glob docs/setup-downstream.md
-@glob contracts/boundary-core.contract.md
-@glob contracts/boundary-cli.contract.md
-@glob contracts/boundary-documentation.contract.md
 @glob contracts/boundary-repository-tooling.contract.md
 @glob contracts/boundary-specifications.contract.md
-@glob src/boundary/__main__.py
-@glob src/boundary/cli/**
+@glob contracts/boundary-documentation.contract.md
 @glob dev-scripts.include
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
@@ -37,12 +33,15 @@
 @globexclude contracts/boundary-agent-procedure.contract.md
 @globexclude contracts/boundary-authorization.contract.md
 @globexclude contracts/boundary-change-adapter.contract.md
+@globexclude contracts/boundary-cli.contract.md
 @globexclude contracts/boundary-context.contract.md
+@globexclude contracts/boundary-core.contract.md
 @globexclude contracts/boundary-native-contracts.contract.md
 @globexclude contracts/boundary-operation-lifecycle.contract.md
 @globexclude contracts/boundary-repository.contract.md
 @globexclude contracts/boundary-tests.contract.md
 @globexclude contracts/boundary-verification.contract.md
+@globexclude src/boundary/**
 @globexclude adapters/**
 @globexclude integration/**
 @globexclude scripts/**
