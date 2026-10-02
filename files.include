@@ -4,17 +4,14 @@
 @glob files.include
 @glob dev-scripts.include
 
-@# next focus: rerun full validation after making the distribution help assertion wrapping-insensitive
 @glob pyproject.toml
+@glob mise.toml
 @glob docs/spec.md
-@glob docs/spec-distribution.md
-
-@glob src/boundary/cli/main.py
-@glob tests/test_distribution_surface.py
 
 @globexclude README.md
 @globexclude docs/setup-development.md
 @globexclude docs/setup-downstream.md
+@globexclude docs/spec-distribution.md
 @globexclude docs/spec-lifecycle.md
 @globexclude docs/spec-authorization.md
 @globexclude docs/spec-change-adapter.md
@@ -22,8 +19,10 @@
 @globexclude contracts/boundary-change-adapter.contract.md
 @globexclude integration/speckit/runtime/boundary_host/adapter.py
 @globexclude tests/test_boundary_status_cli.py
+@globexclude tests/test_distribution_surface.py
 @globexclude tests/test_spec_kit_runtime_projection.py
 
+@globexclude src/boundary/cli/main.py
 @globexclude src/boundary/__init__.py
 @globexclude src/boundary/cli/__init__.py
 

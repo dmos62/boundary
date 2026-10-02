@@ -15,6 +15,12 @@ from boundary_host.generated_state import GENERATED_EXCLUDES
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _normalize_mise_selector_text(value: str) -> str:
+    """Compare mise selectors independently of escaped-colon presentation."""
+
+    return value.replace(r"\:", ":")
+
+
 class DistributionSurfaceTests(unittest.TestCase):
     def test_package_exposes_boundary_console_script(self) -> None:
         config = tomllib.loads(
@@ -37,13 +43,16 @@ class DistributionSurfaceTests(unittest.TestCase):
         config = tomllib.loads(
             (ROOT / "mise.toml").read_text(encoding="utf-8")
         )
-        tools = config["tools"]
-        speckit = "pipx:git+https\://github.com/github/spec-kit.git"
+        tools = {
+            _normalize_mise_selector_text(key): value
+            for key, value in config["tools"].items()
+        }
+        speckit = "pipx:git+https://github.com/github/spec-kit.git"
         self.assertEqual("v1.0.10", tools[speckit]["version"])
         self.assertFalse(
             any(
                 key.startswith(
-                    "pipx:git+https\://github.com/specdd/speckit-boundary"
+                    "pipx:git+https://github.com/specdd/speckit-boundary"
                 )
                 for key in tools
             )
@@ -54,11 +63,13 @@ class DistributionSurfaceTests(unittest.TestCase):
         )
 
     def test_downstream_setup_uses_portable_git_source_and_mise_lock(self) -> None:
-        source = (ROOT / "docs" / "setup-downstream.md").read_text(
-            encoding="utf-8"
+        source = _normalize_mise_selector_text(
+            (ROOT / "docs" / "setup-downstream.md").read_text(
+                encoding="utf-8"
+            )
         )
         self.assertIn(
-            "pipx:git+https\://github.com/specdd/speckit-boundary.git",
+            "pipx:git+https://github.com/specdd/speckit-boundary.git",
             source,
         )
         self.assertIn("mise install --locked", source)
