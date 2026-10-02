@@ -2,6 +2,7 @@
 
 import argparse
 from collections.abc import Sequence
+from importlib.metadata import version as distribution_version
 from pathlib import Path
 import sys
 from typing import TextIO
@@ -38,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
             "  boundary integration install|check|remove"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {distribution_version('boundary-cli')}",
+        help="Show the installed Boundary distribution version and exit.",
     )
     commands = parser.add_subparsers(dest="command")
 

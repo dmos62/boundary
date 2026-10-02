@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version as distribution_version
 from pathlib import Path
 import shutil
 import subprocess
@@ -37,12 +38,12 @@ class DistributionSurfaceTests(unittest.TestCase):
             (ROOT / "mise.toml").read_text(encoding="utf-8")
         )
         tools = config["tools"]
-        speckit = "pipx:git+https://github.com/github/spec-kit.git"
+        speckit = "pipx:git+https\://github.com/github/spec-kit.git"
         self.assertEqual("v1.0.10", tools[speckit]["version"])
         self.assertFalse(
             any(
                 key.startswith(
-                    "pipx:git+https://github.com/specdd/speckit-boundary"
+                    "pipx:git+https\://github.com/specdd/speckit-boundary"
                 )
                 for key in tools
             )
@@ -57,7 +58,7 @@ class DistributionSurfaceTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn(
-            "pipx:git+https://github.com/specdd/speckit-boundary.git",
+            "pipx:git+https\://github.com/specdd/speckit-boundary.git",
             source,
         )
         self.assertIn("mise install --locked", source)
@@ -81,10 +82,15 @@ class DistributionSurfaceTests(unittest.TestCase):
         self.assertEqual("verify", verify.command)
 
     def test_top_level_help_exposes_boundary_lifecycle(self) -> None:
-        help_text = build_parser().format_help()
+        help_text = " ".join(build_parser().format_help().split())
 
         self.assertIn(
             "Persistent project contracts and operation authorization for coding agents.",
+            help_text,
+        )
+        self.assertIn("--version", help_text)
+        self.assertIn(
+            "Show the installed Boundary distribution version and exit.",
             help_text,
         )
         self.assertIn("Implementation lifecycle:", help_text)
@@ -97,6 +103,23 @@ class DistributionSurfaceTests(unittest.TestCase):
             "boundary integration install|check|remove",
         ):
             self.assertIn(command, help_text)
+
+    @unittest.skipUnless(shutil.which("boundary"), "boundary CLI is not installed")
+    def test_installed_version_reports_distribution_metadata(self) -> None:
+        result = subprocess.run(
+            ["boundary", "--version"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            f"boundary {distribution_version('boundary-cli')}\n",
+            result.stdout,
+        )
+        self.assertEqual("", result.stderr)
 
     @unittest.skipUnless(shutil.which("boundary"), "boundary CLI is not installed")
     def test_installed_authorize_help_requires_explicit_task_selection(self) -> None:

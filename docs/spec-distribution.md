@@ -69,6 +69,12 @@ Its package metadata must expose one console entry point:
 
 The installed executable is the canonical downstream command surface.
 
+Boundary's Python package version is derived from Git through the package build configuration. The top-level command:
+
+    boundary --version
+
+reports the version from the installed `boundary-cli` distribution metadata. Boundary source modules and documentation must not introduce a separate authoritative version constant.
+
 Normal downstream procedure uses commands such as:
 
     boundary inspect <target...>
