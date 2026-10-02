@@ -1,9 +1,10 @@
+@cli! bash -lic "mise run dev-install >/dev/null && printf '%s\n' '--- boundary --help ---' && boundary --help"
+@cli! bash -lic "mise run dev-install >/dev/null && printf '%s\n' '--- boundary authorize --help ---' && boundary authorize --help && printf '%s\n' '--- boundary contracts --help ---' && boundary contracts --help && printf '%s\n' '--- boundary integration --help ---' && boundary integration --help"
+@cli! bash -lic "printf '%s\n' '--- CLI help implementation and coverage ---'; git grep -n -E 'ArgumentParser|add_parser|add_subparsers|description=|epilog=|--help' -- src/boundary/cli pyproject.toml tests/test_boundary_status_cli.py tests/test_distribution_surface.py 2>/dev/null || true"
 @cli! bash -lic "mise run contracts-check"
-@cli! bash -lic "mise run dev-install >/dev/null && python -m unittest tests/test_task_selected_units.py tests/test_authorization_lifecycle.py tests/test_operation_record_task_selection.py tests/test_spec_kit_status_projection.py tests/test_boundary_status_cli.py tests/test_spec_kit_runtime_projection.py tests/test_native_verification.py tests/test_lifecycle_outcomes.py tests/test_spec_kit_script_modes.py tests/test_distribution_surface.py"
+@cli! bash -lic "mise run dev-install >/dev/null && python -m unittest tests/test_boundary_status_cli.py tests/test_distribution_surface.py"
 @cli! bash -lic "mise run test-distribution"
 @cli! bash -lic "mise run test"
-@cli! bash -lic "printf '%s\n' '--- Review1-era concepts in current canonical material ---'; git grep -n -E 'feature-wide|flattened authorization|synthetic task|Change Boundary|context fingerprint|validation (phase|stage)|copied runtime|boundary-runtime|boundary\\.lock|project-local launcher|implicit scope expansion' -- README.md docs contracts skills src integration adapters pyproject.toml ':!docs/history/**' ':!.agents/**' ':!.specify/**' ':!.boundary/**' 2>/dev/null || true"
-@cli! bash -lic "printf '%s\n' '--- Legacy invocation leakage in current canonical material ---'; git grep -n -E 'PYTHONPATH|UV_CACHE_DIR|python -m boundary|adapter_gate\\.py|\\.specify/boundary-runtime|boundary\\.lock\\.json' -- README.md docs contracts skills src integration adapters pyproject.toml ':!docs/history/**' ':!.agents/**' ':!.specify/**' ':!.boundary/**' 2>/dev/null || true"
 @cli! bash -lic "git diff --check"
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"

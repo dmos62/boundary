@@ -1,23 +1,35 @@
 @filegroup
 @glob AGENTS.md
 @glob TODO.md
-@glob BOUNDARY-FEEDBACK-REVIEW2.md
+@glob files.include
+@glob dev-scripts.include
 
-@# next focus: validate the follow-up review and declared-scope preflight fix
+@# next focus: review and, if necessary, improve the installed Boundary CLI help
+@glob pyproject.toml
+@glob README.md
 @glob docs/spec.md
-@glob docs/spec-authorization.md
-@glob docs/spec-change-adapter.md
 @glob docs/spec-lifecycle.md
+@glob docs/spec-distribution.md
+@glob docs/setup-development.md
+@glob docs/setup-downstream.md
 
-@glob contracts/boundary-change-adapter.contract.md
+@glob contracts/boundary-repository-tooling.contract.md
 
-@glob integration/speckit/runtime/boundary_host/adapter.py
-@glob tests/test_spec_kit_runtime_projection.py
+@glob src/boundary/cli/**
+@glob tests/test_boundary_status_cli.py
+@glob tests/test_distribution_surface.py
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK-REVIEW1.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK-REVIEW1.md
+
+@globexclude BOUNDARY-FEEDBACK-REVIEW2.md
+@globexclude docs/spec-authorization.md
+@globexclude docs/spec-change-adapter.md
+@globexclude contracts/boundary-change-adapter.contract.md
+@globexclude integration/speckit/runtime/boundary_host/adapter.py
+@globexclude tests/test_spec_kit_runtime_projection.py
 
 @globexclude CLAUDE.md
 @globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
