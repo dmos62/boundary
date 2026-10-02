@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
+import subprocess
 import tomllib
 import unittest
 
@@ -77,6 +79,39 @@ class DistributionSurfaceTests(unittest.TestCase):
 
         verify = parser.parse_args(["verify"])
         self.assertEqual("verify", verify.command)
+
+    def test_top_level_help_exposes_boundary_lifecycle(self) -> None:
+        help_text = build_parser().format_help()
+
+        self.assertIn(
+            "Persistent project contracts and operation authorization for coding agents.",
+            help_text,
+        )
+        self.assertIn("Implementation lifecycle:", help_text)
+        for command in (
+            "boundary inspect <target...>",
+            "boundary authorize --task <task-id> [--task <task-id> ...]",
+            "boundary verify",
+            "boundary status",
+            "boundary contracts check",
+            "boundary integration install|check|remove",
+        ):
+            self.assertIn(command, help_text)
+
+    @unittest.skipUnless(shutil.which("boundary"), "boundary CLI is not installed")
+    def test_installed_authorize_help_requires_explicit_task_selection(self) -> None:
+        result = subprocess.run(
+            ["boundary", "authorize", "--help"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("--task TASK_ID", result.stdout)
+        self.assertIn("Pass --task at least once", result.stdout)
+        self.assertIn("Explicit task selection is required", result.stdout)
 
     def test_workflow_uses_installed_boundary_command_directly(self) -> None:
         source = (

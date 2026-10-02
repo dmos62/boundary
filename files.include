@@ -4,20 +4,13 @@
 @glob files.include
 @glob dev-scripts.include
 
-@# next focus: review and, if necessary, improve the installed Boundary CLI help
+@# no active implementation focus; retain compact architectural context
 @glob pyproject.toml
-@glob README.md
 @glob docs/spec.md
 @glob docs/spec-lifecycle.md
 @glob docs/spec-distribution.md
-@glob docs/setup-development.md
-@glob docs/setup-downstream.md
 
 @glob contracts/boundary-repository-tooling.contract.md
-
-@glob src/boundary/cli/**
-@glob tests/test_boundary_status_cli.py
-@glob tests/test_distribution_surface.py
 
 @# DO NOT REMOVE BELOW INCLUSION (BOUNDARY-FEEDBACK.md).
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
@@ -25,10 +18,17 @@
 @file ../gui-auto2/BOUNDARY-FEEDBACK-REVIEW1.md
 
 @globexclude BOUNDARY-FEEDBACK-REVIEW2.md
+@globexclude README.md
+@globexclude docs/setup-development.md
+@globexclude docs/setup-downstream.md
 @globexclude docs/spec-authorization.md
 @globexclude docs/spec-change-adapter.md
 @globexclude contracts/boundary-change-adapter.contract.md
 @globexclude integration/speckit/runtime/boundary_host/adapter.py
+@globexclude src/boundary/cli/__init__.py
+@globexclude src/boundary/cli/main.py
+@globexclude tests/test_distribution_surface.py
+@globexclude tests/test_boundary_status_cli.py
 @globexclude tests/test_spec_kit_runtime_projection.py
 
 @globexclude CLAUDE.md

@@ -20,26 +20,34 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(
         prog="boundary",
-        description="Persistent project contracts and operation authorization.",
+        description=(
+            "Persistent project contracts and operation authorization for coding agents.\n"
+            "Inspect effective contract context, authorize an explicit task-selected\n"
+            "implementation unit, then verify actual writes."
+        ),
+        epilog=(
+            "Implementation lifecycle:\n"
+            "  boundary inspect <target...>\n"
+            "  boundary authorize --task <task-id> [--task <task-id> ...]\n"
+            "  implement only the authorized targets\n"
+            "  boundary verify\n"
+            "\n"
+            "State and maintenance:\n"
+            "  boundary status\n"
+            "  boundary contracts check\n"
+            "  boundary integration install|check|remove"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     commands = parser.add_subparsers(dest="command")
-
-    contracts_parser = commands.add_parser(
-        "contracts",
-        help="Validate native project contracts.",
-    )
-    contract_commands = contracts_parser.add_subparsers(
-        dest="contracts_command",
-        required=True,
-    )
-    contract_commands.add_parser(
-        "check",
-        help="Validate canonical native contracts.",
-    )
 
     inspect_parser = commands.add_parser(
         "inspect",
         help="Resolve effective contract context for repository targets.",
+        description=(
+            "Resolve effective Boundary contract context for one or more "
+            "repository-relative targets without persisting state."
+        ),
     )
     inspect_parser.add_argument(
         "targets",
@@ -50,27 +58,63 @@ def build_parser() -> argparse.ArgumentParser:
     authorize_parser = commands.add_parser(
         "authorize",
         help="Authorize one explicitly selected implementation unit.",
+        description=(
+            "Authorize one implementation unit from explicitly selected tasks in "
+            "the active change. Pass --task at least once; repeat it for a "
+            "multi-task unit."
+        ),
     )
     authorize_parser.add_argument(
         "--task",
         action="append",
         dest="task_ids",
         default=[],
-        help="Select one implementation task; repeat for multi-task units.",
+        metavar="TASK_ID",
+        help=(
+            "Select one task for this implementation unit; repeat for multi-task "
+            "units. Explicit task selection is required."
+        ),
     )
 
     commands.add_parser(
         "verify",
         help="Verify actual writes against current authorization.",
+        description=(
+            "Verify actual Git changes against the current historical "
+            "authorization and close the operation on success."
+        ),
     )
     commands.add_parser(
         "status",
         help="Show current Boundary authorization state.",
+        description=(
+            "Emit the current Boundary authorization handoff as JSON, or null "
+            "when no current operation exists."
+        ),
+    )
+
+    contracts_parser = commands.add_parser(
+        "contracts",
+        help="Validate native project contracts.",
+        description="Validate canonical native project contracts.",
+    )
+    contract_commands = contracts_parser.add_subparsers(
+        dest="contracts_command",
+        required=True,
+    )
+    contract_commands.add_parser(
+        "check",
+        help="Validate canonical native contracts.",
+        description="Validate canonical native contracts.",
     )
 
     integration_parser = commands.add_parser(
         "integration",
         help="Manage Boundary-owned project integration.",
+        description=(
+            "Manage Boundary-owned generated project integration separately from "
+            "mise-owned Boundary installation and version selection."
+        ),
     )
     integration_commands = integration_parser.add_subparsers(
         dest="integration_command",
@@ -81,7 +125,11 @@ def build_parser() -> argparse.ArgumentParser:
         ("check", "Validate Boundary-owned project integration."),
         ("remove", "Remove Boundary-owned project integration."),
     ):
-        integration_commands.add_parser(action, help=help_text)
+        integration_commands.add_parser(
+            action,
+            help=help_text,
+            description=help_text,
+        )
 
     return parser
 

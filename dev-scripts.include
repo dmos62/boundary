@@ -1,9 +1,4 @@
-@cli! bash -lic "mise run dev-install >/dev/null && printf '%s\n' '--- boundary --help ---' && boundary --help"
-@cli! bash -lic "mise run dev-install >/dev/null && printf '%s\n' '--- boundary authorize --help ---' && boundary authorize --help && printf '%s\n' '--- boundary contracts --help ---' && boundary contracts --help && printf '%s\n' '--- boundary integration --help ---' && boundary integration --help"
-@cli! bash -lic "printf '%s\n' '--- CLI help implementation and coverage ---'; git grep -n -E 'ArgumentParser|add_parser|add_subparsers|description=|epilog=|--help' -- src/boundary/cli pyproject.toml tests/test_boundary_status_cli.py tests/test_distribution_surface.py 2>/dev/null || true"
 @cli! bash -lic "mise run contracts-check"
-@cli! bash -lic "mise run dev-install >/dev/null && python -m unittest tests/test_boundary_status_cli.py tests/test_distribution_surface.py"
-@cli! bash -lic "mise run test-distribution"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
