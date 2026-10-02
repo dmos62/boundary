@@ -1,14 +1,20 @@
 [build-system]
-requires = ["hatchling>=1.27"]
+requires = [
+  "hatchling>=1.27",
+  "hatch-vcs",
+]
 build-backend = "hatchling.build"
 
 [project]
 name = "boundary-cli"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Persistent project contracts and operation authorization for coding agents."
 requires-python = ">=3.11"
 license = "Apache-2.0"
 dependencies = []
+
+[tool.hatch.version]
+source = "vcs"
 
 [project.scripts]
 boundary = "boundary.cli:main"
