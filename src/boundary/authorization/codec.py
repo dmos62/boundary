@@ -12,6 +12,9 @@ from .record import (
 )
 
 
+_MISSING = object()
+
+
 def operation_record_from_document(
     value: object,
 ) -> OperationRecord:
@@ -50,7 +53,7 @@ def operation_record_from_document(
         )
         kind = _string(root.get("kind"), "kind")
         selected_task_ids = _selected_task_ids(
-            root.get("selectedTaskIds"),
+            root.get("selectedTaskIds", _MISSING),
             kind=kind,
             tasks=tasks,
         )
@@ -174,7 +177,7 @@ def _selected_task_ids(
 ) -> tuple[str, ...]:
     """Read canonical selection while tolerating unambiguous legacy evidence."""
 
-    if value is None:
+    if value is _MISSING:
         if kind == "contract-evolution":
             return ()
         return tuple(

@@ -1,10 +1,8 @@
 @filegroup
 @glob AGENTS.md
 @glob TODO.md
-@glob DEBUGGING.md
 @glob files.include
 @glob dev-scripts.include
-@glob ../gui-auto2/BOUNDARY-UPSTREAM-REPORT*
 
 @glob docs/spec.md
 @glob docs/spec-authorization.md
@@ -28,10 +26,8 @@
 
 @glob skills/implement/SKILL.md
 
-@glob tests/test_operation_record_compatibility.py
-@glob tests/test_boundary_status_cli.py
-@glob tests/test_spec_kit_authorization_cli.py
-@glob tests/test_spec_kit_runtime_projection.py
+@globexclude ../gui-auto2/BOUNDARY-UPSTREAM-REPORT*
+@globexclude tests/**
 
 @globexclude pyproject.toml
 @globexclude mise.toml

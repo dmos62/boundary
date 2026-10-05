@@ -1,1 +1,0 @@
-Validate the persisted-operation compatibility fix for BOUNDARY-UPSTREAM-REPORT using the focused and full checks in `dev-scripts.include`. If all checks pass, delete `DEBUGGING.md` and leave this TODO empty.

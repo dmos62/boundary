@@ -92,7 +92,10 @@ class OperationRecordCompatibilityTests(unittest.TestCase):
             )
 
             self.assertEqual(("T022",), record.selected_task_ids)
-            self.assertEqual(("src/t022.py",), record.authorized_targets[0:1][0:1][0].path and record.selected_task_ids and ("src/t022.py",))
+            self.assertEqual(
+                ("src/t022.py",),
+                tuple(target.path for target in record.authorized_targets),
+            )
             self.assertEqual(
                 ["T022"],
                 record.to_document()["selectedTaskIds"],
@@ -107,6 +110,18 @@ class OperationRecordCompatibilityTests(unittest.TestCase):
                 _operation_document(
                     ("T001", "T002"),
                     selected_task_ids="T001",
+                )
+            )
+
+    def test_null_selection_is_not_treated_as_missing(self) -> None:
+        with self.assertRaisesRegex(
+            AuthorizationError,
+            "selectedTaskIds must be an array",
+        ):
+            operation_record_from_document(
+                _operation_document(
+                    ("T001",),
+                    selected_task_ids=None,
                 )
             )
 

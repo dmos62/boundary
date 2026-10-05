@@ -21,18 +21,16 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
 
     def test_valid_record_serializes_selected_task_ids_explicitly(self) -> None:
         record = operation_record_from_document(_implementation_document())
-
         self.assertEqual(record.to_document()["selectedTaskIds"], ["T001"])
 
-    def test_missing_selected_task_ids_is_rejected(self) -> None:
+    def test_missing_selected_task_ids_is_derived_from_task_evidence(self) -> None:
         document = _implementation_document()
         del document["selectedTaskIds"]
 
-        with self.assertRaisesRegex(
-            AuthorizationError,
-            "selectedTaskIds must be an array",
-        ):
-            operation_record_from_document(document)
+        record = operation_record_from_document(document)
+
+        self.assertEqual(("T001",), record.selected_task_ids)
+        self.assertEqual(["T001"], record.to_document()["selectedTaskIds"])
 
     def test_empty_selected_task_ids_is_not_inferred_from_tasks(self) -> None:
         document = _implementation_document()
@@ -82,7 +80,6 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
                 "effectiveContextIdentity": "sha256:context",
             },
         ]
-
         with self.assertRaisesRegex(
             AuthorizationError,
             "authorized targets must exactly match selected task writes",
@@ -92,7 +89,6 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
     def test_implementation_target_requires_owner_evidence(self) -> None:
         document = _implementation_document()
         del document["authorizedTargets"][0]["owner"]
-
         with self.assertRaisesRegex(
             AuthorizationError,
             "must include owner and effective context identity",
@@ -102,7 +98,6 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
     def test_implementation_target_requires_context_identity(self) -> None:
         document = _implementation_document()
         del document["authorizedTargets"][0]["effectiveContextIdentity"]
-
         with self.assertRaisesRegex(
             AuthorizationError,
             "must include owner and effective context identity",
@@ -113,7 +108,6 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
         document = _implementation_document()
         document["tasks"][0]["writes"] = []
         document["authorizedTargets"] = []
-
         with self.assertRaisesRegex(
             AuthorizationError,
             "must declare at least one write target",
@@ -127,7 +121,6 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
             story=None,
             writes=("src/example.py",),
         )
-
         with self.assertRaisesRegex(
             ValueError,
             "selected task identities must match operation task evidence",
