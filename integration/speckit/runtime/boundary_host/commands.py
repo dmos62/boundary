@@ -23,7 +23,7 @@ _TASK_SELECTION_ENV = "BOUNDARY_TASK_IDS"
 
 def run_authorize(
     root: Path,
-    task_ids: Sequence[str],
+    task_ids: str | Sequence[str],
     output: TextIO,
     errors: TextIO,
 ) -> int:
@@ -93,10 +93,23 @@ _BLOCKING_ERRORS = (
 
 
 def _resolve_task_selection(
-    task_ids: Sequence[str],
+    task_ids: str | Sequence[str],
 ) -> tuple[str, ...]:
-    supplied = tuple(task_ids)
+    supplied = (
+        (task_ids,)
+        if isinstance(task_ids, str)
+        else tuple(task_ids)
+    )
     if supplied:
+        if any(
+            not isinstance(item, str) or not item.strip()
+            for item in supplied
+        ):
+            raise SpecKitAdapterError(
+                "implementation task selection must contain only "
+                "non-empty task ids",
+                code="INVALID_TASK_SELECTION",
+            )
         return supplied
 
     raw = os.environ.get(_TASK_SELECTION_ENV)
@@ -117,7 +130,10 @@ def _resolve_task_selection(
     if (
         not isinstance(value, list)
         or not value
-        or any(not isinstance(item, str) or not item for item in value)
+        or any(
+            not isinstance(item, str) or not item.strip()
+            for item in value
+        )
     ):
         raise SpecKitAdapterError(
             "BOUNDARY_TASK_IDS must contain a non-empty JSON array "

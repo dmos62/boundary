@@ -1,11 +1,13 @@
 import io
 import json
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = REPOSITORY_ROOT / "src"
@@ -119,6 +121,27 @@ class BoundaryStatusCliTests(unittest.TestCase):
             [item["path"] for item in document["authorizedTargets"]],
         )
         self.assertTrue(document["git"]["headMatchesBaseline"])
+
+    def test_status_uses_persisted_selection_without_new_task_validation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize(root)
+            verified = self.write_operation(root).mark_verified(())
+            write_current_operation(root, verified)
+
+            with patch.dict(
+                os.environ,
+                {"BOUNDARY_TASK_IDS": '"T022"'},
+                clear=False,
+            ):
+                code, output, errors = self.run_status(root)
+            document = json.loads(output)
+
+        self.assertEqual(0, code)
+        self.assertEqual("", errors)
+        self.assertEqual("verified", document["status"])
+        self.assertEqual(["T001"], document["selectedTaskIds"])
+        self.assertNotIn("T022", document["selectedTaskIds"])
 
     def test_status_reports_when_head_changed_since_authorization(self):
         with tempfile.TemporaryDirectory() as temporary:
