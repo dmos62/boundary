@@ -1,8 +1,10 @@
 @filegroup
 @glob AGENTS.md
 @glob TODO.md
+@glob DEBUGGING.md
 @glob files.include
 @glob dev-scripts.include
+@glob ../gui-auto2/BOUNDARY-UPSTREAM-REPORT*
 
 @glob docs/spec.md
 @glob docs/spec-architecture.md
@@ -12,13 +14,8 @@
 @glob contracts/boundary-change-adapter.contract.md
 
 @glob src/boundary/**/*.py
-@glob adapters/**
-@glob integration/speckit/commands/**
-@glob integration/speckit/runtime/boundary_host/*.py
-
-@glob tests/test_boundary_status_cli.py
-@glob tests/test_spec_kit_authorization_cli.py
-@glob tests/test_spec_kit_runtime_projection.py
+@glob integration/speckit/**
+@glob skills/**
 
 @globexclude pyproject.toml
 @globexclude mise.toml
@@ -30,24 +27,9 @@
 @globexclude docs/spec-contracts.md
 @globexclude docs/spec-agent-instructions.md
 @globexclude contracts/boundary-repository-tooling.contract.md
-@globexclude tests/test_distribution_surface.py
-
-@globexclude CLAUDE.md
-@globexclude HUMAN-REQUEST-UPSTREAM-SPECDD-CLI.md
-@globexclude docs/history/**
-@globexclude docs/*.sdd
-@globexclude **/*.sdd
 
 @globexclude adapters/**
-@globexclude src/boundary/verification/**
-@globexclude integration/speckit/runtime/boundary_host/assets.py
-@globexclude integration/speckit/runtime/boundary_host/generated_state.py
-@globexclude integration/speckit/runtime/boundary_host/host_check.py
-@globexclude integration/speckit/runtime/boundary_host/host_install.py
-@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
-@globexclude integration/speckit/runtime/boundary_host/integration.py
-@globexclude tests/native_contract_cli_test_support.py
-@globexclude tests/preset_test_support.py
+@globexclude tests/**
 
 @globexclude src/boundary/**/__pycache__/**
 @globexclude src/boundary/**/*.pyc
