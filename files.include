@@ -7,15 +7,31 @@
 @glob ../gui-auto2/BOUNDARY-UPSTREAM-REPORT*
 
 @glob docs/spec.md
-@glob docs/spec-architecture.md
 @glob docs/spec-authorization.md
 @glob docs/spec-change-adapter.md
 @glob docs/spec-lifecycle.md
 @glob contracts/boundary-change-adapter.contract.md
 
-@glob src/boundary/**/*.py
-@glob integration/speckit/**
-@glob skills/**
+@glob src/boundary/authorization/*.py
+@glob src/boundary/cli/main.py
+@glob src/boundary/cli/status.py
+@glob src/boundary/outcomes.py
+
+@glob integration/speckit/commands/authorize.md
+@glob integration/speckit/workflow-overlay.yml
+@glob integration/speckit/runtime/boundary_host/adapter.py
+@glob integration/speckit/runtime/boundary_host/commands.py
+@glob integration/speckit/runtime/boundary_host/discovery.py
+@glob integration/speckit/runtime/boundary_host/errors.py
+@glob integration/speckit/runtime/boundary_host/outcomes.py
+@glob integration/speckit/runtime/boundary_host/tasks.py
+
+@glob skills/implement/SKILL.md
+
+@glob tests/test_operation_record_compatibility.py
+@glob tests/test_boundary_status_cli.py
+@glob tests/test_spec_kit_authorization_cli.py
+@glob tests/test_spec_kit_runtime_projection.py
 
 @globexclude pyproject.toml
 @globexclude mise.toml
@@ -29,16 +45,6 @@
 @globexclude contracts/boundary-repository-tooling.contract.md
 
 @globexclude adapters/**
-@globexclude tests/**
-
-@globexclude src/boundary/**/__pycache__/**
-@globexclude src/boundary/**/*.pyc
-@globexclude src/boundary/__init__.py
-@globexclude src/boundary/cli/__init__.py
-
-@globexclude integration/speckit/runtime/boundary_host/__pycache__/**
-@globexclude integration/speckit/runtime/boundary_host/**/*.pyc
-
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**

@@ -2,34 +2,54 @@
 
 ## Goal
 
-Troubleshoot the problem reported in BOUNDARY-UPSTREAM-REPORT.
+Resolve the failure reported in BOUNDARY-UPSTREAM-REPORT where `boundary status` and `boundary authorize --task T022` fail with `selectedTaskIds must be an array`.
 
-## Current state
+## Confirmed failure path
 
-The upstream report was not available in the current programming iteration, so its reported behavior could not yet be inspected or reproduced.
+The current direct task-selection path is not the source of the reported scalar-selection failure:
 
-The supplied validation results were all green:
+- the product CLI uses argparse `action="append"` for `--task`, so one `--task T022` reaches the adapter as a one-element sequence;
+- the Spec Kit command handler also normalizes a direct string input to a one-element tuple;
+- native authorization persists `ImplementationAuthorization.selected_task_ids` through `OperationRecord`;
+- the canonical record writer always serializes `selectedTaskIds` as a JSON array.
 
-- focused Boundary status CLI tests passed;
-- focused Spec Kit authorization CLI tests passed;
-- focused Spec Kit runtime projection tests passed;
-- native contract validation passed;
-- the complete 124-test suite passed;
-- git diff validation passed.
+The exact message `selectedTaskIds must be an array` comes from operation-record decoding in `src/boundary/authorization/codec.py`.
 
-The only reported working-tree change was TODO.md.
+Both reported commands read existing current operation evidence:
 
-## Next investigation
+- `boundary status` reads `.git/boundary/current.json` directly through `read_authorization_handoff`;
+- a fresh authorization reads the current record through predecessor handling before it can replace a verified epoch.
 
-1. Read BOUNDARY-UPSTREAM-REPORT before forming a diagnosis.
-2. Identify the exact failing command, environment, lifecycle stage, and expected versus actual behavior.
-3. Reproduce the failure using deterministic CLI tests where possible.
-4. Inspect the effective Boundary contract context for every implementation target before modifying it.
-5. Keep any fix inside explicitly relevant source files; do not broaden implementation scope merely because adjacent files appear related.
-6. If reproducing or validating the upstream behavior requires a human-operated external or visual test, create HUMAN-REQUEST.md with concrete bash instructions.
-7. Record ruled-out causes, experiments, and the confirmed root cause here while the investigation spans iterations.
-8. Delete this file once the problem is fixed and verified.
+This explains why both status and an otherwise valid single-task authorization fail before a new T022 record can be installed.
 
-## Focus adjustment
+## Root cause
 
-files.include now exposes BOUNDARY-UPSTREAM-REPORT and restores Boundary verification and broader Spec Kit integration source to the next iteration. Tests are excluded from the prompt temporarily to preserve context until the report identifies which regression coverage is needed.
+Version-1 persisted operation evidence from an earlier Boundary build can have task selection in a non-canonical historical shape. A missing `selectedTaskIds` field and a scalar single-task value both previously fail immediately in the decoder even though immutable task evidence is sufficient to validate the historical selection.
+
+That compatibility failure makes a verified predecessor unreadable and therefore blocks both the read-only status query and successor authorization.
+
+## Fix
+
+Operation-record decoding now accepts only two additional unambiguous historical forms:
+
+- missing `selectedTaskIds`: derive implementation selection from the immutable task evidence already stored in the record, or use an empty selection for contract evolution;
+- scalar string `selectedTaskIds`: normalize it to one selected task identity.
+
+The existing `OperationRecord` validation remains authoritative after normalization. It still requires selected implementation identities to exactly match the stored task evidence, so malformed or widening historical evidence remains rejected.
+
+Canonical serialization is unchanged and always emits `selectedTaskIds` as an array.
+
+## Regression coverage
+
+Added focused coverage for:
+
+- deriving a multi-task historical selection when `selectedTaskIds` is absent;
+- reading status from a legacy single-task scalar selection;
+- replacing a verified legacy predecessor with a fresh single-task authorization;
+- rejecting a scalar selection that does not exactly match immutable task evidence.
+
+## Validation remaining
+
+Run the focused compatibility, status, Spec Kit authorization, and runtime-projection tests, then the contract check, full suite, diff check, changed-file line-count check, and Git status check from `dev-scripts.include`.
+
+If those checks remain green, the upstream defect is fixed and this file should be deleted.

@@ -48,12 +48,11 @@ def operation_record_from_document(
             root.get("verification"),
             status,
         )
-        selected_task_ids = tuple(
-            _string(task_id, "selected task id")
-            for task_id in _list(
-                root.get("selectedTaskIds"),
-                "selectedTaskIds",
-            )
+        kind = _string(root.get("kind"), "kind")
+        selected_task_ids = _selected_task_ids(
+            root.get("selectedTaskIds"),
+            kind=kind,
+            tasks=tasks,
         )
         return OperationRecord(
             operation_id=_string(
@@ -61,7 +60,7 @@ def operation_record_from_document(
                 "operationId",
             ),
             change_id=_string(root.get("changeId"), "changeId"),
-            kind=_string(root.get("kind"), "kind"),
+            kind=kind,
             tasks=tasks,
             authorized_targets=targets,
             contract_graph_identity=_string(
@@ -164,6 +163,31 @@ def _verification_states(
             item.get("finalPathStates"),
             "verification finalPathStates",
         )
+    )
+
+
+def _selected_task_ids(
+    value: object,
+    *,
+    kind: str,
+    tasks: tuple[TaskWriteSet, ...],
+) -> tuple[str, ...]:
+    """Read canonical selection while tolerating unambiguous legacy evidence."""
+
+    if value is None:
+        if kind == "contract-evolution":
+            return ()
+        return tuple(
+            _string(task.task_id, "selected task id")
+            for task in tasks
+        )
+
+    if isinstance(value, str):
+        return (_string(value, "selected task id"),)
+
+    return tuple(
+        _string(task_id, "selected task id")
+        for task_id in _list(value, "selectedTaskIds")
     )
 
 

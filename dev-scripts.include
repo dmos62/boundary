@@ -1,4 +1,4 @@
-@cli! bash -lic "mise run dev-install && python -m unittest discover -s tests -p 'test_boundary_status_cli.py' && python -m unittest discover -s tests -p 'test_spec_kit_authorization_cli.py' && python -m unittest discover -s tests -p 'test_spec_kit_runtime_projection.py'"
+@cli! bash -lic "mise run dev-install && python -m unittest discover -s tests -p 'test_operation_record_compatibility.py' && python -m unittest discover -s tests -p 'test_boundary_status_cli.py' && python -m unittest discover -s tests -p 'test_spec_kit_authorization_cli.py' && python -m unittest discover -s tests -p 'test_spec_kit_runtime_projection.py'"
 @cli! bash -lic "mise run contracts-check"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"

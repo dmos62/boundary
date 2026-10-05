@@ -1,1 +1,1 @@
-Troubleshoot the problem in BOUNDARY-UPSTREAM-REPORT. Read DEBUGGING.md first. Do a HUMAN-REQUEST when testing is needed.
+Validate the persisted-operation compatibility fix for BOUNDARY-UPSTREAM-REPORT using the focused and full checks in `dev-scripts.include`. If all checks pass, delete `DEBUGGING.md` and leave this TODO empty.
