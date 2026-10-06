@@ -6,31 +6,22 @@
 
 @glob docs/spec.md
 @glob docs/spec-authorization.md
+@glob docs/spec-change-adapter.md
 @glob docs/spec-lifecycle.md
-@glob docs/setup-downstream.md
 
 @glob contracts/boundary-authorization.contract.md
 @glob contracts/boundary-core.contract.md
 @glob contracts/boundary-operation-lifecycle.contract.md
 @glob contracts/boundary-verification.contract.md
 
-@glob src/boundary/outcomes.py
-@glob src/boundary/authorization/__init__.py
-@glob src/boundary/authorization/git.py
-@glob src/boundary/authorization/service.py
-@glob src/boundary/authorization/storage.py
-@glob src/boundary/verification/*.py
+@glob skills/**
+@# these files are not present
+@#glob adapters/speckit/**
+@glob integration/speckit/runtime/boundary_host/adapter.py
 
-@glob integration/speckit/runtime/boundary_host/commands.py
-@glob integration/speckit/runtime/boundary_host/errors.py
-@glob integration/speckit/runtime/boundary_host/outcomes.py
-
-@glob tests/test_distribution_surface.py
-@glob tests/test_lifecycle_outcomes.py
-@glob tests/test_native_verification.py
-@glob tests/test_operation_persistence.py
-@glob tests/test_operation_record.py
 @glob tests/test_spec_kit_authorization_cli.py
+@glob tests/test_spec_kit_runtime_projection.py
+@glob tests/test_task_selected_units.py
 
 @globexclude tests/preset_test_support.py
 @globexclude tests/test_agent_*.py
@@ -40,16 +31,17 @@
 @globexclude tests/test_boundary_core_layout.py
 @globexclude tests/test_boundary_status_cli.py
 @globexclude tests/test_distribution_state.py
+@globexclude tests/test_distribution_surface.py
 @globexclude tests/test_fresh_authorization.py
+@globexclude tests/test_lifecycle_outcomes.py
+@globexclude tests/test_native_verification.py
+@globexclude tests/test_operation_persistence.py
+@globexclude tests/test_operation_record.py
 @globexclude tests/test_operation_record_compatibility.py
 @globexclude tests/test_operation_record_task_selection.py
-@globexclude tests/test_spec_kit_runtime_projection.py
 @globexclude tests/test_spec_kit_script_modes.py
 @globexclude tests/test_spec_kit_status_projection.py
-@globexclude tests/test_task_selected_units.py
 
-@globexclude adapters/**
-@globexclude integration/speckit/runtime/boundary_host/adapter.py
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**

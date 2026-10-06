@@ -1,15 +1,5 @@
 # Boundary feedback follow-up
 
-- [ ] Finish automatic operation-evidence persistence readiness at lifecycle entry.
-  - Core operation storage now has a temporary create/remove probe against the actual current-worktree Git metadata directory.
-  - Authorization invokes the probe before contract resolution or Git baseline capture.
-  - Persistence failures use `OPERATION_EVIDENCE_UNAVAILABLE`, classified as `missing-external-prerequisite`; storage I/O failures use the same code.
-  - Remaining: invoke the same core probe at native verification entry before operation verification work, and add focused verification-order coverage.
-  - Remaining: document that the current-worktree Git metadata location used for `<git-dir>/boundary` must be writable while keeping the check automatic and out of the routine user-visible lifecycle.
-  - Do not overwrite, relocate, weaken, or silently bypass `current.json` or immutable archives.
-  - Keep unrelated mise cache warnings outside Boundary persistence semantics.
-  - Run the full suite after verification wiring and resolve the currently exposed `boundary status --help` wrapping regression.
-
 - [ ] Clarify the Spec Kit follow-up-work recipe without weakening unique task write ownership.
   - Preserve the rule that one implementation path is declared by only one task in the active change.
   - Document that follow-up work on an already-owned path should refine or reopen the owning task outside an active implementation operation rather than append a duplicate convergence task.

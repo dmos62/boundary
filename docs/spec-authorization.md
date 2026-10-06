@@ -166,7 +166,7 @@ The concise command result is presentation output only. Full historical evidence
 
 ## Storage and atomicity
 
-Operation evidence lives in current-worktree Git metadata, for example:
+Operation evidence lives in current-worktree Git metadata. The current-worktree Git metadata location that holds `<git-dir>/boundary` must be writable at authorization and verification entry; Boundary probes this automatically before lifecycle work, so persistence readiness is an environment prerequisite rather than a separate routine user-visible stage. For example:
 
     <git-dir>/boundary/current.json
     <git-dir>/boundary/operations/<operation-id>.json
@@ -246,5 +246,3 @@ Native authorization and verification prefer product-level codes such as:
 - `GIT_BASELINE_CHANGED`;
 - `GIT_STATE_UNAVAILABLE`;
 - `CONTRACT_GRAPH_INVALID`.
-
-Legacy provider diagnostics stay inside migration adapters.

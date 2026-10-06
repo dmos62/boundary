@@ -68,7 +68,7 @@ class DistributionSurfaceTests(unittest.TestCase):
             if getattr(action, "choices", None)
             and "status" in action.choices
         )
-        help_text = status_parser.format_help()
+        help_text = " ".join(status_parser.format_help().split())
 
         self.assertIn("recovery, handoff", help_text)
         self.assertIn("rather than the routine implementation path", help_text)

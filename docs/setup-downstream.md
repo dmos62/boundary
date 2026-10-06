@@ -9,6 +9,7 @@ Boundary source development is documented separately in [setup-development.md](s
 The downstream machine needs:
 
 - Git;
+- write access to the current worktree's Git metadata location so Boundary can automatically probe and persist operation evidence under `<git-dir>/boundary` at authorization and verification entry;
 - mise;
 - Codex when using the current Codex runtime integration;
 - the runtime required by the project's selected Spec Kit script mode.
@@ -108,7 +109,7 @@ Projects that impose broader environment-reproduction policy may do so independe
 Use the installed CLI directly:
 
     boundary inspect <target...>
-    boundary authorize --task <task-id>
+    boundary authorize <task-id> [<task-id> ...]
     boundary verify
     boundary status
     boundary contracts check

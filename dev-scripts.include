@@ -1,11 +1,9 @@
 @cli! bash -lic "mise run contracts-check"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_operation_persistence.py'"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_native_verification.py'"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_lifecycle_outcomes.py'"
-@cli! bash -lic "python -m unittest discover -s tests -p 'test_distribution_surface.py'"
+@cli! bash -lic "python -m unittest discover -s tests -p 'test_task_selected_units.py'"
+@cli! bash -lic "python -m unittest discover -s tests -p 'test_spec_kit_runtime_projection.py'"
+@cli! bash -lic "python -m unittest discover -s tests -p 'test_spec_kit_authorization_cli.py'"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"
-@cli! bash -lic 'printf "%s\n" "--- Operation-evidence persistence references ---"; git grep -n -E "check_operation_evidence_persistence|OPERATION_EVIDENCE_UNAVAILABLE|current_operation_path|operation_archive_path|read_current_operation|write_current_operation|GIT_STATE_UNAVAILABLE|MISSING_EXTERNAL_PREREQUISITE|boundary/current\\.json|\\.git/boundary" -- src integration tests docs 2>/dev/null || true'
-@cli! bash -lic 'printf "%s\n" "--- Persistence lifecycle Boundary context ---"; boundary inspect src/boundary/authorization/storage.py src/boundary/authorization/service.py src/boundary/verification/service.py src/boundary/cli.py'
+@cli! bash -lic 'printf "%s\n" "--- Spec Kit follow-up ownership references ---"; git grep -n -E "Writes:|follow-up|follow up|reopen|refine|duplicate|unique task|task ownership|selectedTaskIds|fresh authorization|feature correctness|live acceptance" -- adapters/speckit skills integration/speckit docs/spec-change-adapter.md docs/spec-lifecycle.md tests/test_task_selected_units.py tests/test_spec_kit_runtime_projection.py tests/test_spec_kit_authorization_cli.py 2>/dev/null || true'
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"

@@ -5,6 +5,8 @@ from pathlib import Path
 from boundary.authorization.model import AuthorizationError
 from boundary.authorization.record import OperationRecord
 from boundary.authorization.storage import (
+    OPERATION_EVIDENCE_UNAVAILABLE,
+    check_operation_evidence_persistence,
     read_current_operation,
     write_current_operation,
 )
@@ -26,6 +28,11 @@ def verify_operation_authorization(
     classify_path: PathClassifier | None = None,
 ) -> VerificationResult:
     """Check actual Git writes against one historical operation record."""
+
+    try:
+        check_operation_evidence_persistence(repository_root)
+    except AuthorizationError as exc:
+        raise _verification_error_from_authorization(exc) from exc
 
     current = _load_current(repository_root)
     _require_operation(current, operation_id)
@@ -112,7 +119,7 @@ def finalize_operation_verification(
     try:
         write_current_operation(repository_root, verified)
     except AuthorizationError as exc:
-        raise VerificationError(str(exc)) from exc
+        raise _verification_error_from_authorization(exc) from exc
     return verified
 
 
@@ -147,3 +154,14 @@ def _require_operation(
                 "finalized",
             )
         )
+
+
+def _verification_error_from_authorization(
+    error: AuthorizationError,
+) -> VerificationError:
+    return VerificationError(
+        diagnostic(
+            error.code or OPERATION_EVIDENCE_UNAVAILABLE,
+            str(error),
+        )
+    )

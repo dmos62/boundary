@@ -20,6 +20,11 @@ from boundary.outcomes import (
     MISSING_EXTERNAL_PREREQUISITE,
     classify_lifecycle_codes,
 )
+from boundary.verification import (
+    VerificationError,
+    finalize_operation_verification,
+    verify_operation_authorization,
+)
 
 
 def run_git(root: Path, *args: str) -> str:
@@ -142,6 +147,80 @@ class OperationPersistenceTests(unittest.TestCase):
         )
         resolve.assert_not_called()
         baseline.assert_not_called()
+
+    def test_verification_checks_persistence_before_loading_operation(
+        self,
+    ) -> None:
+        error = AuthorizationError(
+            "operation evidence is unavailable",
+            code=OPERATION_EVIDENCE_UNAVAILABLE,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            with (
+                mock.patch(
+                    "boundary.verification.service."
+                    "check_operation_evidence_persistence",
+                    side_effect=error,
+                ),
+                mock.patch(
+                    "boundary.verification.service.read_current_operation"
+                ) as read_current,
+                mock.patch(
+                    "boundary.verification.service.capture_git_delta"
+                ) as delta,
+            ):
+                with self.assertRaises(VerificationError) as raised:
+                    verify_operation_authorization(root)
+
+        self.assertEqual(
+            OPERATION_EVIDENCE_UNAVAILABLE,
+            raised.exception.code,
+        )
+        read_current.assert_not_called()
+        delta.assert_not_called()
+
+    def test_verification_storage_failure_preserves_persistence_code(
+        self,
+    ) -> None:
+        current = mock.Mock()
+        current.status = "authorized"
+        current.authorized_targets = ()
+        verified = mock.Mock()
+        current.mark_verified.return_value = verified
+
+        result = mock.Mock()
+        result.operation = current
+        result.blocking = False
+        result.dirty_path_states = ()
+
+        error = AuthorizationError(
+            "operation evidence cannot be stored",
+            code=OPERATION_EVIDENCE_UNAVAILABLE,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            with (
+                mock.patch(
+                    "boundary.verification.service."
+                    "verify_operation_authorization",
+                    return_value=result,
+                ),
+                mock.patch(
+                    "boundary.verification.service.write_current_operation",
+                    side_effect=error,
+                ),
+            ):
+                with self.assertRaises(VerificationError) as raised:
+                    finalize_operation_verification(root)
+
+        self.assertEqual(
+            OPERATION_EVIDENCE_UNAVAILABLE,
+            raised.exception.code,
+        )
+        current.mark_verified.assert_called_once_with(())
 
     def test_persistence_failure_is_missing_external_prerequisite(self) -> None:
         classification = classify_lifecycle_codes(
