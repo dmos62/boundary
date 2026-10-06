@@ -9,16 +9,18 @@
 @glob docs/spec-lifecycle.md
 @glob docs/spec-distribution.md
 @glob docs/spec-distribution-state.md
+@glob docs/setup-downstream.md
 
 @glob skills/implement/SKILL.md
 @glob skills/scope/SKILL.md
 
 @# adapters/speckit/ is not present in this checkout
+@glob integration/speckit-preset/preset.yml
+@glob integration/speckit-preset/commands/tasks.md
 @glob integration/speckit/commands/**
 @glob integration/speckit/extension.yml
 @glob integration/speckit/workflow-overlay.yml
 @glob integration/speckit/runtime/boundary_host/assets.py
-@glob integration/speckit/runtime/boundary_host/commands.py
 @glob integration/speckit/runtime/boundary_host/generated_state.py
 @glob integration/speckit/runtime/boundary_host/host_check.py
 @glob integration/speckit/runtime/boundary_host/host_install.py
