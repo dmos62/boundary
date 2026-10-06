@@ -6,6 +6,7 @@
 @glob ../gui-auto2/BOUNDARY-*
 
 @glob docs/spec.md
+@glob docs/spec-authorization.md
 @glob docs/spec-lifecycle.md
 @glob docs/spec-change-adapter.md
 @glob contracts/boundary-change-adapter.contract.md
@@ -28,7 +29,6 @@
 @globexclude README.md
 @globexclude docs/setup-development.md
 @globexclude docs/setup-downstream.md
-@globexclude docs/spec-authorization.md
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
 @globexclude docs/spec-contracts.md
