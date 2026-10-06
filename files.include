@@ -14,7 +14,6 @@
 @glob contracts/boundary-repository-tooling.contract.md
 
 @glob src/boundary/outcomes.py
-@glob src/boundary/verification.py
 @glob src/boundary/authorization/__init__.py
 @glob src/boundary/authorization/git.py
 @glob src/boundary/authorization/service.py
