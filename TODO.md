@@ -3,7 +3,9 @@
 - [ ] Finish the Spec Kit follow-up-work guidance in canonical integration material.
   - Core adapter semantics and Boundary scope/implementation procedure now preserve one-task-per-path ownership: follow-up work on an already-owned path refines or reopens the owning task outside an active implementation operation instead of appending a duplicate convergence task.
   - Fresh explicit selection and authorization are required after refinement; Boundary verification proves operation scope compliance only, not feature correctness, completion, or live acceptance.
-  - The current repository grep shows no follow-up/reopen guidance in `integration/speckit/` task-generation/refinement material. Inspect the canonical preset/template sources next and add the smallest discoverability guidance there; do not add new Boundary authority semantics.
+  - The repository grep shows no follow-up/reopen guidance in `integration/speckit/` task-generation/refinement material.
+  - The visible canonical integration tree has no preset or task-template source beside the adapter commands, extension manifest, workflow overlay, and runtime materializer. Inspect the runtime asset/materialization sources and repository-wide preset/template candidates next before choosing the canonical augmentation point.
+  - Add the smallest discoverability guidance at that canonical source; do not add new Boundary authority semantics.
 
 - [ ] Eliminate stale downstream instruction references to Boundary-owned lock files.
   - Audit canonical Spec Kit integration/materialization sources for generated instructions that can still mention `boundary.lock.json`.

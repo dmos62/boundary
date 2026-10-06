@@ -1,6 +1,9 @@
 @cli! bash -lic "mise run contracts-check"
 @cli! bash -lic "git diff --check"
-@cli! bash -lic 'printf "%s\n" "--- Spec Kit follow-up ownership references ---"; git grep -n -E "Writes:|follow-up|follow up|reopen|refine|duplicate|unique task|task ownership|selectedTaskIds|fresh authorization|feature correctness|feature completion|live acceptance" -- integration/speckit skills docs/spec-change-adapter.md docs/spec-lifecycle.md 2>/dev/null || true'
-@cli! bash -lic 'printf "%s\n" "--- Spec Kit integration source tree ---"; find integration/speckit -maxdepth 5 -type f | sort'
+@cli! bash -lic 'printf "%s\n" "--- Spec Kit follow-up ownership references ---"; git grep -n -E "Writes:|follow-up|follow up|reopen|refine|duplicate|unique task|task ownership|fresh authorization|feature correctness|feature completion|live acceptance" -- integration/speckit skills docs/spec-change-adapter.md docs/spec-lifecycle.md 2>/dev/null || true'
+@cli! bash -lic 'printf "%s\n" "--- Candidate canonical Spec Kit preset/template sources ---"; find . -maxdepth 7 -type f \( -name "preset.yml" -o -name "preset.yaml" -o -name "*tasks*.md" -o -path "*/templates/*" \) | grep -Ev "^\./(\.agents|\.boundary|\.specify|\.specdd|tests)/" | sort'
+@cli! bash -lic 'printf "%s\n" "--- Boundary-owned lock references ---"; git grep -n -F "boundary.lock.json" -- . ":(exclude).agents/**" ":(exclude).boundary/**" ":(exclude).specify/**" ":(exclude).specdd/**" ":(exclude)tests/**" 2>/dev/null || true'
+@cli! bash -lic 'printf "%s\n" "--- Downstream Boundary installation/version guidance ---"; git grep -n -E "mise install|mise\.lock|boundary\.lock|Boundary.*version|installed boundary|command -v boundary" -- integration/speckit docs skills src pyproject.toml 2>/dev/null || true'
+@cli! bash -lic 'printf "%s\n" "--- Spec Kit integration source tree ---"; find integration/speckit -maxdepth 6 -type f | grep -Ev "/(__pycache__/|.*\.pyc$)" | sort'
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"
