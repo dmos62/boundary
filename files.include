@@ -5,14 +5,12 @@
 @glob dev-scripts.include
 
 @glob docs/spec.md
-@glob docs/spec-change-adapter.md
-@glob docs/spec-lifecycle.md
+@glob docs/spec-agent-instructions.md
 @glob docs/spec-distribution.md
 @glob docs/spec-distribution-state.md
 @glob docs/setup-downstream.md
 
-@glob skills/implement/SKILL.md
-@glob skills/scope/SKILL.md
+@glob adapters/codex/materialize.py
 
 @# adapters/speckit/ is not present in this checkout
 @glob integration/speckit-preset/preset.yml
@@ -27,7 +25,8 @@
 @glob integration/speckit/runtime/boundary_host/host_runtime.py
 @glob integration/speckit/runtime/boundary_host/integration.py
 
-@globexclude tests/**
+@glob tests/test_mise_distribution_integration.py
+
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**
