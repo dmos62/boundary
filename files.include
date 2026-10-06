@@ -5,27 +5,25 @@
 @glob dev-scripts.include
 
 @glob docs/spec.md
-@glob docs/spec-agent-instructions.md
 @glob docs/spec-distribution.md
 @glob docs/spec-distribution-state.md
 @glob docs/setup-downstream.md
 
-@glob adapters/codex/materialize.py
-
-@# adapters/speckit/ is not present in this checkout
 @glob integration/speckit-preset/preset.yml
 @glob integration/speckit-preset/commands/tasks.md
 @glob integration/speckit/commands/**
 @glob integration/speckit/extension.yml
 @glob integration/speckit/workflow-overlay.yml
-@glob integration/speckit/runtime/boundary_host/assets.py
-@glob integration/speckit/runtime/boundary_host/generated_state.py
 @glob integration/speckit/runtime/boundary_host/host_check.py
 @glob integration/speckit/runtime/boundary_host/host_install.py
-@glob integration/speckit/runtime/boundary_host/host_runtime.py
 @glob integration/speckit/runtime/boundary_host/integration.py
 
-@glob tests/test_mise_distribution_integration.py
+@globexclude docs/spec-agent-instructions.md
+@globexclude adapters/codex/materialize.py
+@globexclude integration/speckit/runtime/boundary_host/assets.py
+@globexclude integration/speckit/runtime/boundary_host/generated_state.py
+@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
+@globexclude tests/test_mise_distribution_integration.py
 
 @globexclude .agents/**
 @globexclude .boundary/**

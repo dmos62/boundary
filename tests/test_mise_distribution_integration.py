@@ -63,6 +63,23 @@ class MiseIntegrationLifecycleTests(unittest.TestCase):
                 self._boundary(project, env, "integration", "check"),
             )
 
+            stale_lock_references = self._find_text_references(
+                project,
+                (".agents", ".specify"),
+                "boundary.lock.json",
+            )
+            self.assertEqual([], stale_lock_references)
+
+            workflow_overlay = (
+                project
+                / ".specify"
+                / "workflows"
+                / "overlays"
+                / "speckit"
+                / "boundary.yml"
+            ).read_text(encoding="utf-8")
+            self.assertIn("mise install --locked", workflow_overlay)
+
             status = run_command(
                 project,
                 "git",
@@ -125,6 +142,26 @@ class MiseIntegrationLifecycleTests(unittest.TestCase):
             *args,
             env=env,
         )
+
+    @staticmethod
+    def _find_text_references(
+        project: Path,
+        roots: tuple[str, ...],
+        needle: str,
+    ) -> list[str]:
+        matches: list[str] = []
+        for relative_root in roots:
+            root = project / relative_root
+            for path in sorted(root.rglob("*")):
+                if not path.is_file():
+                    continue
+                try:
+                    content = path.read_text(encoding="utf-8")
+                except UnicodeDecodeError:
+                    continue
+                if needle in content:
+                    matches.append(path.relative_to(project).as_posix())
+        return matches
 
 
 if __name__ == "__main__":
