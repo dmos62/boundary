@@ -64,17 +64,19 @@ class CanonicalBoundarySkillTests(unittest.TestCase):
         ):
             self.assertIn(marker, content)
 
-    def test_implementation_skill_requires_authorization_status_handoff(self):
+    def test_implementation_skill_uses_authorized_unit_inspection(self):
         content = self._content("boundary-implement")
 
         for marker in (
-            "boundary status",
+            "boundary inspect --authorized",
+            "`kind: implementation`",
+            "`status: authorized`",
+            "Git `HEAD`",
+            "authorization baseline",
             "selected task identities",
-            "authorized targets",
-            "Git HEAD",
-            "recorded baseline",
             "mutable change-system task files",
-            "status capsule is query output",
+            "freshly resolved effective Boundary context",
+            "`boundary status` is a recovery, handoff, and debugging query",
         ):
             self.assertIn(marker, content)
 
@@ -87,7 +89,7 @@ class CanonicalBoundarySkillTests(unittest.TestCase):
             "fresh implementation authorization",
             "persistent-contract evolution",
             "Native contract files are not implementation targets",
-            "Boundary verification",
+            "`boundary verify`",
         ):
             self.assertIn(marker, content)
 

@@ -8,57 +8,43 @@
 @glob docs/spec-authorization.md
 @glob docs/spec-change-adapter.md
 @glob docs/spec-lifecycle.md
-@glob docs/spec-agent-instructions.md
+@glob docs/setup-development.md
+@glob docs/setup-downstream.md
 @glob contracts/boundary-change-adapter.contract.md
+@glob contracts/boundary-repository-tooling.contract.md
 
-@glob src/boundary/cli/main.py
-@glob src/boundary/cli/status.py
-@glob src/boundary/cli/inspection.py
 @glob src/boundary/outcomes.py
-@glob src/boundary/authorization/handoff.py
+@glob src/boundary/verification.py
+@glob src/boundary/authorization/__init__.py
+@glob src/boundary/authorization/git.py
+@glob src/boundary/authorization/service.py
+@glob src/boundary/authorization/storage.py
 
-@glob integration/speckit/commands/*.md
-@glob integration/speckit/workflow-overlay.yml
 @glob integration/speckit/runtime/boundary_host/adapter.py
 @glob integration/speckit/runtime/boundary_host/commands.py
 @glob integration/speckit/runtime/boundary_host/errors.py
 @glob integration/speckit/runtime/boundary_host/outcomes.py
 
-@glob skills/implement/SKILL.md
+@glob tests/test_authorization_lifecycle.py
+@glob tests/test_lifecycle_outcomes.py
+@glob tests/test_native_verification.py
+@glob tests/test_operation_record.py
+@glob tests/test_spec_kit_authorization_cli.py
 
-@glob tests/**/*.py
-
-@globexclude ../gui-auto2/BOUNDARY-*
-@globexclude pyproject.toml
-@globexclude mise.toml
-@globexclude README.md
-@globexclude docs/setup-development.md
-@globexclude docs/setup-downstream.md
-@globexclude docs/spec-distribution.md
-@globexclude docs/spec-distribution-state.md
-@globexclude docs/spec-contracts.md
-@globexclude contracts/boundary-repository-tooling.contract.md
-
-@globexclude src/boundary/authorization/codec.py
-@globexclude src/boundary/authorization/engine.py
-@globexclude src/boundary/authorization/git.py
-@globexclude src/boundary/authorization/identities.py
-@globexclude src/boundary/authorization/model.py
-@globexclude src/boundary/authorization/record.py
-@globexclude src/boundary/authorization/record_document.py
-@globexclude src/boundary/authorization/service.py
-@globexclude src/boundary/authorization/storage.py
-
-@globexclude integration/speckit/runtime/boundary_host/discovery.py
-@globexclude integration/speckit/runtime/boundary_host/tasks.py
-
-@globexclude tests/**/*contract*.py
-@globexclude tests/**/*context*.py
-@globexclude tests/**/*distribution*.py
-@globexclude tests/**/*repository*.py
-@globexclude tests/**/*storage*.py
-@globexclude tests/**/*git*.py
-@globexclude tests/**/__pycache__/**
+@globexclude tests/preset_test_support.py
+@globexclude tests/test_agent_*.py
+@globexclude tests/test_authorization_handoff.py
+@globexclude tests/test_authorization_model.py
+@globexclude tests/test_boundary_core_layout.py
+@globexclude tests/test_boundary_status_cli.py
+@globexclude tests/test_distribution_surface.py
+@globexclude tests/test_fresh_authorization.py
+@globexclude tests/test_operation_record_compatibility.py
+@globexclude tests/test_operation_record_task_selection.py
+@globexclude tests/test_spec_kit_runtime_projection.py
+@globexclude tests/test_spec_kit_script_modes.py
+@globexclude tests/test_spec_kit_status_projection.py
+@globexclude tests/test_task_selected_units.py
 
 @globexclude adapters/**
 @globexclude .agents/**

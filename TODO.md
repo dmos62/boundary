@@ -1,18 +1,5 @@
 # Boundary feedback follow-up
 
-- [ ] Finish validating the routine CLI workflow redesign.
-  - Production and canonical instruction changes now target the direct happy path:
-    1. `boundary authorize T012 [T013 ...]`
-    2. `boundary inspect --authorized`
-    3. implement and run ordinary project checks
-    4. `boundary verify`
-  - Direct task selection is positional. `BOUNDARY_TASK_IDS` remains adapter/workflow transport used only when no positional selection is supplied.
-  - Authorize and verify now target one concise `boundary.lifecycle-result/v1` vocabulary with explicit empty diagnostics on success and nonzero exit status for blocked transitions.
-  - `boundary inspect --authorized` is designed to require a current authorized implementation operation and matching authorization `HEAD`, use historical authorized targets, and fresh-resolve target context without creating authority.
-  - `boundary status` remains a recovery/handoff/debugging query instead of a routine implementation prerequisite.
-  - No compound `boundary next` command was added; there is still no usage evidence justifying the extra API and partial-success semantics.
-  - Before closing this item, inspect and update the focused CLI/adapter tests reintroduced by `files.include`, confirm direct positional selection remains separate from environment workflow transport, run the full checks, and narrow the test include set again.
-
 - [ ] Detect operation-evidence persistence problems automatically before expensive lifecycle work.
   - This must not add another user-visible readiness step to the routine workflow.
   - Probe the actual current-worktree Git metadata location used for Boundary operation evidence internally at authorize/verify entry.
