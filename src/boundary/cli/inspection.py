@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TextIO
 
+from boundary.authorization import read_authorization_handoff
 from boundary.contracts import ContractGraph, load_contract_graph
 from boundary.context import (
     ProvenancedText,
@@ -17,16 +18,72 @@ def run_inspect(
     targets: Sequence[str],
     output: TextIO,
 ) -> int:
-    """Resolve and render all requested targets without persisting projections."""
+    """Resolve and render requested targets without persisting projections."""
 
     graph = load_contract_graph(repository_root)
     contexts = tuple(
         resolve_target_context(graph, target)
         for target in targets
     )
+    print(_render_contexts(graph, contexts), file=output)
+    return 0
+
+
+def run_inspect_authorized(
+    repository_root: Path,
+    output: TextIO,
+    errors: TextIO,
+) -> int:
+    """Render the current authorized unit with freshly resolved contexts."""
+
+    handoff = read_authorization_handoff(repository_root)
+    if handoff is None:
+        return _authorized_error(
+            errors,
+            "no current Boundary operation is available",
+        )
+    if handoff.kind != "implementation":
+        return _authorized_error(
+            errors,
+            "current Boundary operation is not an implementation operation",
+        )
+    if handoff.status != "authorized":
+        return _authorized_error(
+            errors,
+            "current Boundary implementation operation is not authorized",
+        )
+    if not handoff.head_matches_baseline:
+        return _authorized_error(
+            errors,
+            "current Git HEAD does not match the authorization baseline",
+        )
+
+    graph = load_contract_graph(repository_root)
+    targets = tuple(
+        target.path
+        for target in handoff.authorized_targets
+    )
+    contexts = tuple(
+        resolve_target_context(graph, target)
+        for target in targets
+    )
+    selected = ", ".join(handoff.selected_task_ids) or "-"
+    unit_lines = [
+        "authorized-unit:",
+        f"  operation-id: {handoff.operation_id}",
+        f"  change-id: {handoff.change_id}",
+        f"  kind: {handoff.kind}",
+        f"  status: {handoff.status}",
+        f"  selected-tasks: {selected}",
+        "  targets:",
+    ]
+    unit_lines.extend(f"    - {target}" for target in targets)
+
     rendered = "\n\n".join(
-        render_target_context(graph, context)
-        for context in contexts
+        (
+            "\n".join(unit_lines),
+            _render_contexts(graph, contexts),
+        )
     )
     print(rendered, file=output)
     return 0
@@ -75,6 +132,24 @@ def render_target_context(
         context.dependency_interfaces,
     )
     return "\n".join(lines)
+
+
+def _render_contexts(
+    graph: ContractGraph,
+    contexts: tuple[TargetContext, ...],
+) -> str:
+    return "\n\n".join(
+        render_target_context(graph, context)
+        for context in contexts
+    )
+
+
+def _authorized_error(
+    errors: TextIO,
+    message: str,
+) -> int:
+    print(f"boundary inspect --authorized: {message}", file=errors)
+    return 2
 
 
 def _append_items(

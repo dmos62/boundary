@@ -96,13 +96,15 @@ Boundary verifies repository state against the active historical operation. The 
 
 Verification stays scoped to the current unit, accounts for valid adapter-owned state, and is not replaced by ordinary tests or host workflow completion.
 
-## Authorization-state handoff
+## Authorization-state queries
 
-An adapter may expose Boundary's compact current authorization handoff for coordinators and workers.
+An adapter may expose Boundary's compact current authorization handoff for coordinators, recovery, and debugging.
 
 The handoff is read-only query output derived from current operation evidence and current Git `HEAD`. The adapter must not reconstruct task authority from mutable host state.
 
-An adapter may report whether the handoff's `changeId` matches its active host change. Reading the handoff requires no task selection and creates no operation evidence.
+Routine implementation workers instead use `boundary inspect --authorized`, which validates the current authorized implementation epoch and baseline, takes target identity from historical evidence, and fresh-resolves effective target context in one read-only invocation.
+
+Neither query selects tasks, grants authority, or creates lifecycle evidence.
 
 ## Scope expansion
 
@@ -127,7 +129,7 @@ Changing host task scope or selection does not authorize contract edits. After c
 
 Target inspection is a Boundary query, not change-system lifecycle state.
 
-Planning tools may invoke `boundary inspect <target...>` whenever context is needed, including declared-scope preflight. Adapters should not persist a context phase or copy canonical contract semantics into host feature artifacts.
+Planning tools may invoke `boundary inspect <target...>` whenever context is needed, including declared-scope preflight. Authorized workers use `boundary inspect --authorized` for the current unit. Adapters should not persist a context phase or copy canonical contract semantics into host feature artifacts.
 
 ## Concrete Spec Kit adapter
 
@@ -139,15 +141,21 @@ Malformed, empty, duplicate, or ambiguously repeated structured write declaratio
 
 After task refinement, the integration should inspect the deterministic ordered union of declared writes through Boundary target inspection. Ownership defects are therefore reported before implementation entry when possible, but this remains non-authorizing.
 
-Implementation authorization requires explicit task IDs. Direct invocation accepts repeated `--task` arguments; the workflow overlay transports the same input through transient `BOUNDARY_TASK_IDS` JSON.
+Implementation authorization requires explicit task IDs. Direct invocation uses positional task IDs:
 
-`BOUNDARY_TASK_IDS` is transport only. It is not persistent project state or operation evidence. No selection means no authorization, not the complete feature.
+    boundary authorize T012 [T013 ...]
+
+The workflow overlay transports the same explicit input through transient `BOUNDARY_TASK_IDS` JSON while invoking `boundary authorize` without positional IDs.
+
+`BOUNDARY_TASK_IDS` is adapter/workflow transport only. It is not persistent project state, operation evidence, or part of the ordinary human-facing CLI workflow. When positional task IDs are supplied, they are the direct selection input; environment transport is used only when no positional selection is supplied.
 
 The adapter's non-blocking `status` query returns Boundary's compact authorization handoff plus whether its change identity matches the active feature. It neither selects tasks nor authorizes or verifies writes.
 
 The adapter is installed under Spec Kit extension identity `boundary`, yielding public wrappers `speckit.boundary.authorize` and `speckit.boundary.verify`. Those wrappers invoke native Boundary transitions; they are adapter commands, not product identities.
 
 The workflow overlay owns the blocking authorization and verification transitions and never reconstructs feature-wide scope. Planning and task refinement use `boundary inspect` on demand. There is no persisted context phase or public validation phase, and extension hooks do not duplicate the overlay gates.
+
+Authorize and verify expose the same concise `boundary.lifecycle-result/v1` command-result vocabulary. Full operation evidence remains in Boundary storage rather than routine stdout.
 
 Spec Kit feature artifacts and `.specify/` state are adapter-owned for actual-write classification unless a path is an authorized implementation target or native Boundary contract.
 

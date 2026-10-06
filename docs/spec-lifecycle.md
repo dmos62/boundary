@@ -12,6 +12,15 @@ Boundary's mandatory lifecycle is:
 
 Each implementation authorization operates on one explicitly selected implementation unit.
 
+For routine direct CLI use the smallest workflow is:
+
+    boundary authorize T012 [T013 ...]
+    boundary inspect --authorized
+    implement and run ordinary project checks
+    boundary verify
+
+In lifecycle-gated integrations, authorization may be performed by the coordinator or workflow. The implementation worker then normally needs only `boundary inspect --authorized` before editing.
+
 Planning and task generation may use Boundary context, but they do not establish implementation authority. Persisted context refresh and separate validation gates are not part of the supported Boundary lifecycle.
 
 Tool installation and generated project integration are prerequisites around this lifecycle rather than authorization phases.
@@ -46,9 +55,9 @@ It uses a fresh ordered change-task projection, explicit selected task identitie
 
 It does not refresh an earlier boundary or reuse an earlier planning or declared-scope diagnostic as authorization evidence.
 
-Missing task selection is a failure; omission never means the complete active change.
+Missing task selection is a failure; omission never means the complete active change. Direct CLI use supplies task IDs positionally. Adapter workflows may transport the same explicit selection separately.
 
-Successful authorization creates the historical operation record consumed by verification.
+Successful authorization creates the historical operation record consumed by verification and emits a concise lifecycle result rather than serializing that record to routine stdout.
 
 An existing unverified operation cannot be silently replaced by another authorization epoch.
 
@@ -56,7 +65,11 @@ An existing unverified operation cannot be silently replaced by another authoriz
 
 Implementation runs under one active implementation operation.
 
-The implementation skill directs the agent to inspect relevant effective contract context, modify only authorized targets, stop before scope expansion, and transition out of implementation when persistent contracts need evolution.
+`boundary inspect --authorized` is the routine implementation-entry query. It requires a current authorized implementation operation with a matching Git baseline, uses the historical authorized target set, fresh-resolves effective Boundary context, and renders the unit identity and target context in one invocation.
+
+The implementation skill directs the agent to modify only those authorized targets, preserve all applicable constraints, stop before scope expansion, and transition out of implementation when persistent contracts need evolution.
+
+`boundary status` remains available for recovery, handoff, and debugging. It is not an additional routine implementation prerequisite when authorized-unit inspection has already established operation identity, baseline freshness, target scope, and current effective context.
 
 Deterministic checks remain authoritative even if an agent fails to follow the skill.
 
@@ -89,15 +102,19 @@ Successful verification closes the current epoch by marking its operation record
 
 Those identities are the only provenance accepted for dirty-target carry-forward.
 
+The routine verify command emits a concise lifecycle result and does not dump verification path-state fingerprints.
+
 Feature correctness and broader convergence are separate.
 
-## Machine-readable lifecycle outcomes
+## Machine-readable lifecycle results
 
-Blocking Boundary results expose stable machine-readable lifecycle semantics in addition to human-readable diagnostics.
+Authorize and verify results use `schema: boundary.lifecycle-result/v1`.
 
-The version-1 blocked outcome contains `schema: boundary.lifecycle-outcome/v1`, `status: blocked`, the lifecycle stage, one stable category, one structured diagnostic code, the human-readable message, available change and operation identities, structured diagnostics when produced by the underlying check, and an optional required Boundary transition.
+Every result contains `status`, `stage`, and a structured `diagnostics` collection. Successful results contain an explicit empty diagnostics collection and available operation/change identity. Authorization success additionally contains selected task identities and exact authorized target paths. Verification success contains selected task identities when applicable.
 
-Stable categories include:
+Blocked results use `status: blocked` and additionally expose one stable category, one structured diagnostic code, the human-readable message, available change and operation identities, structured diagnostics, and an optional required Boundary transition.
+
+Stable blocked categories include:
 
 - `scope-expansion-required`;
 - `contract-evolution-required`;
@@ -106,15 +123,13 @@ Stable categories include:
 - `stale-authorization`;
 - `verification-write-scope-failure`.
 
-Verification keeps its historical semantics when producing these outcomes.
+Blocking lifecycle commands retain nonzero process exit status. Consumers do not need a wrapper or output-filtering pipeline to preserve failure semantics.
+
+Verification keeps its historical semantics when producing these results.
 
 An undeclared or unowned actual write remains a verification failure; current mutable task state is not consulted to reinterpret or authorize it.
 
-The outcome may additionally identify the required Boundary transition.
-
-Declared-scope preflight uses the same vocabulary where applicable but never contains an operation identity because preflight creates no operation.
-
-Structured outcomes describe Boundary state and required Boundary lifecycle transitions. They do not decide whether an outer controller should pause, retry, ask a human, or continue another activity.
+Structured results describe Boundary state and required Boundary lifecycle transitions. They do not decide whether an outer controller should pause, retry, ask a human, or continue another activity.
 
 ## Contract evolution
 
@@ -148,13 +163,14 @@ A concrete change system may impose additional governance without making it a Bo
 
 ## Product CLI direction
 
-The canonical installed product-level command surface includes:
+The canonical installed product-level command surface is intentionally small:
 
+    boundary authorize T012 [T013 ...]
+    boundary inspect --authorized
     boundary inspect <target...>
-    boundary contracts check
-    boundary authorize
     boundary verify
     boundary status
+    boundary contracts check
 
 Boundary-specific generated integration is managed separately through:
 
@@ -162,19 +178,15 @@ Boundary-specific generated integration is managed separately through:
     boundary integration check
     boundary integration remove
 
-These commands use Boundary terminology and do not depend on callers knowing Python module paths, uv invocation details, copied runtime locations, or adapter script paths.
+`authorize`, `inspect --authorized`, and `verify` form the routine direct implementation path.
 
-`boundary status` is a read-only query.
+Ordinary `boundary inspect <target...>` is situational: planning, undeclared-target investigation, declared-scope preflight, and focused queries.
 
-It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists.
+`boundary status` is a read-only recovery, handoff, and debugging query. It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists. It does not select tasks, create operation evidence, replace authorization or verification, or act as installation health checking.
 
-It does not select tasks, create operation evidence, replace authorization or verification, or act as installation health checking.
+`boundary contracts` and `boundary integration` are maintenance surfaces rather than routine implementation stages.
 
-`boundary integration check` owns integration health reporting and does not duplicate mise's source-lock behavior.
-
-Declared-scope preflight composes the existing `boundary inspect` query over structured targets.
-
-It does not add another mandatory Boundary lifecycle phase or require a persisted preflight artifact.
+No compound `boundary next` command is defined. Explicit `verify` followed by explicit `authorize` remains the lifecycle until actual usage demonstrates recurring friction worth additional API and partial-success semantics.
 
 ## Spec Kit adapter
 

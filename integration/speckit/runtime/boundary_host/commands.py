@@ -11,6 +11,7 @@ from boundary.authorization import (
     AuthorizationError,
     read_current_operation,
 )
+from boundary.outcomes import LifecycleSuccess
 from boundary.verification import VerificationError
 
 from .adapter import authorize_feature, verify_feature
@@ -31,7 +32,7 @@ def run_authorize(
 
     try:
         selected = _resolve_task_selection(task_ids)
-        feature_dir, feature_path = active_feature(root)
+        feature_dir, _ = active_feature(root)
         record = authorize_feature(root, feature_dir, selected)
     except _BLOCKING_ERRORS as exc:
         return _render_error(
@@ -42,12 +43,18 @@ def run_authorize(
             errors,
         )
 
-    _render_success(
-        {
-            "adapter": "speckit",
-            "feature": feature_path,
-            "operation": record.to_document(),
-        },
+    _render_json(
+        LifecycleSuccess(
+            stage="authorize",
+            status=record.status,
+            operation_id=record.operation_id,
+            change_id=record.change_id,
+            selected_task_ids=record.selected_task_ids,
+            authorized_targets=tuple(
+                target.path
+                for target in record.authorized_targets
+            ),
+        ).to_document(),
         output,
     )
     return 0
@@ -61,7 +68,7 @@ def run_verify(
     """Verify the active Spec Kit implementation operation."""
 
     try:
-        feature_dir, feature_path = active_feature(root)
+        feature_dir, _ = active_feature(root)
         record = verify_feature(root, feature_dir)
     except _BLOCKING_ERRORS as exc:
         return _render_error(
@@ -72,12 +79,14 @@ def run_verify(
             errors,
         )
 
-    _render_success(
-        {
-            "adapter": "speckit",
-            "feature": feature_path,
-            "operation": record.to_document(),
-        },
+    _render_json(
+        LifecycleSuccess(
+            stage="verify",
+            status=record.status,
+            operation_id=record.operation_id,
+            change_id=record.change_id,
+            selected_task_ids=record.selected_task_ids,
+        ).to_document(),
         output,
     )
     return 0
@@ -116,8 +125,8 @@ def _resolve_task_selection(
     if raw is None or not raw.strip():
         raise SpecKitAdapterError(
             "implementation authorization requires explicit task ids; "
-            "pass --task for each selected task or set BOUNDARY_TASK_IDS "
-            "to a JSON array",
+            "pass task ids positionally or, for workflow integration, "
+            "set BOUNDARY_TASK_IDS to a JSON array",
             code="INVALID_TASK_SELECTION",
         )
     try:
@@ -163,7 +172,7 @@ def _render_error(
         change_id=change_id,
         operation_id=_current_operation_id(root),
     )
-    _render_success(outcome.to_document(), output)
+    _render_json(outcome.to_document(), output)
     print(f"boundary Spec Kit adapter: {error}", file=errors)
     return 2
 
@@ -176,7 +185,7 @@ def _current_operation_id(root: Path) -> str | None:
     return None if current is None else current.operation_id
 
 
-def _render_success(
+def _render_json(
     value: dict[str, object],
     output: TextIO,
 ) -> None:

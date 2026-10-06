@@ -1,33 +1,17 @@
 # Boundary feedback follow-up
 
-- [ ] Redesign the routine CLI path around the smallest clear Boundary workflow.
-  - Treat the intended direct-use happy path as:
+- [ ] Finish validating the routine CLI workflow redesign.
+  - Production and canonical instruction changes now target the direct happy path:
     1. `boundary authorize T012 [T013 ...]`
     2. `boundary inspect --authorized`
     3. implement and run ordinary project checks
     4. `boundary verify`
-  - In integrations where authorize/verify are lifecycle gates, the implementation worker should normally need only `boundary inspect --authorized` before editing.
-  - Replace repeated `--task` flags with positional task IDs for direct CLI use. Explicit selection remains mandatory; positional syntax is still explicit authority input.
-  - Keep `BOUNDARY_TASK_IDS` only as adapter/workflow transport where a shell integration needs it. Do not make environment transport part of the ordinary human-facing CLI.
-  - Make `boundary authorize` emit a concise result describing the authorized unit: status, operation ID, change ID, selected tasks, and exact authorized targets. Do not dump the persisted operation record, Git baseline fingerprints, or storage-oriented evidence.
-  - Make `boundary verify` emit a similarly concise result: status, operation ID, change ID, selected tasks when useful, and diagnostics. Do not dump verification path-state fingerprints.
-  - Use one consistent command-result vocabulary for successful and blocked authorize/verify results. Successful results should contain an explicit empty diagnostics collection.
-  - Preserve useful nonzero process exit status for blocked lifecycle transitions without requiring wrappers or pipelines.
-  - Add `boundary inspect --authorized` as a read-only convenience over the current authorized operation:
-    - require a current `implementation` operation with `status: authorized`;
-    - require current HEAD to match its authorization baseline;
-    - inspect the exact authorized target set from historical operation evidence rather than current mutable tasks;
-    - resolve fresh effective Boundary context for those targets;
-    - render the authorized-unit identity plus the target contexts in one invocation;
-    - grant no new authority and create no lifecycle state.
-  - Keep ordinary `boundary inspect <target...>` for planning, undeclared-target investigation, and focused queries.
-  - Keep `boundary status` as a recovery/handoff/debugging query, not a required happy-path command before implementation when `inspect --authorized` has already established current operation identity, baseline freshness, targets, and effective context.
-  - Update the implementation skill accordingly so it does not require both `status` and separate per-target inspection during routine use.
-  - Make `boundary --help` lead with the routine lifecycle and distinguish routine commands from situational queries and maintenance commands.
-  - Keep the core product vocabulary small: `authorize`, `inspect`, `verify`, `status`, `contracts`, and `integration`. Do not add aliases or output-mode switches without a concrete need.
-  - Before implementation, inspect the focused CLI/adapter tests and integration call sites and re-include only those relevant tests in `files.include`. Confirm that positional direct selection and environment-based workflow transport can remain separate without special-case ambiguity.
-  - Reconsider, but do not automatically add, a compound `boundary next <task...>` command. Only add it if actual multi-unit direct usage demonstrates that explicit `verify` followed by `authorize` is recurring friction worth the extra API surface and partial-success semantics.
-  - Update `docs/spec-authorization.md`, `docs/spec-change-adapter.md`, `docs/spec-lifecycle.md`, focused CLI help, Spec Kit integration instructions, and tests together.
+  - Direct task selection is positional. `BOUNDARY_TASK_IDS` remains adapter/workflow transport used only when no positional selection is supplied.
+  - Authorize and verify now target one concise `boundary.lifecycle-result/v1` vocabulary with explicit empty diagnostics on success and nonzero exit status for blocked transitions.
+  - `boundary inspect --authorized` is designed to require a current authorized implementation operation and matching authorization `HEAD`, use historical authorized targets, and fresh-resolve target context without creating authority.
+  - `boundary status` remains a recovery/handoff/debugging query instead of a routine implementation prerequisite.
+  - No compound `boundary next` command was added; there is still no usage evidence justifying the extra API and partial-success semantics.
+  - Before closing this item, inspect and update the focused CLI/adapter tests reintroduced by `files.include`, confirm direct positional selection remains separate from environment workflow transport, run the full checks, and narrow the test include set again.
 
 - [ ] Detect operation-evidence persistence problems automatically before expensive lifecycle work.
   - This must not add another user-visible readiness step to the routine workflow.

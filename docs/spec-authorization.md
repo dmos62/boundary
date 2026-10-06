@@ -55,7 +55,7 @@ It verifies canonical paths, operation kind, selected-task validity, unambiguous
 
 Authorization captures `HEAD` around the dirty-state snapshot. If `HEAD` changes while that snapshot is being captured, authorization fails closed with `GIT_STATE_UNAVAILABLE` rather than storing a baseline assembled across two revisions.
 
-Missing, unknown, duplicate, or empty-write task selection is blocking input failure. Omitted selection never means all tasks.
+Missing, unknown, duplicate, or empty-write task selection is blocking input failure. Omitted direct CLI selection never means all tasks; adapters may provide the same explicit selection through workflow transport.
 
 No feature-local Change Boundary or refresh-time context sidecar is required.
 
@@ -110,7 +110,7 @@ One operation is never split across independently writable boundary, selection, 
 
 ## Authorization-state handoff
 
-Boundary may project the current operation into a compact read-only authorization handoff for coordinator-to-worker transfer.
+Boundary may project the current operation into a compact read-only authorization handoff for coordinator transfer, recovery, and debugging.
 
 The version-1 handoff contains:
 
@@ -126,17 +126,43 @@ The handoff is derived from the current atomic operation record plus a fresh Git
 
 Canonical `boundary status` serializes this handoff document directly as JSON. When there is no current operation, it emits JSON `null`.
 
-A matching `HEAD` is only one useful freshness fact. The handoff must not claim that semantic contract context or actual writes have been reverified. Effective contract prose remains available through target inspection, and authoritative closure remains `boundary verify`.
+`boundary status` is not required in the routine implementation path. It exists for handoff, recovery, and debugging where the lower-level authorization evidence projection is useful.
 
 Reading a handoff:
 
 - does not select tasks;
 - does not widen or refresh authority;
-- does not replace target inspection;
+- does not fresh-resolve contract context;
 - does not replace authorization or verification;
 - does not mutate operation evidence.
 
-If there is no current operation, the handoff is absent.
+## Authorized-unit inspection
+
+`boundary inspect --authorized` is the routine read-only implementation-entry query after authorization.
+
+It:
+
+- requires a current operation with `kind: implementation`;
+- requires that operation to have `status: authorized`;
+- requires current Git `HEAD` to equal the authorization baseline;
+- takes the exact target set from historical operation evidence;
+- does not consult current mutable task scope to reconstruct authority;
+- fresh-loads the native contract graph;
+- resolves effective Boundary context for every authorized target;
+- renders the authorized unit identity and all target contexts together;
+- creates no operation state and grants no new authority.
+
+Ordinary `boundary inspect <target...>` remains available for planning, undeclared-target investigation, and focused context queries.
+
+## CLI lifecycle results
+
+Direct `boundary authorize` and `boundary verify` use the common `boundary.lifecycle-result/v1` result vocabulary.
+
+Successful results are concise. They contain lifecycle stage and status, operation and change identity, selected tasks when applicable, exact authorized target paths for authorization, and an explicit empty `diagnostics` collection. They do not serialize the persisted operation record, Git baseline dirty-state fingerprints, carry-forward evidence, or verification final path-state fingerprints.
+
+Blocked results use the same result schema and stage vocabulary with `status: blocked`, stable classification fields, structured diagnostics, and available operation or change identities. Blocking transitions retain nonzero process exit status.
+
+The concise command result is presentation output only. Full historical evidence remains in the atomic operation store.
 
 ## Storage and atomicity
 

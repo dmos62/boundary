@@ -12,7 +12,7 @@ from boundary.contracts import ContractGraphError, ContractParseError
 from boundary.repository import RepositoryPathError
 
 from .contracts import run_contracts_check
-from .inspection import run_inspect
+from .inspection import run_inspect, run_inspect_authorized
 from .status import run_status
 
 
@@ -22,19 +22,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="boundary",
         description=(
-            "Persistent project contracts and operation authorization for coding agents.\n"
-            "Inspect effective contract context, authorize an explicit task-selected\n"
-            "implementation unit, then verify actual writes."
+            "Persistent project contracts and operation authorization for "
+            "coding agents.\nAuthorize an explicit task-selected unit, inspect "
+            "its effective context, implement it, then verify actual writes."
         ),
         epilog=(
-            "Implementation lifecycle:\n"
-            "  boundary inspect <target...>\n"
-            "  boundary authorize --task <task-id> [--task <task-id> ...]\n"
-            "  implement only the authorized targets\n"
+            "Routine implementation lifecycle:\n"
+            "  boundary authorize T012 [T013 ...]\n"
+            "  boundary inspect --authorized\n"
+            "  implement only the authorized targets and run project checks\n"
             "  boundary verify\n"
             "\n"
-            "State and maintenance:\n"
+            "Situational queries:\n"
+            "  boundary inspect <target...>\n"
             "  boundary status\n"
+            "\n"
+            "Maintenance:\n"
             "  boundary contracts check\n"
             "  boundary integration install|check|remove"
         ),
@@ -50,36 +53,43 @@ def build_parser() -> argparse.ArgumentParser:
 
     inspect_parser = commands.add_parser(
         "inspect",
-        help="Resolve effective contract context for repository targets.",
+        help="Inspect effective context for targets or the authorized unit.",
         description=(
-            "Resolve effective Boundary contract context for one or more "
-            "repository-relative targets without persisting state."
+            "Resolve effective Boundary contract context without persisting "
+            "state. Pass repository targets for focused inspection, or use "
+            "--authorized to inspect the exact current authorized target set."
+        ),
+    )
+    inspect_parser.add_argument(
+        "--authorized",
+        action="store_true",
+        help=(
+            "Inspect the exact targets from the current authorized "
+            "implementation operation and require a fresh Git baseline."
         ),
     )
     inspect_parser.add_argument(
         "targets",
-        nargs="+",
-        help="Repository-relative target path.",
+        nargs="*",
+        help="Repository-relative target path for focused inspection.",
     )
 
     authorize_parser = commands.add_parser(
         "authorize",
         help="Authorize one explicitly selected implementation unit.",
         description=(
-            "Authorize one implementation unit from explicitly selected tasks in "
-            "the active change. Pass --task at least once; repeat it for a "
-            "multi-task unit."
+            "Authorize one implementation unit from explicitly selected tasks "
+            "in the active change. For direct use, pass one or more task IDs "
+            "positionally. Workflow integrations may use adapter transport."
         ),
     )
     authorize_parser.add_argument(
-        "--task",
-        action="append",
-        dest="task_ids",
-        default=[],
+        "task_ids",
+        nargs="*",
         metavar="TASK_ID",
         help=(
-            "Select one task for this implementation unit; repeat for multi-task "
-            "units. Explicit task selection is required."
+            "Task ID selected for this implementation unit. Pass multiple "
+            "IDs for a multi-task unit."
         ),
     )
 
@@ -96,7 +106,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show current Boundary authorization state.",
         description=(
             "Emit the current Boundary authorization handoff as JSON, or null "
-            "when no current operation exists."
+            "when no current operation exists. Intended for recovery, handoff, "
+            "and debugging rather than the routine implementation path."
         ),
     )
 
@@ -119,8 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
         "integration",
         help="Manage Boundary-owned project integration.",
         description=(
-            "Manage Boundary-owned generated project integration separately from "
-            "mise-owned Boundary installation and version selection."
+            "Manage Boundary-owned generated project integration separately "
+            "from mise-owned Boundary installation and version selection."
         ),
     )
     integration_commands = integration_parser.add_subparsers(
@@ -164,6 +175,22 @@ def main(
         if args.command == "contracts":
             return run_contracts_check(root, output)
         if args.command == "inspect":
+            if args.authorized:
+                if args.targets:
+                    print(
+                        "boundary: error: --authorized cannot be combined "
+                        "with explicit targets",
+                        file=errors,
+                    )
+                    return 2
+                return run_inspect_authorized(root, output, errors)
+            if not args.targets:
+                print(
+                    "boundary: error: inspect requires one or more targets "
+                    "or --authorized",
+                    file=errors,
+                )
+                return 2
             return run_inspect(root, args.targets, output)
         if args.command == "status":
             return run_status(root, output)

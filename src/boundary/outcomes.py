@@ -1,4 +1,4 @@
-"""Stable machine-readable lifecycle outcome vocabulary."""
+"""Stable machine-readable lifecycle result vocabulary."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ MISSING_EXTERNAL_PREREQUISITE = "missing-external-prerequisite"
 STALE_AUTHORIZATION = "stale-authorization"
 VERIFICATION_WRITE_SCOPE_FAILURE = "verification-write-scope-failure"
 BOUNDARY_FAILURE = "boundary-failure"
+
+_RESULT_SCHEMA = "boundary.lifecycle-result/v1"
 
 _STALE_CODES = frozenset(
     {
@@ -50,7 +52,7 @@ class LifecycleClassification:
 
 @dataclass(frozen=True, slots=True)
 class LifecycleDiagnostic:
-    """One machine-readable diagnostic contributing to a lifecycle outcome."""
+    """One machine-readable diagnostic contributing to a lifecycle result."""
 
     code: str
     message: str
@@ -64,6 +66,33 @@ class LifecycleDiagnostic:
         if self.paths:
             value["paths"] = list(self.paths)
         return value
+
+
+@dataclass(frozen=True, slots=True)
+class LifecycleSuccess:
+    """One concise successful authorize or verify command result."""
+
+    stage: str
+    status: str
+    operation_id: str
+    change_id: str
+    selected_task_ids: tuple[str, ...] = ()
+    authorized_targets: tuple[str, ...] = ()
+
+    def to_document(self) -> dict[str, object]:
+        document: dict[str, object] = {
+            "schema": _RESULT_SCHEMA,
+            "status": self.status,
+            "stage": self.stage,
+            "operationId": self.operation_id,
+            "changeId": self.change_id,
+            "diagnostics": [],
+        }
+        if self.selected_task_ids:
+            document["selectedTaskIds"] = list(self.selected_task_ids)
+        if self.authorized_targets:
+            document["authorizedTargets"] = list(self.authorized_targets)
+        return document
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,12 +110,16 @@ class LifecycleOutcome:
 
     def to_document(self) -> dict[str, object]:
         document: dict[str, object] = {
-            "schema": "boundary.lifecycle-outcome/v1",
+            "schema": _RESULT_SCHEMA,
             "status": "blocked",
             "stage": self.stage,
             "category": self.category,
             "code": self.code,
             "message": self.message,
+            "diagnostics": [
+                item.to_document()
+                for item in self.diagnostics
+            ],
         }
         if self.change_id is not None:
             document["changeId"] = self.change_id
@@ -94,11 +127,6 @@ class LifecycleOutcome:
             document["operationId"] = self.operation_id
         if self.required_transition is not None:
             document["requiredTransition"] = self.required_transition
-        if self.diagnostics:
-            document["diagnostics"] = [
-                item.to_document()
-                for item in self.diagnostics
-            ]
         return document
 
 

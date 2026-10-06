@@ -34,10 +34,13 @@ Current task text is not historical authorization evidence.
    - rejects native contract writes during implementation;
    - fresh-resolves ownership and effective target context;
    - closes the operation only when verification has no blocking diagnostic.
+8. Successful verification emits a concise `boundary.lifecycle-result/v1` result containing verified status, operation and change identity, selected tasks when applicable, and an explicit empty diagnostics collection. Verification path-state fingerprints remain in operation evidence rather than routine stdout.
 
 ## Failure behavior
 
 A changed active feature, wrong operation kind, undeclared write, operation-kind violation, changed contract context, missing owner, ambiguous owner, changed Git baseline, invalid operation record, or invalid adapter classification is blocking.
+
+Blocked verify output uses the same lifecycle-result vocabulary and retains a nonzero process exit status.
 
 Do not alter current tasks or operation evidence to make verification succeed.
 

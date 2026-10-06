@@ -3,7 +3,6 @@
 @glob TODO.md
 @glob files.include
 @glob dev-scripts.include
-@glob ../gui-auto2/BOUNDARY-*
 
 @glob docs/spec.md
 @glob docs/spec-authorization.md
@@ -17,8 +16,6 @@
 @glob src/boundary/cli/inspection.py
 @glob src/boundary/outcomes.py
 @glob src/boundary/authorization/handoff.py
-@glob src/boundary/authorization/record.py
-@glob src/boundary/authorization/record_document.py
 
 @glob integration/speckit/commands/*.md
 @glob integration/speckit/workflow-overlay.yml
@@ -29,7 +26,9 @@
 
 @glob skills/implement/SKILL.md
 
-@globexclude tests/**
+@glob tests/**/*.py
+
+@globexclude ../gui-auto2/BOUNDARY-*
 @globexclude pyproject.toml
 @globexclude mise.toml
 @globexclude README.md
@@ -45,11 +44,21 @@
 @globexclude src/boundary/authorization/git.py
 @globexclude src/boundary/authorization/identities.py
 @globexclude src/boundary/authorization/model.py
+@globexclude src/boundary/authorization/record.py
+@globexclude src/boundary/authorization/record_document.py
 @globexclude src/boundary/authorization/service.py
 @globexclude src/boundary/authorization/storage.py
 
 @globexclude integration/speckit/runtime/boundary_host/discovery.py
 @globexclude integration/speckit/runtime/boundary_host/tasks.py
+
+@globexclude tests/**/*contract*.py
+@globexclude tests/**/*context*.py
+@globexclude tests/**/*distribution*.py
+@globexclude tests/**/*repository*.py
+@globexclude tests/**/*storage*.py
+@globexclude tests/**/*git*.py
+@globexclude tests/**/__pycache__/**
 
 @globexclude adapters/**
 @globexclude .agents/**

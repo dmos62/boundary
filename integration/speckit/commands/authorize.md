@@ -26,13 +26,14 @@ It does not maintain a separate context or validation lifecycle state.
 6. Reject malformed, empty, duplicate, or ambiguously repeated structured write declarations.
 7. Ignore incidental path-looking prose for authorization scope.
 8. Require an explicit non-empty implementation task selection.
-9. For direct invocation, use the installed Boundary command and pass each selected task through a repeated `--task` argument:
+9. For direct invocation, use positional task IDs:
 
-       boundary authorize --task <task-id> [--task <task-id> ...]
+       boundary authorize <task-id> [<task-id> ...]
 
-10. When authorization is entered through the workflow overlay, use its transient `BOUNDARY_TASK_IDS` JSON-array transport instead of reconstructing feature-wide scope.
-11. The installed Boundary command delegates change-system translation to the packaged Spec Kit adapter without locating copied runtime source or a project-local launcher.
-12. Boundary then:
+10. When authorization is entered through the workflow overlay, use its transient `BOUNDARY_TASK_IDS` JSON-array transport and invoke `boundary authorize` without positional IDs.
+11. Positional task IDs are direct CLI input. `BOUNDARY_TASK_IDS` exists only for adapter/workflow transport when no positional selection is supplied.
+12. The installed Boundary command delegates change-system translation to the packaged Spec Kit adapter without locating copied runtime source or a project-local launcher.
+13. Boundary then:
    - validates the selected task identities against the fresh task projection;
    - projects only the selected tasks' structured writes;
    - reloads canonical native contracts;
@@ -41,10 +42,13 @@ It does not maintain a separate context or validation lifecycle state.
    - captures the current Git authorization baseline;
    - verifies predecessor provenance for any already-dirty target;
    - atomically stores the successful operation record, selected task identities, and authorized targets in current-worktree Git metadata.
+14. Successful direct authorization emits a concise `boundary.lifecycle-result/v1` result containing status, operation ID, change ID, selected tasks, exact authorized targets, and an explicit empty diagnostics collection. Full baseline and storage evidence are not routine stdout.
 
 ## Failure behavior
 
 Missing, unknown, or duplicate task selection; an empty selected-unit write set; malformed task state; unowned targets; ambiguous ownership; invalid canonical contracts; pre-authorization target modifications without verified provenance; and stale active operations are blocking.
+
+Blocked authorize output uses the same lifecycle-result vocabulary and retains a nonzero process exit status.
 
 Do not regenerate a planning projection, infer an all-task selection, or reinterpret descriptive task prose to make authorization succeed.
 

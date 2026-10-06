@@ -1,6 +1,7 @@
 @cli! bash -lic "mise run contracts-check"
 @cli! bash -lic "mise run test"
 @cli! bash -lic "git diff --check"
+@cli! bash -lic 'printf "%s\n" "--- Focused lifecycle test files ---"; git grep -l -E "run_authorize|run_verify|run_inspect|boundary authorize|boundary inspect|boundary verify|BOUNDARY_TASK_IDS|lifecycle-(outcome|result)|LifecycleOutcome|LifecycleSuccess" -- tests 2>/dev/null | sort || true'
 @cli! bash -lic 'printf "%s\n" "--- Boundary CLI help ---"; boundary --help; printf "%s\n" "--- authorize help ---"; boundary authorize --help; printf "%s\n" "--- inspect help ---"; boundary inspect --help; printf "%s\n" "--- verify help ---"; boundary verify --help; printf "%s\n" "--- status help ---"; boundary status --help'
 @cli! bash -lic 'printf "%s\n" "--- Changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "*.py" "*.md" "*.toml" "*.yml" "*.yaml"); exit "$failed"'
 @cli! bash -lic "git status --short"

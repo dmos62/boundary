@@ -64,9 +64,13 @@ It does not authorize implementation.
 
 Use only after successful implementation authorization.
 
-It establishes current authority from deterministic `boundary status` output, inspects effective context before changing targets, preserves all applicable constraints, writes only authorized targets, stops before scope expansion, and transitions to contract evolution when required behavior cannot satisfy current contracts.
+Its routine entry query is `boundary inspect --authorized`. That query requires an authorized implementation operation with a matching Git baseline, obtains the target set from historical operation evidence, and fresh-resolves the effective Boundary context for the complete authorized unit.
 
-It does not alter authorization evidence.
+The skill preserves all applicable constraints, writes only authorized targets, stops before scope expansion, and transitions to contract evolution when required behavior cannot satisfy current contracts.
+
+`boundary status` is reserved for recovery, handoff, and debugging rather than being an additional routine prerequisite.
+
+The skill does not alter authorization evidence.
 
 ### `boundary-contracts`
 
@@ -98,15 +102,20 @@ Codex and Claude Code remain concrete adapters rather than members of a generali
 
 ## Effective-context query
 
-Boundary provides an on-demand query equivalent to:
+Boundary provides two on-demand inspection forms:
 
-    boundary inspect <target>
+    boundary inspect <target...>
+    boundary inspect --authorized
 
-The agent-oriented result includes only relevant facts, including target path, primary owner, applicable contracts, semantic items with provenance, relevant dependency interfaces, and canonical source identities.
+Focused target inspection is for planning, task refinement, undeclared-target investigation, and other situational queries.
+
+Authorized-unit inspection is for routine implementation after authorization. It renders the unit identity plus freshly resolved effective context for the exact historical authorized target set and grants no new authority.
+
+The agent-oriented target result includes only relevant facts, including target path, primary owner, applicable contracts, semantic items with provenance, relevant dependency interfaces, and canonical source identities.
 
 Agents may request raw canonical contracts when a projection is insufficient.
 
-Planning and task refinement query this context on demand. They do not create a persisted planning-context lifecycle state.
+Planning and task refinement query context on demand. They do not create a persisted planning-context lifecycle state.
 
 For the Spec Kit adapter, only exact structured `Writes:` declarations become authorization input.
 
@@ -114,15 +123,20 @@ For the Spec Kit adapter, only exact structured `Writes:` declarations become au
 
 Installed downstream projects use the mise-installed `boundary` executable for semantic operations:
 
+    boundary authorize T012 [T013 ...]
+    boundary inspect --authorized
     boundary inspect <target...>
-    boundary authorize --task <task-id>
     boundary verify
     boundary status
     boundary contracts check
 
 Agents do not reconstruct Python import paths, package locations, adapter script paths, copied-runtime locations, or uv cache configuration during ordinary downstream work.
 
-`boundary status` emits the compact `boundary.authorization-handoff/v1` document.
+Direct task selection is positional. `BOUNDARY_TASK_IDS` remains adapter/workflow transport for integrations that need shell-level selection transfer and is not part of the ordinary direct-use procedure.
+
+Authorize and verify emit concise `boundary.lifecycle-result/v1` documents. Successful results contain explicit empty diagnostics and omit persisted Git baseline or verification path-state fingerprints.
+
+`boundary status` emits the compact `boundary.authorization-handoff/v1` document for recovery, handoff, and debugging.
 
 When an operation exists, the handoff projects:
 
@@ -137,7 +151,7 @@ When an operation exists, the handoff projects:
 
 The handoff is query output derived from historical operation evidence and current repository state. It does not reconstruct authority from mutable change-system planning files and does not become another persistent source of truth.
 
-A delegated implementation worker requires an implementation operation with `status: authorized`, an authorized target, and a matching Git baseline before writing.
+A delegated implementation worker normally establishes current implementation authority and context with `boundary inspect --authorized` before writing.
 
 The installed `boundary` command delegates `authorize` and `verify` to the packaged change-system adapter while keeping adapter module layout out of normal agent procedure.
 
@@ -192,4 +206,4 @@ Prompt wording never converts a deterministic failure into permission.
 
 ## Evaluation criteria
 
-The instruction architecture is tested for small runtime-neutral canonical skills, deterministic materialization, stable skill bytes, compact worker handoff, explicit write-scope discipline, reliable scope expansion, correct contract-evolution transitions, additive constraint preservation, clear provenance, and low-context use of the installed semantic command surface.
+The instruction architecture is tested for small runtime-neutral canonical skills, deterministic materialization, stable skill bytes, concise lifecycle command results, compact recovery handoff, explicit write-scope discipline, reliable scope expansion, correct contract-evolution transitions, additive constraint preservation, clear provenance, and low-context use of the installed semantic command surface.
