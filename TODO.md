@@ -1,14 +1,14 @@
 # Boundary feedback follow-up
 
-- [ ] Detect operation-evidence persistence problems automatically before expensive lifecycle work.
-  - This must not add another user-visible readiness step to the routine workflow.
-  - Probe the actual current-worktree Git metadata location used for Boundary operation evidence internally at authorize/verify entry.
+- [ ] Finish automatic operation-evidence persistence readiness at lifecycle entry.
+  - Core operation storage now has a temporary create/remove probe against the actual current-worktree Git metadata directory.
+  - Authorization invokes the probe before contract resolution or Git baseline capture.
+  - Persistence failures use `OPERATION_EVIDENCE_UNAVAILABLE`, classified as `missing-external-prerequisite`; storage I/O failures use the same code.
+  - Remaining: invoke the same core probe at native verification entry before operation verification work, and add focused verification-order coverage.
+  - Remaining: document that the current-worktree Git metadata location used for `<git-dir>/boundary` must be writable while keeping the check automatic and out of the routine user-visible lifecycle.
   - Do not overwrite, relocate, weaken, or silently bypass `current.json` or immutable archives.
-  - Prefer a temporary create/remove probe in the intended Boundary metadata directory, with cleanup on both success and failure.
-  - Fail before contract resolution, Git baseline work, or verification work that would otherwise need to be repeated when persistence is unavailable.
-  - Give persistence-readiness failure a stable machine-readable diagnostic/category rather than relying only on raw `OSError` text.
-  - Document the required writable Git-metadata location while keeping the check automatic.
   - Keep unrelated mise cache warnings outside Boundary persistence semantics.
+  - Run the full suite after verification wiring and resolve the currently exposed `boundary status --help` wrapping regression.
 
 - [ ] Clarify the Spec Kit follow-up-work recipe without weakening unique task write ownership.
   - Preserve the rule that one implementation path is declared by only one task in the active change.

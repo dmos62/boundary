@@ -18,6 +18,7 @@ from .record import (
 )
 from .storage import (
     archive_operation,
+    check_operation_evidence_persistence,
     read_current_operation,
     write_current_operation,
 )
@@ -32,6 +33,7 @@ def authorize_implementation_operation(
 ) -> OperationRecord:
     """Fresh-authorize one selected implementation unit and persist evidence."""
 
+    check_operation_evidence_persistence(repository_root)
     authorization = authorize_implementation(
         repository_root,
         change,
@@ -67,6 +69,7 @@ def authorize_contract_evolution_operation(
 ) -> OperationRecord:
     """Fresh-authorize contract evolution and persist isolated evidence."""
 
+    check_operation_evidence_persistence(repository_root)
     authorization = authorize_contract_evolution(repository_root, change)
     baseline = capture_git_baseline(repository_root)
     predecessor, carried = _carry_forward(

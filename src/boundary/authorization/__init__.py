@@ -39,7 +39,9 @@ from .service import (
     authorize_implementation_operation,
 )
 from .storage import (
+    OPERATION_EVIDENCE_UNAVAILABLE,
     archive_operation,
+    check_operation_evidence_persistence,
     current_operation_path,
     operation_archive_path,
     read_current_operation,
@@ -58,6 +60,7 @@ __all__ = [
     "DirtyPathState",
     "GitBaseline",
     "ImplementationAuthorization",
+    "OPERATION_EVIDENCE_UNAVAILABLE",
     "OperationRecord",
     "OperationTargetEvidence",
     "TaskWriteSet",
@@ -70,6 +73,7 @@ __all__ = [
     "capture_dirty_path_states",
     "capture_git_baseline",
     "capture_git_head",
+    "check_operation_evidence_persistence",
     "contract_graph_identity",
     "current_operation_path",
     "effective_context_identity",

@@ -10,8 +10,62 @@ from .git import git_metadata_directory
 from .model import AuthorizationError
 from .record import OperationRecord
 
+OPERATION_EVIDENCE_UNAVAILABLE = "OPERATION_EVIDENCE_UNAVAILABLE"
+
 _CURRENT_RELATIVE_PATH = Path("boundary") / "current.json"
 _ARCHIVE_RELATIVE_ROOT = Path("boundary") / "operations"
+_PROBE_PREFIX = ".persistence-probe-"
+
+
+def check_operation_evidence_persistence(
+    repository_root: str | Path,
+) -> Path:
+    """Prove that operation evidence can be created and removed."""
+
+    directory = (
+        git_metadata_directory(repository_root)
+        / _CURRENT_RELATIVE_PATH.parent
+    )
+    created_directory = not directory.exists()
+    temporary: Path | None = None
+    failure: OSError | None = None
+
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        descriptor, name = tempfile.mkstemp(
+            dir=directory,
+            prefix=_PROBE_PREFIX,
+            suffix=".tmp",
+        )
+        temporary = Path(name)
+        try:
+            os.write(descriptor, b"boundary persistence probe\n")
+        finally:
+            os.close(descriptor)
+        temporary.unlink()
+        temporary = None
+    except OSError as exc:
+        failure = exc
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError as exc:
+                if failure is None:
+                    failure = exc
+        if created_directory:
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
+
+    if failure is not None:
+        raise _operation_evidence_error(
+            "operation evidence cannot be persisted in current-worktree "
+            f"Git metadata at {directory}: {failure}"
+        ) from failure
+
+    return directory
 
 
 def current_operation_path(
@@ -56,7 +110,7 @@ def read_current_operation(
     except FileNotFoundError:
         return None
     except OSError as exc:
-        raise AuthorizationError(
+        raise _operation_evidence_error(
             f"could not read current operation evidence: {exc}"
         ) from exc
 
@@ -110,6 +164,13 @@ def _render_record(record: OperationRecord) -> str:
     )
 
 
+def _operation_evidence_error(message: str) -> AuthorizationError:
+    return AuthorizationError(
+        message,
+        code=OPERATION_EVIDENCE_UNAVAILABLE,
+    )
+
+
 def _write_replacing(output: Path, rendered: str) -> None:
     temporary: Path | None = None
     try:
@@ -118,7 +179,7 @@ def _write_replacing(output: Path, rendered: str) -> None:
         os.replace(temporary, output)
         temporary = None
     except OSError as exc:
-        raise AuthorizationError(
+        raise _operation_evidence_error(
             f"could not store atomic operation evidence: {exc}"
         ) from exc
     finally:
@@ -142,7 +203,7 @@ def _write_immutable(output: Path, rendered: str) -> None:
         temporary.unlink(missing_ok=True)
         temporary = None
     except OSError as exc:
-        raise AuthorizationError(
+        raise _operation_evidence_error(
             f"could not archive immutable operation evidence: {exc}"
         ) from exc
     finally:
@@ -171,7 +232,7 @@ def _require_same_archive(
     try:
         existing = output.read_text(encoding="utf-8")
     except OSError as exc:
-        raise AuthorizationError(
+        raise _operation_evidence_error(
             f"could not read archived operation evidence: {exc}"
         ) from exc
     if existing != rendered:
