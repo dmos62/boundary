@@ -3,6 +3,7 @@
 @glob TODO.md
 @glob files.include
 @glob dev-scripts.include
+@glob ../gui-auto2/BOUNDARY-*
 
 @glob docs/spec.md
 @glob docs/spec-authorization.md
@@ -26,7 +27,6 @@
 
 @glob skills/implement/SKILL.md
 
-@globexclude ../gui-auto2/BOUNDARY-UPSTREAM-REPORT*
 @globexclude tests/**
 
 @globexclude pyproject.toml
