@@ -10,38 +10,17 @@
 @glob docs/spec-lifecycle.md
 
 @glob contracts/boundary-authorization.contract.md
-@glob contracts/boundary-core.contract.md
 @glob contracts/boundary-operation-lifecycle.contract.md
 @glob contracts/boundary-verification.contract.md
 
-@glob skills/**
-@# these files are not present
-@#glob adapters/speckit/**
-@glob integration/speckit/runtime/boundary_host/adapter.py
+@glob skills/implement/SKILL.md
+@glob skills/scope/SKILL.md
 
-@glob tests/test_spec_kit_authorization_cli.py
-@glob tests/test_spec_kit_runtime_projection.py
-@glob tests/test_task_selected_units.py
+@# adapters/speckit/ is not present in this checkout
+@glob integration/speckit/**
 
-@globexclude tests/preset_test_support.py
-@globexclude tests/test_agent_*.py
-@globexclude tests/test_authorization_handoff.py
-@globexclude tests/test_authorization_lifecycle.py
-@globexclude tests/test_authorization_model.py
-@globexclude tests/test_boundary_core_layout.py
-@globexclude tests/test_boundary_status_cli.py
-@globexclude tests/test_distribution_state.py
-@globexclude tests/test_distribution_surface.py
-@globexclude tests/test_fresh_authorization.py
-@globexclude tests/test_lifecycle_outcomes.py
-@globexclude tests/test_native_verification.py
-@globexclude tests/test_operation_persistence.py
-@globexclude tests/test_operation_record.py
-@globexclude tests/test_operation_record_compatibility.py
-@globexclude tests/test_operation_record_task_selection.py
-@globexclude tests/test_spec_kit_script_modes.py
-@globexclude tests/test_spec_kit_status_projection.py
-
+@globexclude integration/speckit/runtime/**
+@globexclude tests/**
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**

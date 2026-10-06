@@ -1,11 +1,9 @@
 # Boundary feedback follow-up
 
-- [ ] Clarify the Spec Kit follow-up-work recipe without weakening unique task write ownership.
-  - Preserve the rule that one implementation path is declared by only one task in the active change.
-  - Document that follow-up work on an already-owned path should refine or reopen the owning task outside an active implementation operation rather than append a duplicate convergence task.
-  - Require fresh explicit task selection and authorization after that refinement.
-  - Keep operation verification distinct from feature completion or live acceptance; a verified Boundary operation proves scope compliance, not feature correctness.
-  - Review current Spec Kit task-generation/refinement integration before deciding whether documentation alone is enough. If the host workflow makes reopening/refinement hard to discover, propose the smallest adapter-side guidance needed rather than adding new Boundary authority semantics.
+- [ ] Finish the Spec Kit follow-up-work guidance in canonical integration material.
+  - Core adapter semantics and Boundary scope/implementation procedure now preserve one-task-per-path ownership: follow-up work on an already-owned path refines or reopens the owning task outside an active implementation operation instead of appending a duplicate convergence task.
+  - Fresh explicit selection and authorization are required after refinement; Boundary verification proves operation scope compliance only, not feature correctness, completion, or live acceptance.
+  - The current repository grep shows no follow-up/reopen guidance in `integration/speckit/` task-generation/refinement material. Inspect the canonical preset/template sources next and add the smallest discoverability guidance there; do not add new Boundary authority semantics.
 
 - [ ] Eliminate stale downstream instruction references to Boundary-owned lock files.
   - Audit canonical Spec Kit integration/materialization sources for generated instructions that can still mention `boundary.lock.json`.

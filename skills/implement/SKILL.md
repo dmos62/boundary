@@ -30,8 +30,9 @@ When implementation discovers another required write target:
 1. Use `boundary inspect <target>` if additional context is useful.
 2. Do not write the undeclared target.
 3. Finish or otherwise leave the current implementation operation through the supported lifecycle.
-4. Refine structured change scope outside the active implementation operation when the target is not already declared.
-5. Obtain fresh explicit task selection and implementation authorization before writing the target.
+4. If the target is not already declared, refine structured change scope outside the active implementation operation.
+5. If follow-up work returns to a path already declared by an existing task, refine or reopen that owning task rather than adding a second task with duplicate write ownership.
+6. Obtain fresh explicit task selection and implementation authorization before writing the target.
 
 Previously completed work may be carried into a successor operation only through deterministic predecessor evidence accepted by Boundary.
 
@@ -52,4 +53,5 @@ When requested behavior cannot satisfy the applicable persistent contracts:
 - A target owned by an already represented owner is still undeclared unless it is in the authorized write set.
 - Native contract files are not implementation targets.
 - Changed planning or task prose cannot retroactively widen the active operation.
+- Successful verification closes the authorized scope epoch but does not establish feature correctness, completion, or live acceptance.
 - Deterministic authorization and verification findings are authoritative.

@@ -139,6 +139,8 @@ Implementation writes come only from dedicated indented `Writes:` metadata attac
 
 Malformed, empty, duplicate, or ambiguously repeated structured write declarations are blocking adapter errors. Task refinement must include durable project records in `Writes:` metadata whenever implementation is expected to update them.
 
+For Spec Kit follow-up work on a path already declared by an existing task, task refinement must reopen or update that owning task only after leaving any active implementation operation rather than append a second checklist task with the same `Writes:` path. The refined owning task then requires fresh explicit selection and Boundary authorization before further implementation. Verification of the preceding or follow-up Boundary operation establishes write-scope compliance for that authorization epoch only; it does not establish feature completion, feature correctness, or live acceptance.
+
 After task refinement, the integration should inspect the deterministic ordered union of declared writes through Boundary target inspection. Ownership defects are therefore reported before implementation entry when possible, but this remains non-authorizing.
 
 Implementation authorization requires explicit task IDs. Direct invocation uses positional task IDs:
