@@ -7,21 +7,27 @@
 
 @glob docs/spec.md
 @glob docs/spec-authorization.md
-@glob docs/spec-lifecycle.md
 @glob docs/spec-change-adapter.md
+@glob docs/spec-lifecycle.md
+@glob docs/spec-agent-instructions.md
 @glob contracts/boundary-change-adapter.contract.md
 
 @glob src/boundary/cli/main.py
 @glob src/boundary/cli/status.py
+@glob src/boundary/cli/inspection.py
 @glob src/boundary/outcomes.py
+@glob src/boundary/authorization/handoff.py
 @glob src/boundary/authorization/record.py
 @glob src/boundary/authorization/record_document.py
 
-@glob integration/speckit/commands/authorize.md
+@glob integration/speckit/commands/*.md
+@glob integration/speckit/workflow-overlay.yml
 @glob integration/speckit/runtime/boundary_host/adapter.py
 @glob integration/speckit/runtime/boundary_host/commands.py
 @glob integration/speckit/runtime/boundary_host/errors.py
 @glob integration/speckit/runtime/boundary_host/outcomes.py
+
+@glob skills/implement/SKILL.md
 
 @globexclude tests/**
 @globexclude pyproject.toml
@@ -32,22 +38,18 @@
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
 @globexclude docs/spec-contracts.md
-@globexclude docs/spec-agent-instructions.md
 @globexclude contracts/boundary-repository-tooling.contract.md
 
 @globexclude src/boundary/authorization/codec.py
 @globexclude src/boundary/authorization/engine.py
 @globexclude src/boundary/authorization/git.py
-@globexclude src/boundary/authorization/handoff.py
 @globexclude src/boundary/authorization/identities.py
 @globexclude src/boundary/authorization/model.py
 @globexclude src/boundary/authorization/service.py
 @globexclude src/boundary/authorization/storage.py
 
-@globexclude integration/speckit/workflow-overlay.yml
 @globexclude integration/speckit/runtime/boundary_host/discovery.py
 @globexclude integration/speckit/runtime/boundary_host/tasks.py
-@globexclude skills/implement/SKILL.md
 
 @globexclude adapters/**
 @globexclude .agents/**
