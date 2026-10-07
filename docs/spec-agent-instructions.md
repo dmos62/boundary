@@ -76,7 +76,9 @@ The skill does not alter authorization evidence.
 
 Use for deliberate persistent-contract evolution.
 
-It identifies the smallest durable contract change, preserves additive scope semantics, modifies only contract files, runs structural contract validation, and requires fresh dependent implementation authorization afterward.
+It inspects the current graph, authorizes exact native contract targets with `boundary contracts authorize --change CHANGE_ID CONTRACT...`, identifies the smallest durable contract change, preserves additive scope semantics, modifies only the authorized contract files, runs structural contract validation, verifies and closes the evolution operation, and requires fresh dependent implementation authorization afterward.
+
+When an ordinary target is unowned, the skill evolves native ownership rather than treating the ordinary target as a contract-evolution write or automatically owning a feature/specification subtree.
 
 It is not part of ordinary implementation unless the lifecycle explicitly transitions to contract evolution.
 
@@ -128,11 +130,14 @@ Installed downstream projects use the mise-installed `boundary` executable for s
     boundary inspect <target...>
     boundary verify
     boundary status
+    boundary contracts authorize --change CHANGE_ID CONTRACT...
     boundary contracts check
 
 Agents do not reconstruct Python import paths, package locations, adapter script paths, copied-runtime locations, or uv cache configuration during ordinary downstream work.
 
 Direct task selection is positional. `BOUNDARY_TASK_IDS` remains adapter/workflow transport for integrations that need shell-level selection transfer and is not part of the ordinary direct-use procedure.
+
+Contract-evolution target selection is separate from implementation task selection. `boundary contracts authorize` receives an explicit change identity and exact native contract paths; it does not infer implementation tasks or authorize ordinary project targets.
 
 Authorize and verify emit concise `boundary.lifecycle-result/v1` documents. Successful results contain explicit empty diagnostics and omit persisted Git baseline or verification path-state fingerprints.
 

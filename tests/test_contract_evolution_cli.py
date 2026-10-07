@@ -7,8 +7,16 @@ import subprocess
 import tempfile
 import unittest
 
-from boundary.authorization import read_current_operation
+from boundary.authorization import (
+    AuthorizationError,
+    ChangeWriteSet,
+    TaskWriteSet,
+    authorize_implementation_operation,
+    read_current_operation,
+)
 from boundary.cli.main import main
+from boundary.contracts import load_contract_graph
+from boundary.context import resolve_target_context
 from boundary.verification import finalize_operation_verification
 
 
@@ -140,6 +148,116 @@ class ContractEvolutionCliTests(unittest.TestCase):
             self.assertEqual("blocked", document["status"])
             self.assertEqual("OPERATION_KIND_VIOLATION", document["code"])
             self.assertIsNone(read_current_operation(root))
+
+    def test_evolution_establishes_exact_owner_before_implementation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = self._repository(Path(directory))
+            interface_path = "specs/005-dev-chrome-session/contracts/cli.md"
+            sibling_path = "specs/005-dev-chrome-session/contracts/other.md"
+            contract_path = "contracts/feature-005-interface.contract.md"
+            change = ChangeWriteSet(
+                "feature-005",
+                (
+                    TaskWriteSet(
+                        order=0,
+                        task_id="T026",
+                        story="US1",
+                        writes=(interface_path,),
+                    ),
+                ),
+            )
+
+            with self.assertRaises(AuthorizationError) as raised:
+                authorize_implementation_operation(
+                    root,
+                    change,
+                    selected_task_ids=("T026",),
+                )
+            self.assertEqual("UNOWNED_WRITE_TARGET", raised.exception.code)
+            self.assertIsNone(read_current_operation(root))
+
+            evolution_output = StringIO()
+            result = main(
+                [
+                    "contracts",
+                    "authorize",
+                    "--change",
+                    "feature-005",
+                    contract_path,
+                ],
+                repository_root=root,
+                stdout=evolution_output,
+                stderr=StringIO(),
+            )
+            self.assertEqual(0, result)
+            evolution = json.loads(evolution_output.getvalue())
+            self.assertEqual([contract_path], evolution["authorizedTargets"])
+            self.assertFalse((root / interface_path).exists())
+
+            (root / contract_path).write_text(
+                "---\n"
+                "schema: boundary.contract/v1\n"
+                "id: feature-005-interface\n"
+                "owns:\n"
+                f"  - {interface_path}\n"
+                "---\n"
+                "\n"
+                "# Feature 005 CLI interface\n"
+                "\n"
+                "## Purpose\n"
+                "\n"
+                "Own the durable Feature 005 CLI interface contract.\n",
+                encoding="utf-8",
+            )
+
+            check_output = StringIO()
+            self.assertEqual(
+                0,
+                main(
+                    ["contracts", "check"],
+                    repository_root=root,
+                    stdout=check_output,
+                    stderr=StringIO(),
+                ),
+            )
+            self.assertIn("contracts: ok", check_output.getvalue())
+
+            graph = load_contract_graph(root)
+            self.assertEqual(
+                "feature-005-interface",
+                resolve_target_context(graph, interface_path).owner_id,
+            )
+            self.assertIsNone(
+                resolve_target_context(graph, sibling_path).owner_id
+            )
+
+            verified = finalize_operation_verification(root)
+            self.assertEqual("verified", verified.status)
+            self.assertEqual("contract-evolution", verified.kind)
+            self.assertFalse((root / interface_path).exists())
+
+            implementation = authorize_implementation_operation(
+                root,
+                change,
+                selected_task_ids=("T026",),
+            )
+            self.assertEqual("implementation", implementation.kind)
+            self.assertEqual(("T026",), implementation.selected_task_ids)
+            self.assertNotEqual(
+                evolution["operationId"],
+                implementation.operation_id,
+            )
+            self.assertEqual(
+                (interface_path,),
+                tuple(
+                    target.path
+                    for target in implementation.authorized_targets
+                ),
+            )
+            self.assertEqual(
+                "feature-005-interface",
+                implementation.authorized_targets[0].owner,
+            )
 
     def _repository(self, root: Path) -> Path:
         self._git(root, "init", "-q")

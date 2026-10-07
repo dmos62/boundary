@@ -137,15 +137,15 @@ When requested behavior cannot satisfy current persistent contracts:
 
 1. stop dependent implementation;
 2. verify and close the current implementation operation, or abandon it through an explicit future lifecycle mechanism;
-3. begin a `contract-evolution` operation;
+3. authorize exact native contract targets with `boundary contracts authorize --change CHANGE_ID CONTRACT...`;
 4. use the Boundary contracts skill;
-5. modify only native contract files;
+5. modify only the authorized native contract files;
 6. run `boundary contracts check`;
 7. verify and close contract evolution;
 8. explicitly select the dependent implementation unit;
 9. authorize dependent implementation against the resulting fresh graph.
 
-Contract evolution never retroactively authorizes earlier implementation.
+Contract evolution never retroactively authorizes earlier implementation. When it establishes ownership for an unowned ordinary target, the evolution authorization still covers only native contract files; the ordinary target is written only after closure and fresh implementation authorization.
 
 ## Convergence
 
@@ -170,6 +170,7 @@ The canonical installed product-level command surface is intentionally small:
     boundary inspect <target...>
     boundary verify
     boundary status
+    boundary contracts authorize --change CHANGE_ID CONTRACT...
     boundary contracts check
 
 Boundary-specific generated integration is managed separately through:
@@ -178,9 +179,7 @@ Boundary-specific generated integration is managed separately through:
     boundary integration check
     boundary integration remove
 
-`authorize`, `inspect --authorized`, and `verify` form the routine direct implementation path.
-
-Ordinary `boundary inspect <target...>` is situational: planning, undeclared-target investigation, declared-scope preflight, and focused queries.
+`authorize`, `inspect --authorized`, and `verify` form the routine direct implementation path. Ordinary `boundary inspect <target...>` is situational: planning, undeclared-target investigation, declared-scope preflight, and focused queries.
 
 `boundary status` is a read-only recovery, handoff, and debugging query. It emits the compact `boundary.authorization-handoff/v1` document directly as JSON, or JSON `null` when no current operation exists. It does not select tasks, create operation evidence, replace authorization or verification, or act as installation health checking.
 

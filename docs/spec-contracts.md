@@ -106,6 +106,16 @@ A target must have one unambiguous most-specific owner. With the restricted v1 p
 
 The graph is invalid when matching ownership scopes overlap without one being strictly more specific than the other, or when equally specific scopes claim the same target. Authorization fails for an unowned or ambiguously owned implementation target.
 
+## Establishing ownership for an unowned target
+
+An ordinary project or durable change-system path with no primary owner cannot be implementation-authorized.
+
+The supported repair is deliberate contract evolution of one or more native contract files. The contract-evolution operation authorizes only exact `contracts/**/*.contract.md` paths. A changed native contract may add an exact `owns` scope for the unowned target, or a narrow subtree ownership scope when that broader ownership is itself durable.
+
+After the changed graph passes `boundary contracts check` and the contract-evolution operation verifies successfully, dependent implementation requires fresh authorization against that graph. The ordinary target is not a contract-evolution write.
+
+Boundary does not automatically own feature directories, specification directories, interface-contract paths, or other change-system paths merely because they need implementation-time edits. Additional `applies_to` scope can add constraints but does not supply the primary ownership required for implementation authorization.
+
 ## No override semantics in v1
 
 Applicable contract semantics are monotonic. More-specific contracts may add requirements but cannot cancel broader requirements.
