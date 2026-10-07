@@ -4,15 +4,13 @@
 @glob files.include
 @glob dev-scripts.include
 
-@# DO NOT REMOVE BELOW INCLUDE
-@file ../gui-auto2/BOUNDARY-FEEDBACK.md
-
 @glob docs/spec.md
-@glob docs/spec-distribution.md
-@glob docs/spec-distribution-state.md
-@glob docs/setup-downstream.md
 
+@globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
+@globexclude docs/setup-downstream.md
 @globexclude docs/setup-development.md
+@globexclude docs/spec-distribution.md
+@globexclude docs/spec-distribution-state.md
 @globexclude docs/spec-contracts.md
 @globexclude docs/spec-change-adapter.md
 @globexclude docs/spec-authorization.md
