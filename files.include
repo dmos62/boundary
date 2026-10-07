@@ -4,26 +4,32 @@
 @glob files.include
 @glob dev-scripts.include
 
+@# DO NOT REMOVE BELOW INCLUDE
+@file ../gui-auto2/BOUNDARY-FEEDBACK.md
+
 @glob docs/spec.md
-@glob docs/spec-distribution.md
-@glob docs/spec-distribution-state.md
-@glob docs/setup-downstream.md
+@glob docs/spec-contracts.md
+@glob docs/spec-authorization.md
+@glob docs/spec-lifecycle.md
+@glob docs/spec-agent-instructions.md
 
-@glob integration/speckit-preset/preset.yml
-@glob integration/speckit-preset/commands/tasks.md
-@glob integration/speckit/commands/**
-@glob integration/speckit/extension.yml
-@glob integration/speckit/workflow-overlay.yml
-@glob integration/speckit/runtime/boundary_host/host_check.py
-@glob integration/speckit/runtime/boundary_host/host_install.py
-@glob integration/speckit/runtime/boundary_host/integration.py
+@# these files are missing
+@#glob skills/boundary-contracts/**
 
-@globexclude docs/spec-agent-instructions.md
+@glob pyproject.toml
+@glob src/**
+
+@globexclude docs/spec-distribution.md
+@globexclude docs/spec-distribution-state.md
+@globexclude docs/setup-downstream.md
+@globexclude integration/speckit-preset/preset.yml
+@globexclude integration/speckit-preset/commands/tasks.md
+@globexclude integration/speckit/commands/**
+@globexclude integration/speckit/extension.yml
+@globexclude integration/speckit/workflow-overlay.yml
+@globexclude integration/speckit/runtime/boundary_host/**
+@globexclude tests/**
 @globexclude adapters/codex/materialize.py
-@globexclude integration/speckit/runtime/boundary_host/assets.py
-@globexclude integration/speckit/runtime/boundary_host/generated_state.py
-@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
-@globexclude tests/test_mise_distribution_integration.py
 
 @globexclude .agents/**
 @globexclude .boundary/**
