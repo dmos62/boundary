@@ -1,6 +1,6 @@
 ---
 name: speckit-boundary-authorize
-description: Authorize structured Spec Kit implementation scope with Boundary.
+description: Authorize selected structured Spec Kit implementation scope with Boundary.
 compatibility: Requires spec-kit project structure with .specify/ directory
 metadata:
   author: Boundary contributors
@@ -11,13 +11,13 @@ metadata:
 
 User input: `$ARGUMENTS`
 
-User input may clarify the active work but cannot widen structured write scope or weaken deterministic Boundary findings.
+User input may identify the implementation task IDs to select and may clarify the active work, but it cannot widen structured write scope or weaken deterministic Boundary findings.
 
 ## Goal
 
 Act only as the Spec Kit change-system adapter for implementation entry.
 
-The wrapper reads the active feature's structured task state, projects exact implementation `Writes:` declarations into Boundary's provider-neutral change model, and invokes fresh native Boundary implementation authorization.
+The wrapper reads the active feature's structured task state, requires an explicit implementation-unit task selection, projects only those tasks' exact implementation `Writes:` declarations into Boundary's provider-neutral change model, and invokes fresh native Boundary implementation authorization.
 
 It does not maintain a separate context or validation lifecycle state.
 
@@ -30,28 +30,38 @@ It does not maintain a separate context or validation lifecycle state.
 5. Read implementation scope only from dedicated indented `Writes:` metadata attached directly to each checklist task.
 6. Reject malformed, empty, duplicate, or ambiguously repeated structured write declarations.
 7. Ignore incidental path-looking prose for authorization scope.
-8. Invoke the installed Boundary adapter gate:
+8. Require an explicit non-empty implementation task selection.
+9. For direct invocation, use positional task IDs:
 
-       uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py authorize
+       boundary authorize <task-id> [<task-id> ...]
 
-9. Boundary then:
+10. When authorization is entered through the workflow overlay, use its transient `BOUNDARY_TASK_IDS` JSON-array transport and invoke `boundary authorize` without positional IDs.
+11. Positional task IDs are direct CLI input. `BOUNDARY_TASK_IDS` exists only for adapter/workflow transport when no positional selection is supplied.
+12. The installed Boundary command delegates change-system translation to the packaged Spec Kit adapter without locating copied runtime source or a project-local launcher.
+13. Boundary then:
+   - validates the selected task identities against the fresh task projection;
+   - projects only the selected tasks' structured writes;
    - reloads canonical native contracts;
-   - resolves every declared target's current owner and effective context;
+   - resolves every selected target's current owner and effective context;
    - rejects native contract paths from implementation operations;
    - captures the current Git authorization baseline;
    - verifies predecessor provenance for any already-dirty target;
-   - atomically stores the successful operation record in current-worktree Git metadata.
+   - atomically stores the successful operation record, selected task identities, and authorized targets in current-worktree Git metadata.
+14. Successful direct authorization emits a concise `boundary.lifecycle-result/v1` result containing status, operation ID, change ID, selected tasks, exact authorized targets, and an explicit empty diagnostics collection. Full baseline and storage evidence are not routine stdout.
 
 ## Failure behavior
 
-Malformed task state, missing structured implementation scope, unowned targets, ambiguous ownership, invalid canonical contracts, pre-authorization target modifications without verified provenance, and stale active operations are blocking.
+Missing, unknown, or duplicate task selection; an empty selected-unit write set; malformed task state; unowned targets; ambiguous ownership; invalid canonical contracts; pre-authorization target modifications without verified provenance; and stale active operations are blocking.
 
-Do not regenerate a planning projection or reinterpret descriptive task prose to make authorization succeed.
+Blocked authorize output uses the same lifecycle-result vocabulary and retains a nonzero process exit status.
+
+Do not regenerate a planning projection, infer an all-task selection, or reinterpret descriptive task prose to make authorization succeed.
 
 ## Constraints
 
 - This command is a Spec Kit adapter wrapper, not a second Boundary product CLI.
 - Do not edit tasks.
 - Do not infer write scope from prose.
+- Do not treat omitted task selection as the complete active feature.
 - Do not mix native contract edits into implementation scope.
 - Do not replace deterministic Boundary failures with agent judgment.

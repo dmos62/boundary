@@ -1,19 +1,23 @@
-id: "boundary"
-extends: "speckit"
+id: boundary
+extends: speckit
 priority: 10
 enabled: true
-
 edits:
-  - insert_before: implement
-    step:
-      id: boundary-authorize
-      type: shell
-      run: 'command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py authorize'
-      timeout: 300
-
-  - insert_after: implement
-    step:
-      id: boundary-verify
-      type: shell
-      run: 'command -v uv >/dev/null 2>&1 || { printf "%s\n" "boundary workflow gate: required command not found: uv; install uv before retrying" >&2; exit 2; }; uv run --no-project python .specify/extensions/boundary/scripts/adapter_gate.py verify'
-      timeout: 300
+- insert_before: implement
+  step:
+    id: boundary-authorize
+    type: shell
+    run: 'test -n "${BOUNDARY_TASK_IDS:-}" || { printf "%s\n" "boundary workflow gate:
+      BOUNDARY_TASK_IDS must be a JSON array of explicitly selected task IDs" >&2;
+      exit 2; }; command -v boundary >/dev/null 2>&1 || { printf "%s\n" "boundary
+      workflow gate: installed boundary command not found; run mise install --locked
+      before retrying" >&2; exit 2; }; boundary authorize'
+    timeout: 300
+- insert_after: implement
+  step:
+    id: boundary-verify
+    type: shell
+    run: 'command -v boundary >/dev/null 2>&1 || { printf "%s\n" "boundary workflow
+      gate: installed boundary command not found; run mise install --locked before
+      retrying" >&2; exit 2; }; boundary verify'
+    timeout: 300

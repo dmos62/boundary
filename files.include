@@ -8,47 +8,21 @@
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
 
 @glob docs/spec.md
-@glob docs/spec-contracts.md
-@glob docs/spec-authorization.md
-@glob docs/spec-lifecycle.md
-@glob docs/spec-agent-instructions.md
+@glob docs/spec-distribution.md
+@glob docs/spec-distribution-state.md
+@glob docs/setup-downstream.md
 
-@glob skills/contracts/SKILL.md
-
-@glob pyproject.toml
-@glob src/boundary/authorization/**
-@glob src/boundary/cli/**
-@glob src/boundary/contracts/**
-@glob src/boundary/context/**
-@glob src/boundary/verification/**
-@glob src/boundary/outcomes.py
-@glob src/boundary/repository/**
-
-@glob integration/speckit/runtime/boundary_host/commands.py
-@glob integration/speckit/runtime/boundary_host/outcomes.py
-
-@glob tests/test_contract_evolution_cli.py
-@glob tests/test_native_verification.py
-@glob tests/test_operation_record.py
-@glob tests/test_lifecycle_outcomes.py
-
-@globexclude docs/spec-distribution.md
-@globexclude docs/spec-distribution-state.md
-@globexclude docs/setup-downstream.md
-@globexclude integration/speckit-preset/preset.yml
-@globexclude integration/speckit-preset/commands/tasks.md
-@globexclude integration/speckit/commands/**
-@globexclude integration/speckit/extension.yml
-@globexclude integration/speckit/workflow-overlay.yml
-@globexclude adapters/codex/materialize.py
-
-@globexclude src/boundary/authorization/identities.py
-@globexclude src/boundary/authorization/record_document.py
-@globexclude src/boundary/authorization/record_validation.py
-@globexclude src/boundary/contracts/frontmatter.py
-@globexclude src/boundary/contracts/parser.py
-@globexclude src/boundary/contracts/sections.py
-
+@globexclude docs/setup-development.md
+@globexclude docs/spec-contracts.md
+@globexclude docs/spec-change-adapter.md
+@globexclude docs/spec-authorization.md
+@globexclude docs/spec-lifecycle.md
+@globexclude docs/spec-agent-instructions.md
+@globexclude src/**
+@globexclude integration/**
+@globexclude tests/**
+@globexclude adapters/**
+@globexclude skills/**
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**
