@@ -13,11 +13,17 @@
 @glob docs/spec-lifecycle.md
 @glob docs/spec-agent-instructions.md
 
-@# these files are missing
-@#glob skills/boundary-contracts/**
+@glob skills/contracts/SKILL.md
 
 @glob pyproject.toml
 @glob src/**
+
+@glob integration/speckit/runtime/boundary_host/commands.py
+
+@glob tests/test_contract_evolution_cli.py
+@glob tests/test_native_verification.py
+@glob tests/test_operation_record.py
+@glob tests/test_lifecycle_outcomes.py
 
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
@@ -27,8 +33,6 @@
 @globexclude integration/speckit/commands/**
 @globexclude integration/speckit/extension.yml
 @globexclude integration/speckit/workflow-overlay.yml
-@globexclude integration/speckit/runtime/boundary_host/**
-@globexclude tests/**
 @globexclude adapters/codex/materialize.py
 
 @globexclude .agents/**

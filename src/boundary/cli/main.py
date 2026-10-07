@@ -11,7 +11,11 @@ from boundary.authorization import AuthorizationError
 from boundary.contracts import ContractGraphError, ContractParseError
 from boundary.repository import RepositoryPathError
 
-from .contracts import run_contracts_check
+from .contracts import (
+    configure_contracts_parser,
+    run_contracts_authorize,
+    run_contracts_check,
+)
 from .inspection import run_inspect, run_inspect_authorized
 from .status import run_status
 
@@ -32,6 +36,13 @@ def build_parser() -> argparse.ArgumentParser:
             "  boundary inspect --authorized\n"
             "  implement only the authorized targets and run project checks\n"
             "  boundary verify\n"
+            "\n"
+            "Persistent-contract evolution:\n"
+            "  boundary contracts authorize --change CHANGE_ID CONTRACT [...]\n"
+            "  modify only the authorized contract targets\n"
+            "  boundary contracts check\n"
+            "  boundary verify\n"
+            "  authorize dependent implementation only after closure\n"
             "\n"
             "Situational queries:\n"
             "  boundary inspect <target...>\n"
@@ -113,18 +124,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     contracts_parser = commands.add_parser(
         "contracts",
-        help="Validate native project contracts.",
-        description="Validate canonical native project contracts.",
+        help="Authorize evolution or validate native project contracts.",
+        description=(
+            "Authorize isolated persistent-contract evolution or validate "
+            "canonical native project contracts."
+        ),
     )
-    contract_commands = contracts_parser.add_subparsers(
-        dest="contracts_command",
-        required=True,
-    )
-    contract_commands.add_parser(
-        "check",
-        help="Validate canonical native contracts.",
-        description="Validate canonical native contracts.",
-    )
+    configure_contracts_parser(contracts_parser)
 
     integration_parser = commands.add_parser(
         "integration",
@@ -173,7 +179,14 @@ def main(
 
     try:
         if args.command == "contracts":
-            return run_contracts_check(root, output)
+            if args.contracts_command == "check":
+                return run_contracts_check(root, output)
+            return run_contracts_authorize(
+                root,
+                args.change_id,
+                args.targets,
+                output,
+            )
         if args.command == "inspect":
             if args.authorized:
                 if args.targets:
