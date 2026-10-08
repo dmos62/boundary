@@ -18,24 +18,15 @@
 @glob src/boundary/cli/main.py
 @glob src/boundary/cli/contracts.py
 @glob src/boundary/cli/contract_verification.py
-@glob src/boundary/cli/inspection.py
-@glob src/boundary/authorization/service.py
-@glob src/boundary/authorization/engine.py
-@glob src/boundary/authorization/model.py
 @glob src/boundary/outcomes.py
 
 @glob integration/speckit/runtime/boundary_host/adapter.py
-@glob integration/speckit/runtime/boundary_host/commands.py
 @glob integration/speckit/runtime/boundary_host/outcomes.py
-@glob integration/speckit/runtime/boundary_host/tasks.py
 
 @glob tests/test_contract_evolution_cli.py
 @glob tests/test_contract_evolution_verification_cli.py
 @glob tests/test_installed_contract_evolution_workflow.py
-@glob tests/test_native_contract_graph.py
-@glob tests/test_native_contract_context.py
 @glob tests/test_native_contract_repository.py
-@glob tests/test_mise_distribution_integration.py
 @glob tests/test_mise_distribution_lock.py
 
 @glob skills/contracts/SKILL.md
@@ -43,10 +34,22 @@
 @# DO NOT REMOVE BELOW directive for BOUNDARY-FEEDBACK.md
 @file ../gui-auto2/BOUNDARY-FEEDBACK.md
 
+@# Downstream ownership repair inputs are canonical, read-only until authorized.
+@file ../gui-auto2/contracts/chrome-dev-session.contract.md
+@file ../gui-auto2/specs/005-dev-chrome-session/tasks.md
+
 @globexclude docs/setup-downstream.md
 @globexclude docs/setup-development.md
 @globexclude docs/spec-architecture.md
 
+@globexclude src/boundary/authorization/**
+@globexclude src/boundary/verification/**
+@globexclude src/boundary/context/**
+@globexclude src/boundary/contracts/**
+@globexclude src/boundary/repository/**
+
+@globexclude integration/speckit/runtime/boundary_host/commands.py
+@globexclude integration/speckit/runtime/boundary_host/tasks.py
 @globexclude integration/speckit/runtime/boundary_host/host_runtime.py
 @globexclude integration/speckit/runtime/boundary_host/host_install.py
 @globexclude integration/speckit/runtime/boundary_host/host_check.py
@@ -58,6 +61,9 @@
 @globexclude skills/scope/**
 @globexclude skills/implement/**
 
+@globexclude tests/test_mise_distribution_integration.py
+@globexclude tests/test_native_contract_graph.py
+@globexclude tests/test_native_contract_context.py
 @globexclude tests/test_agent_skills.py
 @globexclude tests/test_native_verification.py
 @globexclude tests/test_authorization_lifecycle.py
@@ -76,4 +82,5 @@
 @globexclude .specdd/**
 @globexclude **/__pycache__/**
 @globexclude **/*.pyc
+@globexclude **/TEST_SECRET_DONT_READ
 @endfilegroup
