@@ -5,22 +5,28 @@
 @glob dev-scripts.include
 
 @glob docs/spec.md
+@glob docs/spec-authorization.md
+@glob docs/spec-change-adapter.md
+@glob docs/spec-lifecycle.md
+@glob docs/spec-contracts.md
+@glob docs/spec-agent-instructions.md
 
-@globexclude ../gui-auto2/BOUNDARY-FEEDBACK.md
+@glob src/boundary/cli/**
+@glob tests/**
+@glob skills/contracts/SKILL.md
+
+@# DO NOT REMOVE BELOW directive for BOUNDARY-FEEDBACK.md
+@file ../gui-auto2/BOUNDARY-FEEDBACK.md
+
 @globexclude docs/setup-downstream.md
 @globexclude docs/setup-development.md
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
-@globexclude docs/spec-contracts.md
-@globexclude docs/spec-change-adapter.md
-@globexclude docs/spec-authorization.md
-@globexclude docs/spec-lifecycle.md
-@globexclude docs/spec-agent-instructions.md
-@globexclude src/**
+@globexclude docs/spec-architecture.md
 @globexclude integration/**
-@globexclude tests/**
 @globexclude adapters/**
-@globexclude skills/**
+@globexclude skills/scope/**
+@globexclude skills/implement/**
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**
