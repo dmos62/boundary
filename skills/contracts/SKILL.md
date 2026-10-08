@@ -15,7 +15,7 @@ Use this skill for deliberate evolution of persistent Boundary contracts.
 9. Keep ownership and additional applicability explicit.
 10. Declare architectural dependencies only when the relationship is durable and useful to downstream target context.
 11. Modify only native contract files explicitly authorized for the contract-evolution operation.
-12. Run `boundary contracts check` after editing and resolve structural failures.
+12. Run `boundary contracts check` as the structural contract check after editing and resolve structural failures.
 13. Run `boundary verify` and require a successful `status: verified` lifecycle result before dependent implementation begins.
 14. Explicitly select the dependent implementation unit and obtain fresh implementation authorization against the resulting canonical graph.
 

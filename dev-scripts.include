@@ -1,4 +1,6 @@
+@cli! bash -lic 'printf "%s\n" "--- Installed contract-evolution end-to-end regression tests ---"; mise exec -- python -m unittest discover -s tests -p "test_installed_contract_evolution_workflow.py" -v'
 @cli! bash -lic 'printf "%s\n" "--- Focused contract-evolution CLI regression tests ---"; mise exec -- python -m unittest discover -s tests -p "test_contract_evolution*.py" -v'
+@cli! bash -lic 'printf "%s\n" "--- Canonical agent skill regressions ---"; mise exec -- python -m unittest discover -s tests -p "test_agent_skills.py" -v'
 @cli! bash -lic 'printf "%s\n" "--- Native verification and lifecycle regression tests ---"; mise exec -- python -m unittest discover -s tests -p "test_native_verification.py" -v && mise exec -- python -m unittest discover -s tests -p "test_authorization_lifecycle.py" -v'
 @cli! bash -lic 'printf "%s\n" "--- CLI surface, adapter outcomes, and persistence ---"; mise exec -- python -m unittest discover -s tests -p "test_distribution_surface.py" -v && mise exec -- python -m unittest discover -s tests -p "test_lifecycle_outcomes.py" -v && mise exec -- python -m unittest discover -s tests -p "test_operation_persistence.py" -v'
 @cli! bash -lic 'printf "%s\n" "--- Complete unittest suite ---"; mise exec -- python -m unittest discover -s tests -p "test_*.py"'

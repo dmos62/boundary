@@ -24,10 +24,10 @@
 
 @glob tests/test_contract_evolution_cli.py
 @glob tests/test_contract_evolution_verification_cli.py
+@glob tests/test_installed_contract_evolution_workflow.py
 @glob tests/test_agent_skills.py
 @glob tests/test_distribution_surface.py
 @glob tests/test_lifecycle_outcomes.py
-@glob tests/test_operation_persistence.py
 
 @glob skills/contracts/SKILL.md
 
@@ -57,6 +57,7 @@
 @globexclude tests/test_agent_skill_materialization.py
 @globexclude tests/test_boundary_core_layout.py
 @globexclude tests/test_native_contract_repository.py
+@globexclude tests/test_operation_persistence.py
 
 @globexclude .agents/**
 @globexclude .boundary/**
