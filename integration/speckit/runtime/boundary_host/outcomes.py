@@ -19,15 +19,16 @@ def outcome_for_error(
     *,
     change_id: str | None = None,
     operation_id: str | None = None,
+    operation_kind: str = "implementation",
 ) -> LifecycleOutcome:
-    """Project one blocking adapter error without parsing diagnostic prose."""
+    """Project one blocking error without parsing diagnostic prose."""
 
     diagnostics = _diagnostics(error)
     codes = tuple(item.code for item in diagnostics)
     classification = classify_lifecycle_codes(
         codes,
         stage=stage,
-        operation_kind="implementation",
+        operation_kind=operation_kind,
     )
     return LifecycleOutcome(
         stage=stage,

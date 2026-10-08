@@ -18,9 +18,8 @@ def run_contract_evolution_verify(
 ) -> int:
     """Verify contract evolution with the Spec Kit bookkeeping classifier.
 
-    The native verification service owns all write-scope, Git baseline,
-    authorization-evidence, and finalization decisions. This entrypoint
-    supplies only deterministic host-owned path classification.
+    Native verification owns write-scope, Git baseline, operation identity,
+    authorization-evidence, and finalization decisions.
     """
     del errors
 
@@ -45,6 +44,7 @@ def run_contract_evolution_verify(
             exc,
             change_id=operation.change_id,
             operation_id=operation.operation_id,
+            operation_kind="contract-evolution",
         )
         _print_document(outcome.to_document(), output)
         return 2

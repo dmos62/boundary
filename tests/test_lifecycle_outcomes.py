@@ -6,6 +6,7 @@ import unittest
 
 from boundary.authorization import AuthorizationError
 from boundary.outcomes import (
+    BOUNDARY_FAILURE,
     CONTRACT_EVOLUTION_REQUIRED,
     INVALID_ADAPTER_STATE,
     MISSING_EXTERNAL_PREREQUISITE,
@@ -61,6 +62,51 @@ class LifecycleOutcomeTests(unittest.TestCase):
             ["specs/CONTINUATION.md"],
             outcome.to_document()["diagnostics"][0]["paths"],
         )
+
+    def test_contract_evolution_kind_violation_does_not_request_evolution(
+        self,
+    ) -> None:
+        error = VerificationError(
+            VerificationDiagnostic(
+                code="OPERATION_KIND_VIOLATION",
+                message="contract evolution modified an ordinary file",
+                paths=("src/app.py",),
+            )
+        )
+        outcome = outcome_for_error(
+            "verify",
+            error,
+            change_id="006-example",
+            operation_id="operation-1",
+            operation_kind="contract-evolution",
+        )
+
+        self.assertEqual(BOUNDARY_FAILURE, outcome.category)
+        self.assertEqual("OPERATION_KIND_VIOLATION", outcome.code)
+        self.assertIsNone(outcome.required_transition)
+        self.assertEqual(
+            ["src/app.py"],
+            outcome.to_document()["diagnostics"][0]["paths"],
+        )
+
+    def test_implementation_kind_violation_still_requires_evolution(
+        self,
+    ) -> None:
+        error = VerificationError(
+            VerificationDiagnostic(
+                code="OPERATION_KIND_VIOLATION",
+                message="implementation modified a native contract",
+                paths=("contracts/app.contract.md",),
+            )
+        )
+        outcome = outcome_for_error(
+            "verify",
+            error,
+            operation_kind="implementation",
+        )
+
+        self.assertEqual(CONTRACT_EVOLUTION_REQUIRED, outcome.category)
+        self.assertEqual("OPERATION_KIND_VIOLATION", outcome.code)
 
 
 if __name__ == "__main__":
