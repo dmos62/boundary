@@ -15,13 +15,18 @@
 @glob src/boundary/verification/**
 @glob src/boundary/authorization/service.py
 @glob src/boundary/authorization/storage.py
+@glob src/boundary/outcomes.py
+
+@glob integration/speckit/runtime/boundary_host/adapter.py
+@glob integration/speckit/runtime/boundary_host/commands.py
+@glob integration/speckit/runtime/boundary_host/outcomes.py
+@glob integration/speckit/runtime/boundary_host/errors.py
 
 @glob tests/test_contract_evolution_cli.py
 @glob tests/test_contract_evolution_verification_cli.py
-@glob tests/test_native_verification.py
-@glob tests/test_authorization_lifecycle.py
-@glob tests/test_lifecycle_outcomes.py
+@glob tests/test_agent_skills.py
 @glob tests/test_distribution_surface.py
+@glob tests/test_lifecycle_outcomes.py
 @glob tests/test_operation_persistence.py
 
 @glob skills/contracts/SKILL.md
@@ -34,15 +39,25 @@
 @globexclude docs/spec-distribution.md
 @globexclude docs/spec-distribution-state.md
 @globexclude docs/spec-architecture.md
-@globexclude integration/**
+
+@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
+@globexclude integration/speckit/runtime/boundary_host/host_install.py
+@globexclude integration/speckit/runtime/boundary_host/host_check.py
+@globexclude integration/speckit/runtime/boundary_host/assets.py
+@globexclude integration/speckit/runtime/boundary_host/generated_state.py
+@globexclude integration/speckit/runtime/boundary_host/integration.py
+
 @globexclude adapters/**
 @globexclude skills/scope/**
 @globexclude skills/implement/**
+
+@globexclude tests/test_native_verification.py
+@globexclude tests/test_authorization_lifecycle.py
 @globexclude tests/test_spec_kit_authorization_cli.py
-@globexclude tests/test_agent_skills.py
 @globexclude tests/test_agent_skill_materialization.py
 @globexclude tests/test_boundary_core_layout.py
 @globexclude tests/test_native_contract_repository.py
+
 @globexclude .agents/**
 @globexclude .boundary/**
 @globexclude .specify/**
