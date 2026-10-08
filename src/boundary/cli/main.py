@@ -7,10 +7,11 @@ from pathlib import Path
 import sys
 from typing import TextIO
 
-from boundary.authorization import AuthorizationError
+from boundary.authorization import AuthorizationError, read_current_operation
 from boundary.contracts import ContractGraphError, ContractParseError
 from boundary.repository import RepositoryPathError
 
+from .contract_verification import run_contract_evolution_verify
 from .contracts import (
     configure_contracts_parser,
     run_contracts_authorize,
@@ -44,6 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
             "  boundary verify\n"
             "  authorize dependent implementation only after closure\n"
             "\n"
+            "The verify command closes either operation kind using its\n"
+            "historical authorization and host-owned path classification.\n"
+            "\n"
             "Situational queries:\n"
             "  boundary inspect <target...>\n"
             "  boundary status\n"
@@ -61,7 +65,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show the installed Boundary distribution version and exit.",
     )
     commands = parser.add_subparsers(dest="command")
-
     inspect_parser = commands.add_parser(
         "inspect",
         help="Inspect effective context for targets or the authorized unit.",
@@ -84,7 +87,6 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="*",
         help="Repository-relative target path for focused inspection.",
     )
-
     authorize_parser = commands.add_parser(
         "authorize",
         help="Authorize one explicitly selected implementation unit.",
@@ -103,13 +105,15 @@ def build_parser() -> argparse.ArgumentParser:
             "IDs for a multi-task unit."
         ),
     )
-
     commands.add_parser(
         "verify",
-        help="Verify actual writes against current authorization.",
+        help="Verify and close the current authorized operation.",
         description=(
-            "Verify actual Git changes against the current historical "
-            "authorization and close the operation on success."
+            "Verify actual Git changes against historical authorization and "
+            "close the operation on success. Implementation verification "
+            "preserves its Spec Kit adapter lifecycle. Contract-evolution "
+            "verification uses native verification and deterministic Spec Kit "
+            "bookkeeping classification. Neither path expands authority."
         ),
     )
     commands.add_parser(
@@ -121,7 +125,6 @@ def build_parser() -> argparse.ArgumentParser:
             "and debugging rather than the routine implementation path."
         ),
     )
-
     contracts_parser = commands.add_parser(
         "contracts",
         help="Authorize evolution or validate native project contracts.",
@@ -131,7 +134,6 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     configure_contracts_parser(contracts_parser)
-
     integration_parser = commands.add_parser(
         "integration",
         help="Manage Boundary-owned project integration.",
@@ -154,7 +156,6 @@ def build_parser() -> argparse.ArgumentParser:
             help=help_text,
             description=help_text,
         )
-
     return parser
 
 
@@ -176,7 +177,6 @@ def main(
         if repository_root is None
         else Path(repository_root)
     )
-
     try:
         if args.command == "contracts":
             if args.contracts_command == "check":
@@ -217,6 +217,10 @@ def main(
                 errors,
             )
         if args.command == "verify":
+            operation = read_current_operation(root)
+            if operation is not None and operation.kind == "contract-evolution":
+                return run_contract_evolution_verify(root, output, errors)
+
             from boundary_host.commands import run_verify
 
             return run_verify(root, output, errors)

@@ -4,19 +4,24 @@ Use this skill for deliberate evolution of persistent Boundary contracts.
 
 ## Procedure
 
-1. Identify the durable system rule, ownership statement, applicability rule, or interface that actually needs to change.
+1. Identify the durable system rule, ownership statement, applicability rule, or interface that needs to change.
 2. Confirm that persistent-contract evolution is necessary rather than using it to accommodate an ordinary implementation mistake.
 3. Inspect the existing contract graph and relevant effective context before editing contracts.
 4. Stop dependent implementation and ensure any active operation is verified before starting another authorization epoch.
 5. Authorize the exact native contract files with `boundary contracts authorize --change CHANGE_ID CONTRACT...`.
-6. Make the smallest durable contract change that expresses the intended system semantics.
-7. Preserve additive applicability: more-specific ownership does not remove broader applicable constraints.
-8. Keep ownership and additional applicability explicit.
-9. Declare architectural dependencies only when the relationship is durable and useful to downstream target context.
-10. Modify only the native contract files authorized for the contract-evolution operation.
-11. Run `boundary contracts check` after editing.
-12. Run `boundary verify` and require successful closure before dependent implementation begins.
-13. Explicitly select the dependent implementation unit and obtain fresh implementation authorization against the resulting canonical graph.
+6. Confirm successful authorization and the exact authorized contract targets.
+7. Make the smallest durable contract change that expresses the intended system semantics.
+8. Preserve additive applicability: more-specific ownership does not remove broader applicable constraints.
+9. Keep ownership and additional applicability explicit.
+10. Declare architectural dependencies only when the relationship is durable and useful to downstream target context.
+11. Modify only the native contract files authorized for the contract-evolution operation.
+12. Run `boundary contracts check` after editing and resolve structural failures.
+13. Run `boundary verify` and require a successful `status: verified` lifecycle result before dependent implementation begins.
+14. Explicitly select the dependent implementation unit and obtain fresh implementation authorization against the resulting canonical graph.
+
+The public `boundary verify` command handles both implementation and contract-evolution operations. Contract evolution is verified by Boundary's native verification service with deterministic change-system bookkeeping classification. An implementation operation retains its implementation-specific adapter verification behavior.
+
+Verification does not infer authority from newly changed contracts, current task prose, or additional discovered targets. A failed verification leaves the operation unverified and requires correction within authorized scope or an explicit lifecycle transition.
 
 When an ordinary implementation or durable change-system target is unowned, evolve a native contract that explicitly owns the required exact path or durable subtree. The ordinary target is not itself a contract-evolution target and must not be written until contract evolution closes and fresh implementation authorization succeeds.
 
@@ -48,4 +53,5 @@ Avoid:
 - Do not auto-own feature, specification, interface-contract, or other change-system paths.
 - Do not weaken contracts automatically to make implementation pass.
 - Structural validation establishes graph correctness, not semantic correctness of prose.
+- Failed verification must not be bypassed by modifying operation evidence.
 - Dependent implementation always starts from a fresh authorization epoch.

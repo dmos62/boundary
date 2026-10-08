@@ -1,4 +1,13 @@
+@cli! bash -lic 'printf "%s\n" "--- Focused contract-evolution CLI regression tests ---"; mise exec -- python -m unittest discover -s tests -p "test_contract_evolution*.py" -v'
+@cli! bash -lic 'printf "%s\n" "--- Native verification and lifecycle regression tests ---"; mise exec -- python -m unittest discover -s tests -p "test_native_verification.py" -v && mise exec -- python -m unittest discover -s tests -p "test_authorization_lifecycle.py" -v'
+@cli! bash -lic 'printf "%s\n" "--- CLI surface, adapter outcomes, and persistence ---"; mise exec -- python -m unittest discover -s tests -p "test_distribution_surface.py" -v && mise exec -- python -m unittest discover -s tests -p "test_lifecycle_outcomes.py" -v && mise exec -- python -m unittest discover -s tests -p "test_operation_persistence.py" -v'
+@cli! bash -lic 'printf "%s\n" "--- Complete unittest suite ---"; mise exec -- python -m unittest discover -s tests -p "test_*.py"'
+@cli! bash -lic 'printf "%s\n" "--- Installed Boundary CLI surface ---"; mise exec -- boundary --version && mise exec -- boundary --help && mise exec -- boundary contracts --help && mise exec -- boundary contracts authorize --help && mise exec -- boundary verify --help'
+@cli! bash -lic 'printf "%s\n" "--- Native contract validation ---"; mise exec -- boundary contracts check'
 @cli! bash -lic 'printf "%s\n" "--- Boundary integration health ---"; mise exec -- boundary integration check && test ! -e .specify/boundary-runtime'
-@cli! bash -lic "git diff --check"
-@cli! bash -lic 'printf "%s\n" "--- Canonical changed code/documentation line counts ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi; done < <(git diff --name-only --diff-filter=ACMR -- "\*.py" "\*.md" "\*.toml" "\*.yml" "\*.yaml" ":(exclude).agents/\*\*" ":(exclude).specify/\*\*"); exit "$failed"'
+@cli! bash -lic 'printf "%s\n" "--- Repository whitespace checks ---"; git diff --check && git diff --cached --check'
+@cli! bash -lic 'printf "%s\n" "--- Canonical changed code/documentation line counts, including untracked files ---"; failed=0; while IFS= read -r file; do [ -f "$file" ] || continue; case "$file" in .agents/*|.specify/*|.boundary/*|.specdd/*) continue ;; esac; case "$file" in *.py|*.md|*.toml|*.yml|*.yaml) lines=$(wc -l < "$file"); printf "%4d %s\n" "$lines" "$file"; if [ "$lines" -gt 250 ]; then failed=1; fi ;; esac; done < <({ git diff --name-only --diff-filter=ACMR; git diff --cached --name-only --diff-filter=ACMR; git ls-files --others --exclude-standard; } | LC_ALL=C sort -u); exit "$failed"'
 @cli! bash -lic 'printf "%s\n" "--- Repository status ---"; git status --short'
+@# ALWAYS MAINTAIN AN ATLAS CALL, AS WELL AS ITS --HELP CALL: WE USE THEM FOR CODEBASE AWARENESS: BUDGET IS 4096, can be higher.
+@cli atlas --help
+@cli atlas --budget 4096 --focus .

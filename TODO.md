@@ -2,135 +2,116 @@
 
 Source: `../gui-auto2/BOUNDARY-FEEDBACK.md` (read-only).
 
-The feedback contains three distinct problems. The final 2026-10-08 entry supersedes the earlier claim that the Feature 006 contract-evolution operation remains open. It does not resolve the CLI verification defect.
+The final 2026-10-08 feedback entry supersedes the earlier claim that operation `c47c942cc21e42cfb237e9663dd40564` remains open. That operation and the dependent evidence-record implementation operation both verified successfully. Do not recover, reopen, reconstruct, or edit either operation record.
 
-Work in the order below. Each implementation unit requires fresh Boundary authorization derived from selected structured task writes. Inspect effective target context before editing, and verify through the supported lifecycle. If additional writes become necessary, explicitly expand structured scope and obtain fresh authorization. Keep persistent-contract evolution separate.
+## 1. Complete contract-evolution CLI verification
 
-## 1. Fix contract-evolution verification through the CLI
+Status: focused regression validation passed; full-suite and installed end-to-end validation remain outstanding.
 
-Priority: highest.
+The prepared implementation:
 
-Status: unresolved in Boundary 0.3.0.
+- Dispatches public `boundary verify` by historical operation kind.
+- Retains the existing Spec Kit adapter verification path for implementation operations.
+- Uses native `finalize_operation_verification` for contract-evolution closure.
+- Derives deterministic Spec Kit bookkeeping classification from the historical operation change identity.
+- Preserves native verification policy without introducing another write verifier.
+- Rejects unauthorized contract writes and ordinary implementation writes during contract evolution.
+- Includes regression coverage for closure, feature bookkeeping exclusion, operation-kind violations, unauthorized writes, diagnostic stability, and CLI help.
+- Documents the intended public contract-evolution workflow in the canonical skill and CLI help.
 
-### Established facts
+Validation reported by the current iteration:
 
-- `boundary contracts authorize` can create a native contract-evolution operation.
-- The native verification service supports this operation kind.
-- `boundary verify` currently routes through `boundary_host.adapter.verify_feature`, which rejects non-implementation operations with `OPERATION_CHANGED`.
-- Contract-evolution verification must use the same Spec Kit path classifier as implementation verification, so active-feature bookkeeping is excluded correctly.
-- Operation `c47c942cc21e42cfb237e9663dd40564` was successfully closed using the native verifier. No recovery or manual alteration of that operation is required.
-- The subsequent evidence-record implementation operation also verified successfully.
+- Focused contract-evolution CLI tests: 9 passed.
+- Native verification tests: 7 passed.
+- Authorization lifecycle tests: 8 passed.
+- Distribution surface tests: 4 passed.
+- Lifecycle outcome tests: 3 passed.
+- `mise exec -- boundary integration check`: passed.
+- Generated `.specify/boundary-runtime` absence check: passed.
+- `git diff --check`: passed.
+- Changed-file line-count check: failed because `src/boundary/cli/main.py` had 254 lines.
 
-### Planned resolution
+The CLI file has now been shortened to address that limit. The revised working tree has not yet been revalidated.
 
-1. Inspect `docs/spec-authorization.md`, `docs/spec-change-adapter.md`, and `docs/spec-lifecycle.md`, together with the current CLI dispatch, adapter, verification service, and tests.
-2. Identify the narrowest shared verification path that supports both operation kinds without duplicating native verification policy.
-3. Make the documented `boundary verify` entrypoint dispatch according to the active operation kind.
-4. Preserve implementation-specific adapter behavior for implementation operations.
-5. Route contract-evolution operations to native verification and finalization with the deterministic Spec Kit path classifier.
-6. Preserve existing authorization evidence, baseline checks, actual-write checks, lifecycle diagnostics, and operation finalization semantics.
-7. Ensure no verification path infers new authority or silently changes an operation's authorized targets.
-8. Add regression tests for:
-   - successful CLI verification and closure of an authorized contract-evolution operation;
-   - active-feature plan/tasks bookkeeping excluded by the correct classifier;
-   - unauthorized contract writes rejected;
-   - contract-evolution operations not authorizing implementation writes;
-   - existing implementation verification remaining functional;
-   - failed verification leaving the operation unverified with stable diagnostics.
-9. Align CLI help, contract-evolution skill guidance, and focused specifications with the actual supported closure command.
-10. Run focused tests, integration health checks, and repository validation.
+Remaining work:
 
-### Acceptance criteria
+1. Review the installed `boundary_host.adapter.path_classifier`, `boundary_host.outcomes.outcome_for_error`, and native verification service signatures against the new CLI path.
+2. Confirm lifecycle result fields, blocked categories, diagnostic codes, and nonzero exit behavior against the installed adapter.
+3. Rerun focused regressions after the CLI line-count correction.
+4. Run the complete relevant test suite.
+5. Run `mise exec -- boundary integration check`.
+6. Run `git diff --check` and the changed-file line-count check, including new untracked Python and Markdown files.
+7. Confirm every changed canonical code or documentation file contains at most 250 lines.
+8. Confirm no generated `.agents/` or `.specify/` content is used as canonical source.
+9. Exercise an actual installed `boundary contracts authorize` → `boundary contracts check` → `boundary verify` workflow in an isolated Git repository with active Spec Kit plan and task bookkeeping.
+10. Confirm the operation is persistently verified and dependent implementation requires fresh authorization.
 
-- The public CLI completes `authorize -> edit -> verify` for contract evolution without calling internal Python APIs.
-- Contract-evolution verification uses the same relevant change-system classification as native implementation verification.
-- Authorized contract-evolution operations close successfully; prohibited writes still block verification.
-- Existing implementation verification behavior is preserved.
-- Documentation and installed skill instructions describe a working supported workflow.
+Do not classify this task as resolved until full validation and the installed CLI workflow succeed.
 
 ## 2. Establish supported ownership for Spec Kit interface contracts
 
-Status: unresolved for `specs/005-dev-chrome-session/contracts/cli.md` in the reported downstream project.
+Status: unresolved for `specs/005-dev-chrome-session/contracts/cli.md` in the downstream project.
 
-### Established facts
+The Rust implementation and test targets have owner `chrome-dev-session`. The CLI interface contract lacks a primary owner.
 
-- The affected Rust implementation and test paths have owner `chrome-dev-session`.
-- The Feature 005 CLI interface contract has no primary owner or applicable contracts in the reported effective context.
-- Explicit structured writes cannot be authorized for unowned targets.
-- The downstream project requires the CLI contract to evolve alongside the launcher interface implementation.
-- A broader implicit ownership or feature-wide authorization rule would contradict the native Boundary invariants.
+Native Boundary contract semantics already support exact-path ownership. No catch-all owner, implicit feature ownership, or runtime exception is necessary.
 
-### Planned resolution
+Next steps:
 
-1. Inspect `docs/spec-contracts.md`, `docs/spec-authorization.md`, and `docs/spec-change-adapter.md`.
-2. Determine whether native contract semantics already allow a narrow owner to cover the exact Spec Kit interface-contract path.
-3. Establish whether the downstream contract should be owned by an existing appropriate architectural owner or by a distinct, narrowly scoped interface owner.
-4. Prefer existing native ownership and applicability declarations over new framework behavior.
-5. Check for overlapping ownership, additive constraints, and primary-owner ambiguity before changing contracts.
-6. If an ordinary native contract-evolution operation can establish this ownership, document the required downstream contract changes without editing the read-only feedback file.
-7. If native semantics cannot represent the intended ownership, specify the missing behavior and authorize a separate Boundary implementation unit before modifying the runtime.
-8. Confirm the downstream change system can explicitly declare the interface-contract write in the appropriate implementation task.
-9. Inspect effective context and declared-scope preflight for the Rust sources, tests, and CLI contract after ownership is established.
-10. Require fresh implementation authorization before the Feature 005 CLI change resumes.
+1. Inspect the downstream native contract graph and effective context for the CLI contract, Rust implementation, and Rust test paths.
+2. Select the existing appropriate architectural owner or a new narrow interface owner.
+3. Evolve native `contracts/**/*.contract.md` declarations through an authorized contract-evolution operation.
+4. Confirm exactly one primary owner and preserved additive applicability.
+5. Require the exact interface-contract path in the appropriate structured task `Writes:` metadata.
+6. Run declared-scope preflight across the source, test, and interface-contract targets.
+7. Verify and close contract evolution before dependent implementation authorization.
+8. Leave `../gui-auto2/BOUNDARY-FEEDBACK.md` and Feature 005 implementation unchanged during Boundary repair.
 
-### Acceptance criteria
+Acceptance requires exact ownership, additive constraints, declared writes, and fresh implementation authorization.
 
-- The CLI contract resolves to exactly one primary owner.
-- All relevant additive constraints remain applicable.
-- The contract path can participate in an explicitly selected task's write set.
-- No authorization is derived from path-looking prose or unrelated tasks.
-- Neither global catch-all ownership nor undocumented write exceptions are introduced.
+## 3. Confirm installed contract-evolution entrypoint
 
-## 3. Confirm and document the contract-evolution entrypoint
+Status: the Boundary 0.2.0 missing-authorization-entrypoint limitation was partially superseded by Boundary 0.3.0. The public verification defect still requires installed end-to-end validation.
 
-Status: reported missing in Boundary 0.2.0; partially addressed by Boundary 0.3.0.
+The intended workflow is:
 
-### Established facts
+    boundary contracts authorize --change CHANGE_ID CONTRACT...
+    boundary contracts check
+    boundary verify
 
-- Boundary 0.2.0 exposed native contract-evolution APIs but lacked a supported CLI entrypoint.
-- Boundary 0.3.0 exposes `boundary contracts authorize`.
-- Boundary 0.3.0 documents `boundary verify` as the closure command, but that command is defective for contract evolution.
-- The original missing-entrypoint report must not be treated as a separate current defect without checking the installed CLI.
+After task 1:
 
-### Planned resolution
-
-1. Confirm the current CLI accepts and correctly authorizes contract-evolution operations.
-2. Review command help, argument validation, blocking diagnostic output, and skill instructions.
-3. Use the repaired verification path from task 1 to complete the public contract-evolution workflow.
-4. Add or extend end-to-end CLI coverage if authorization entrypoint coverage is insufficient.
-5. Check that installation through mise provides the same commands and guidance.
-6. Document version requirements for affected downstream projects.
-7. Do not add a redundant second contract-evolution API or CLI command merely to work around verification dispatch.
-
-### Acceptance criteria
-
-- Contract-evolution authorization and verification are both available through documented installed CLI commands.
-- An operator does not need runtime bootstrap code, manual operation-record edits, or undocumented native-service invocations.
-- Skill instructions, CLI help, and runtime behavior agree.
-- The historical 0.2.0 limitation is identified as superseded once the complete workflow is confirmed.
+1. Confirm authorization and closure through the installed CLI.
+2. Check command help, argument validation, and blocked lifecycle diagnostics.
+3. Confirm mise installation exposes the same commands and canonical skill guidance.
+4. Add end-to-end authorization coverage if remaining gaps are found.
+5. Document the minimum released Boundary version containing the complete workflow.
+6. Do not introduce a redundant second contract-evolution command.
+7. Mark the original 0.2.0 entrypoint defect superseded only after the installed workflow is demonstrated.
 
 ## 4. Release and downstream validation
 
-Perform after the corresponding fixes have passed focused verification.
+Perform after the corresponding changes pass verification.
 
-1. Run all relevant unit, CLI, integration, and regression tests.
-2. Run `mise exec -- boundary integration check` and the repository hygiene checks.
-3. Keep changed canonical code and documentation files at or below 250 lines; split responsibilities where necessary.
-4. Confirm generated `.agents/` and `.specify/` state is not used as canonical source.
-5. Prepare an appropriately versioned Boundary release using the documented mise-managed distribution procedure.
+1. Run relevant unit, CLI, integration, and regression tests.
+2. Run `mise exec -- boundary integration check` and repository hygiene checks.
+3. Enforce the 250-line limit for changed canonical code and documentation.
+4. Confirm canonical procedure and implementation are not replaced by generated `.agents/` or `.specify/` material.
+5. Review `docs/spec-distribution.md` before preparing a versioned release through the documented mise-managed distribution procedure.
 6. Validate the released executable in a clean downstream installation.
-7. Confirm the previously failing contract-evolution CLI workflow works against active Spec Kit change bookkeeping.
-8. Confirm Feature 005's interface-contract ownership can be established without weakening its implementation write scope.
-9. Ensure dependent implementation begins only after contract evolution has verified and a fresh implementation authorization succeeds.
-10. Record resolved items and any remaining downstream migration instructions before clearing this TODO.
+7. Confirm contract-evolution CLI closure works with active Spec Kit bookkeeping.
+8. Confirm Feature 005 interface-contract ownership can be established without widening implementation authority.
+9. Require fresh implementation authorization after contract evolution.
+10. Record resolved items and remaining downstream migration instructions before clearing this TODO.
 
 ## Scope and exclusions
 
 - Do not edit `../gui-auto2/BOUNDARY-FEEDBACK.md`.
 - Do not reopen or reconstruct already verified operation records.
-- Do not introduce a new Boundary-owned lock format to address the observation that the mise lock names a tag rather than an immutable commit. Source identity and locking are governed by `docs/spec-distribution.md`; assess any separate reproducibility concern against that specification before treating it as another defect.
-- Do not alter Feature 005 calibration or launcher behavior as part of fixing Boundary itself.
-- Do not treat successful Boundary verification as proof of downstream application acceptance.
-- Do not edit persistent contracts during an implementation operation.
+- Do not introduce another Boundary-owned lock format for the mise source-tag observation; assess reproducibility against `docs/spec-distribution.md`.
+- Do not alter Feature 005 calibration or launcher behavior while fixing Boundary.
+- Do not equate Boundary verification with downstream application acceptance.
+- Do not modify persistent contracts during an implementation operation.
+- Do not treat prepared changes or passing focused tests as proof of release readiness.
 
-The immediate next implementation unit should address task 1. Tasks 2 and 3 may then be resolved independently, with task 3 reusing the verified CLI closure path rather than duplicating it.
+The next step remains completion of task 1 validation. Tasks 2 and 3 can proceed separately after the public CLI closure path is established.
