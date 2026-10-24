@@ -10,36 +10,28 @@ depends_on:
   - boundary-repository
 ---
 
-# Operation Authorization
+# Pre-change and Operation Evidence
 
 ## Purpose
 
-Authorize exact operation write scope against fresh contracts and current Git state.
+Resolve exact selected scope and capture worktree state before edits.
 
 ## Invariants
 
-- Implementation scope comes only from explicit structured write declarations.
-- Implementation authorization requires an explicit ordered selection of one or more task identities from the active change.
-- Authorized implementation targets are the deterministic ordered union of the selected tasks' structured writes; unselected tasks grant no write authority.
-- Every implementation target resolves through a fresh native contract graph to one unambiguous owner.
-- Implementation and contract evolution are separate operation kinds.
-- Successful implementation authorization records the selected task identities together with the exact authorized targets in one atomic operation record.
-- Successful authorization creates one atomic operation record with the Git baseline and governing target identities.
-- Dirty intended targets require exact verified predecessor provenance before carry-forward.
-- An unverified active operation cannot be silently replaced.
-- Compact authorization handoff state is derived from current operation evidence and current Git state rather than persisted as another authority artifact.
+- A fresh generic request, native contract graph, and Git snapshot determine one immutable operation record.
+- Selection is explicit; task prose, unrelated tasks, and architectural ownership cannot enlarge scope.
+- An open operation cannot be replaced.
+- Dirty targets require exact verified predecessor output from the same change, kind, and selected task identity.
+- Evidence is atomic and confined to `.boundary-state/` in the current worktree.
+- The root managed ignore block must be installed before opening an operation.
 
 ## Prohibitions
 
-- Path-looking prose must not widen implementation authority.
-- Missing task selection must not fall back to authorizing every task in the active change.
-- Architectural ownership must not infer implementation-unit membership or widen the selected write set.
-- Native contract changes must not authorize implementation writes in the same operation.
-- Mutable planning state must not alter historical authorization evidence.
-- Reading authorization handoff state must not widen, refresh, or verify an operation.
+- Boundary must not write evidence or exclusion rules under `.git/**`.
+- An abandoned or modified predecessor output must not be carried forward.
+- Mutable planning state must not rewrite historical operation scope.
 
 ## Interfaces
 
-- Authorization services produce and persist versioned `OperationRecord` evidence for implementation and contract-evolution operations.
-- Implementation operation evidence exposes the explicit selected task identities and resolved authorized targets used for that authorization epoch.
-- Authorization services expose a compact read-only handoff projection of the current operation for coordinator and worker transfer.
+- Pre-change services open implementation or contract-evolution operations.
+- Operation storage and status queries preserve current worktree evidence without cross-worktree coordination.

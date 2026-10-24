@@ -3,14 +3,14 @@
 from copy import deepcopy
 import unittest
 
-from boundary.authorization import (
-    AuthorizationError,
+from boundary.pre_change import (
+    PreChangeError,
     GitBaseline,
     OperationRecord,
     OperationTargetEvidence,
     TaskWriteSet,
 )
-from boundary.authorization.codec import operation_record_from_document
+from boundary.operation.codec import operation_record_from_document
 
 
 class OperationRecordTaskSelectionTests(unittest.TestCase):
@@ -23,21 +23,12 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
         record = operation_record_from_document(_implementation_document())
         self.assertEqual(record.to_document()["selectedTaskIds"], ["T001"])
 
-    def test_missing_selected_task_ids_is_derived_from_task_evidence(self) -> None:
-        document = _implementation_document()
-        del document["selectedTaskIds"]
-
-        record = operation_record_from_document(document)
-
-        self.assertEqual(("T001",), record.selected_task_ids)
-        self.assertEqual(["T001"], record.to_document()["selectedTaskIds"])
-
     def test_empty_selected_task_ids_is_not_inferred_from_tasks(self) -> None:
         document = _implementation_document()
         document["selectedTaskIds"] = []
 
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "selected task identities must match operation task evidence",
         ):
             operation_record_from_document(document)
@@ -47,28 +38,28 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
         document["selectedTaskIds"] = ["T999"]
 
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "selected task identities must match operation task evidence",
         ):
             operation_record_from_document(document)
 
-    def test_authorized_targets_must_match_selected_task_writes(self) -> None:
+    def test_allowed_targets_must_match_selected_task_writes(self) -> None:
         document = _implementation_document()
-        document["authorizedTargets"][0]["path"] = "src/other.py"
+        document["allowedTargets"][0]["path"] = "src/other.py"
 
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "authorized targets must exactly match selected task writes",
         ):
             operation_record_from_document(document)
 
-    def test_authorized_targets_must_preserve_selected_write_order(self) -> None:
+    def test_allowed_targets_must_preserve_selected_write_order(self) -> None:
         document = _implementation_document()
         document["tasks"][0]["writes"] = [
             "src/example.py",
             "src/other.py",
         ]
-        document["authorizedTargets"] = [
+        document["allowedTargets"] = [
             {
                 "path": "src/other.py",
                 "owner": "example-owner",
@@ -81,25 +72,25 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
             },
         ]
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "authorized targets must exactly match selected task writes",
         ):
             operation_record_from_document(document)
 
     def test_implementation_target_requires_owner_evidence(self) -> None:
         document = _implementation_document()
-        del document["authorizedTargets"][0]["owner"]
+        del document["allowedTargets"][0]["owner"]
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "must include owner and effective context identity",
         ):
             operation_record_from_document(document)
 
     def test_implementation_target_requires_context_identity(self) -> None:
         document = _implementation_document()
-        del document["authorizedTargets"][0]["effectiveContextIdentity"]
+        del document["allowedTargets"][0]["effectiveContextIdentity"]
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "must include owner and effective context identity",
         ):
             operation_record_from_document(document)
@@ -107,9 +98,9 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
     def test_implementation_task_evidence_requires_a_write(self) -> None:
         document = _implementation_document()
         document["tasks"][0]["writes"] = []
-        document["authorizedTargets"] = []
+        document["allowedTargets"] = []
         with self.assertRaisesRegex(
-            AuthorizationError,
+            PreChangeError,
             "must declare at least one write target",
         ):
             operation_record_from_document(document)
@@ -130,7 +121,7 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
                 change_id="change-1",
                 kind="implementation",
                 tasks=(task,),
-                authorized_targets=(
+                allowed_targets=(
                     OperationTargetEvidence(
                         path="src/example.py",
                         owner="example-owner",
@@ -145,7 +136,7 @@ class OperationRecordTaskSelectionTests(unittest.TestCase):
 def _implementation_document() -> dict[str, object]:
     return deepcopy(
         {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "operationId": "operation-1",
             "changeId": "change-1",
             "kind": "implementation",
@@ -158,7 +149,7 @@ def _implementation_document() -> dict[str, object]:
                     "writes": ["src/example.py"],
                 }
             ],
-            "authorizedTargets": [
+            "allowedTargets": [
                 {
                     "path": "src/example.py",
                     "owner": "example-owner",
@@ -171,7 +162,7 @@ def _implementation_document() -> dict[str, object]:
                 "dirtyPathStates": [],
             },
             "carriedForward": [],
-            "status": "authorized",
+            "status": "open",
         }
     )
 

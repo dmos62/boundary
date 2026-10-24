@@ -6,12 +6,12 @@ For implementation work:
 
 - derive write scope only from explicit structured writes supplied by the active change-system adapter;
 - inspect effective Boundary context for targets rather than manually reproducing contract resolution;
-- use the `authorize → implement → verify` lifecycle;
+- use the `pre-change → implement → post-change` lifecycle;
 - do not modify undeclared targets under an active implementation operation;
 - stop and perform an explicit scope-expansion transition before adding newly discovered write targets;
 - keep persistent-contract evolution separate from implementation and require fresh implementation authorization afterward;
 - treat deterministic Boundary authorization and verification as authoritative.
 
-Do not use generated `.agents/` or `.specify/` material as canonical source. Canonical procedure lives under `skills/`, concrete integrations under `adapters/` and `integration/`, and persistent project semantics under `contracts/`.
+Do not use generated `.agents/` material as canonical source. Canonical procedure lives under `skills/`, agent integrations under `adapters/`, and persistent project semantics under `contracts/`.
 
 Historical migration material does not define current Boundary behavior.

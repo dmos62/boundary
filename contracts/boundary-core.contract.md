@@ -9,19 +9,15 @@ owns:
 
 ## Purpose
 
-Provide provider-neutral Boundary mechanics and product concepts.
+Provide native contracts, context, generic change requests, and deterministic worktree operation checks.
 
 ## Invariants
 
-- Boundary product semantics remain independent of any particular change system, contract provider, or agent runtime.
-- Facts that can be computed deterministically remain deterministic code responsibilities.
-- Generated projections, adapter state, and operation evidence do not become persistent project contracts.
+- Planning systems supply normalized task projections; Boundary owns scope and Git evidence.
+- Native contracts and effective context remain independent of callers and agent runtimes.
+- Current operation evidence is local, noncanonical workflow state.
 
 ## Prohibitions
 
-- Core semantics must not depend on external change system command names, legacy provider concepts, or agent-runtime discovery paths.
-- Agent prompt compliance must not become the authorization or correctness boundary.
-
-## Interfaces
-
-- Core packages expose repository paths, native contracts, target context, authorization, verification, and product CLI behavior through provider-neutral APIs.
+- Core permission checks must not depend on provider file layouts, workflow stages, or agent prompt compliance.
+- Boundary must not acquire a task tracker, cross-worktree lock, or external-service authority.

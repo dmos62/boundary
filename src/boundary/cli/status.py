@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import TextIO
 
-from boundary.authorization import read_authorization_handoff
+from boundary.operation.handoff import read_operation_status
 
 
 def run_status(
@@ -15,7 +15,7 @@ def run_status(
 ) -> int:
     """Render the compact current authorization handoff as JSON."""
 
-    handoff = read_authorization_handoff(repository_root)
+    handoff = read_operation_status(repository_root)
     document = None if handoff is None else handoff.to_document()
     print(
         json.dumps(

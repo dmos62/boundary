@@ -1,3 +1,4 @@
+from boundary.cli.integration import update_managed_ignore
 import io
 import json
 import os
@@ -14,7 +15,7 @@ SOURCE_ROOT = REPOSITORY_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
-from boundary.authorization import (
+from boundary.pre_change import (
     OperationRecord,
     OperationTargetEvidence,
     TaskWriteSet,
@@ -41,6 +42,7 @@ def run_git(root: Path, *args: str) -> str:
 class BoundaryStatusCliTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
         run_git(root, "init", "-q")
+        update_managed_ignore(root, True)
         run_git(root, "config", "user.email", "tests@example.invalid")
         run_git(root, "config", "user.name", "Boundary Tests")
         (root / "app.py").write_text(
@@ -63,7 +65,7 @@ class BoundaryStatusCliTests(unittest.TestCase):
                     writes=("app.py",),
                 ),
             ),
-            authorized_targets=(
+            allowed_targets=(
                 OperationTargetEvidence(
                     path="app.py",
                     owner="app",
@@ -111,14 +113,14 @@ class BoundaryStatusCliTests(unittest.TestCase):
         self.assertEqual(0, code)
         self.assertEqual("", errors)
         self.assertEqual(
-            "boundary.authorization-handoff/v1",
+            "boundary.operation-status/v2",
             document["schema"],
         )
         self.assertEqual(record.operation_id, document["operationId"])
         self.assertEqual(["T001"], document["selectedTaskIds"])
         self.assertEqual(
             ["app.py"],
-            [item["path"] for item in document["authorizedTargets"]],
+            [item["path"] for item in document["allowedTargets"]],
         )
         self.assertTrue(document["git"]["headMatchesBaseline"])
 

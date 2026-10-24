@@ -1,3 +1,4 @@
+from boundary.cli.integration import update_managed_ignore
 import json
 import subprocess
 import tempfile
@@ -5,16 +6,16 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from boundary.authorization import (
-    AuthorizationError,
+from boundary.pre_change import (
+    PreChangeError,
     ChangeWriteSet,
     ContractEvolutionWriteSet,
     TaskWriteSet,
-    authorize_contract_evolution_operation,
-    authorize_implementation_operation,
+    open_contract_operation,
+    open_implementation_operation,
     current_operation_path,
 )
-from boundary.verification import finalize_operation_verification
+from boundary.post_change import close_verified_operation
 
 
 class OperationRecordTests(unittest.TestCase):
@@ -31,6 +32,7 @@ class OperationRecordTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         root = Path(temporary.name).resolve()
         self.git(root, "init")
+        update_managed_ignore(root, True)
         self.git(root, "config", "user.name", "Boundary Test")
         self.git(root, "config", "user.email", "boundary@example.test")
 
@@ -92,7 +94,7 @@ class OperationRecordTests(unittest.TestCase):
             self.git(root, "add", "docs/note.md")
             (root / "docs/old.md").unlink()
 
-            record = authorize_implementation_operation(
+            record = open_implementation_operation(
                 root,
                 self.implementation_change(),
                 selected_task_ids=("T001",),
@@ -122,10 +124,10 @@ class OperationRecordTests(unittest.TestCase):
         self.assertTrue(states["docs/old.md"].startswith("missing:sha256:"))
         self.assertEqual(
             "auth",
-            document["authorizedTargets"][0]["owner"],
+            document["allowedTargets"][0]["owner"],
         )
         self.assertTrue(
-            document["authorizedTargets"][0][
+            document["allowedTargets"][0][
                 "effectiveContextIdentity"
             ].startswith("sha256:")
         )
@@ -133,7 +135,7 @@ class OperationRecordTests(unittest.TestCase):
     def test_failed_reauthorization_preserves_prior_successful_record(self):
         temporary, root = self.initialize_repository()
         with temporary:
-            authorize_implementation_operation(
+            open_implementation_operation(
                 root,
                 self.implementation_change(),
                 selected_task_ids=("T001",),
@@ -143,10 +145,10 @@ class OperationRecordTests(unittest.TestCase):
             before = path.read_bytes()
 
             with self.assertRaisesRegex(
-                AuthorizationError,
-                "no primary owner",
+                PreChangeError,
+                "OPERATION_OPEN",
             ):
-                authorize_implementation_operation(
+                open_implementation_operation(
                     root,
                     self.implementation_change("docs/unowned.md"),
                     selected_task_ids=("T001",),
@@ -158,13 +160,13 @@ class OperationRecordTests(unittest.TestCase):
     def test_atomic_replace_failure_preserves_prior_record(self):
         temporary, root = self.initialize_repository()
         with temporary:
-            authorize_implementation_operation(
+            open_implementation_operation(
                 root,
                 self.implementation_change(),
                 selected_task_ids=("T001",),
                 operation_id="operation-1",
             )
-            finalize_operation_verification(
+            close_verified_operation(
                 root,
                 operation_id="operation-1",
             )
@@ -172,14 +174,14 @@ class OperationRecordTests(unittest.TestCase):
             before = path.read_bytes()
 
             with mock.patch(
-                "boundary.authorization.storage.os.replace",
+                "boundary.operation.storage.os.replace",
                 side_effect=OSError("replace failed"),
             ):
                 with self.assertRaisesRegex(
-                    AuthorizationError,
+                    PreChangeError,
                     "atomic operation evidence",
                 ):
-                    authorize_implementation_operation(
+                    open_implementation_operation(
                         root,
                         self.implementation_change(),
                         selected_task_ids=("T001",),
@@ -191,7 +193,7 @@ class OperationRecordTests(unittest.TestCase):
     def test_contract_evolution_record_is_a_separate_operation_kind(self):
         temporary, root = self.initialize_repository()
         with temporary:
-            record = authorize_contract_evolution_operation(
+            record = open_contract_operation(
                 root,
                 ContractEvolutionWriteSet(
                     "001-login",
@@ -208,7 +210,7 @@ class OperationRecordTests(unittest.TestCase):
         self.assertEqual([], document["tasks"])
         self.assertEqual(
             [{"path": "contracts/auth.contract.md"}],
-            document["authorizedTargets"],
+            document["allowedTargets"],
         )
 
 

@@ -19,8 +19,8 @@ class RepositoryNativeContractTests(unittest.TestCase):
             "src/boundary/repository/paths.py": "boundary-repository",
             "src/boundary/contracts/parser.py": "boundary-native-contracts",
             "src/boundary/context/resolver.py": "boundary-context",
-            "src/boundary/authorization/service.py": "boundary-authorization",
-            "src/boundary/verification/service.py": "boundary-verification",
+            "src/boundary/pre_change/service.py": "boundary-pre-change",
+            "src/boundary/post_change/service.py": "boundary-post-change",
             "src/boundary/cli/main.py": "boundary-cli",
             "adapters/codex/materialize.py": "boundary-agent-adapters",
             "skills/implement/SKILL.md": "boundary-agent-procedure",
@@ -29,8 +29,8 @@ class RepositoryNativeContractTests(unittest.TestCase):
             "docs/spec.md": "boundary-specifications",
             "docs/TODO.md": "boundary-documentation",
             "tests/test_native_contract_graph.py": "boundary-tests",
-            "integration/speckit/scripts/spec_kit_adapter.py": (
-                "boundary-change-adapter"
+            "src/boundary/request/codec.py": (
+                "boundary-request"
             ),
         }
 
@@ -44,14 +44,14 @@ class RepositoryNativeContractTests(unittest.TestCase):
     ) -> None:
         context = resolve_target_context(
             self.graph,
-            "src/boundary/authorization/service.py",
+            "src/boundary/pre_change/service.py",
         )
 
-        self.assertEqual(context.owner_id, "boundary-authorization")
+        self.assertEqual(context.owner_id, "boundary-pre-change")
         self.assertTrue(
             {
                 "boundary-core",
-                "boundary-authorization",
+                "boundary-pre-change",
                 "boundary-operation-lifecycle",
             }.issubset(context.applicable_contract_ids)
         )

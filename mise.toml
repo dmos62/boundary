@@ -3,7 +3,6 @@ min_version = "2026.9.0"
 [tools]
 python = "3.14.7"
 uv = "latest"
-"pipx:git+https://github.com/github/spec-kit.git" = { version = "v1.0.10", depends = ["python", "uv"] }
 
 [env]
 _.python.venv = { path = ".venv", create = true }

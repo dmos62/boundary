@@ -22,13 +22,8 @@ boundary = "boundary.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = [
   "src/boundary",
-  "integration/speckit/runtime/boundary_host",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]
 "skills" = "boundary_assets/skills"
 "adapters" = "boundary_assets/adapters"
-"integration/speckit/commands" = "boundary_assets/integration/speckit/commands"
-"integration/speckit/extension.yml" = "boundary_assets/integration/speckit/extension.yml"
-"integration/speckit/workflow-overlay.yml" = "boundary_assets/integration/speckit/workflow-overlay.yml"
-"integration/speckit-preset" = "boundary_assets/integration/speckit-preset"

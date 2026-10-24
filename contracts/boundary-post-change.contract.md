@@ -9,26 +9,22 @@ depends_on:
   - boundary-native-contracts
 ---
 
-# Operation Verification
+# Post-change and Abandonment
 
 ## Purpose
 
-Derive actual Git writes and verify them against historical Boundary authorization.
+Check actual Git writes against an open operation or close it explicitly without verification.
 
 ## Invariants
 
-- Actual writes are derived from Git final state relative to the authorization baseline.
-- A changed Git `HEAD` invalidates direct verification against the recorded baseline.
-- Every ordinary actual write must be present in the exact authorized target set.
-- Actual implementation targets are fresh-resolved and compared with their historical effective-context identities.
-- Successful verification records exact final dirty states for later verified carry-forward.
+- Post-change compares actual index and worktree state with the stored pre-change baseline.
+- Git `HEAD` must remain unchanged and every actual write must fit the exact allowed scope.
+- Implementation targets retain their historical effective contract context.
+- Successful post-change stores exact verified final states; failure leaves the operation open.
+- Post-abandon records an unverified `abandoned` outcome and preserves project files.
 
 ## Prohibitions
 
-- Current task prose or regenerated planning state must not replace historical operation evidence.
-- Adapter-owned path classification must not hide native contracts or explicitly authorized targets.
-- Contract evolution must not be treated as retroactive implementation authority.
-
-## Interfaces
-
-- Verification services expose provider-neutral diagnostics and close successful authorization epochs.
+- Neither closing transition commits, resets, restores, or rebases project files.
+- Planning or generated paths receive no implicit actual-write exemption.
+- Contract evolution cannot retroactively authorize implementation.

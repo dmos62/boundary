@@ -13,18 +13,17 @@ depends_on:
 
 ## Purpose
 
-Expose product-level Boundary commands without coupling the core CLI to a host workflow.
+Expose the generic operation lifecycle, contract queries, status, and Boundary-owned agent integration.
 
 ## Invariants
 
-- CLI commands use Boundary terminology and provider-neutral core APIs.
-- Target inspection is transient and does not persist effective-context projections.
-- Contract checking validates fresh canonical native contracts.
+- `pre-change` accepts only the versioned normalized request; `post-change` and `post-abandon` use stored evidence.
+- Contract evolution uses `contracts pre-change` and the same closing commands.
+- Lifecycle results have stable versioned stage, status, and diagnostic fields.
+- Status, inspection, contract checking, and integration checking are read-only.
+- Integration install and remove manage only Boundary skills and a root ignore block, and refuse open operations.
 
 ## Prohibitions
 
-- Product CLI behavior must not depend on external change system stages, legacy provider commands, or agent-runtime discovery paths.
-
-## Interfaces
-
-- The product command surface includes native contract checking and target inspection and may grow to expose native authorization and verification.
+- No command reads or depends on a particular planning system's files.
+- Old lifecycle command aliases are absent.

@@ -1,20 +1,21 @@
+from boundary.cli.integration import update_managed_ignore
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from boundary.authorization import (
-    AuthorizationError,
+from boundary.pre_change import (
+    PreChangeError,
     ChangeWriteSet,
     TaskWriteSet,
-    authorize_implementation_operation,
+    open_implementation_operation,
     operation_archive_path,
     read_current_operation,
 )
-from boundary.verification import (
-    VerificationError,
-    finalize_operation_verification,
+from boundary.post_change import (
+    PostChangeError,
+    close_verified_operation,
 )
 
 
@@ -58,7 +59,7 @@ def change(*paths: str) -> ChangeWriteSet:
 
 
 def authorize(root: Path, *paths: str):
-    return authorize_implementation_operation(
+    return open_implementation_operation(
         root,
         change(*paths),
         selected_task_ids=("T001",),
@@ -69,6 +70,7 @@ def authorize(root: Path, *paths: str):
 class AuthorizationLifecycleTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
         run_git(root, "init", "-q")
+        update_managed_ignore(root, True)
         run_git(root, "config", "user.email", "tests@example.invalid")
         run_git(root, "config", "user.name", "Boundary Tests")
         write_contract(root)
@@ -90,7 +92,7 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
                 authorize(root, "src/a.py")
@@ -102,8 +104,8 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             authorize(root, "src/a.py")
 
             with self.assertRaisesRegex(
-                AuthorizationError,
-                "OPERATION_NOT_VERIFIED",
+                PreChangeError,
+                "OPERATION_OPEN",
             ):
                 authorize(root, "src/b.py")
 
@@ -116,7 +118,7 @@ class AuthorizationLifecycleTests(unittest.TestCase):
                 "VALUE = 'first'\n",
                 encoding="utf-8",
             )
-            verified = finalize_operation_verification(
+            verified = close_verified_operation(
                 root,
                 operation_id=first.operation_id,
             )
@@ -141,7 +143,7 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             root = Path(temporary)
             self.initialize(root)
             first = authorize(root, "src/a.py")
-            finalize_operation_verification(root)
+            close_verified_operation(root)
             authorize(root, "src/b.py")
 
             self.assertFalse(
@@ -155,11 +157,11 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             authorize(root, "src/a.py")
             path = root / "src" / "a.py"
             path.write_text("VALUE = 'verified'\n", encoding="utf-8")
-            finalize_operation_verification(root)
+            close_verified_operation(root)
             path.write_text("VALUE = 'changed-again'\n", encoding="utf-8")
 
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
                 authorize(root, "src/a.py")
@@ -170,11 +172,11 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             self.initialize(root)
             authorize(root, "src/a.py")
             (root / "src" / "a.py").unlink()
-            verified = finalize_operation_verification(root)
+            verified = close_verified_operation(root)
             successor = authorize(root, "src/a.py")
 
             self.assertEqual(
-                verified.verification_final_states[0].state,
+                verified.verified_final_states[0].state,
                 successor.carried_forward[0].state,
             )
 
@@ -186,11 +188,11 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             path = root / "src" / "a.py"
             path.write_text("VALUE = 'staged'\n", encoding="utf-8")
             run_git(root, "add", "src/a.py")
-            finalize_operation_verification(root)
+            close_verified_operation(root)
             run_git(root, "reset", "HEAD", "--", "src/a.py")
 
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "DIRTY_TARGET_NOT_VERIFIED",
             ):
                 authorize(root, "src/a.py")
@@ -203,14 +205,14 @@ class AuthorizationLifecycleTests(unittest.TestCase):
             run_git(root, "commit", "--allow-empty", "-q", "-m", "move head")
 
             with self.assertRaisesRegex(
-                VerificationError,
+                PostChangeError,
                 "GIT_BASELINE_CHANGED",
             ):
-                finalize_operation_verification(root)
+                close_verified_operation(root)
 
             current = read_current_operation(root)
             self.assertIsNotNone(current)
-            self.assertEqual("authorized", current.status)
+            self.assertEqual("open", current.status)
 
 
 if __name__ == "__main__":

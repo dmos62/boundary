@@ -2,13 +2,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from boundary.authorization import (
-    AuthorizationError,
+from boundary.pre_change import (
+    PreChangeError,
     ChangeWriteSet,
     ContractEvolutionWriteSet,
     TaskWriteSet,
-    authorize_contract_evolution,
-    authorize_implementation,
+    resolve_contract_scope,
+    resolve_implementation_scope,
 )
 
 
@@ -54,7 +54,7 @@ class FreshAuthorizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             write_contract(root)
-            first = authorize_implementation(
+            first = resolve_implementation_scope(
                 root,
                 self.change("src/auth/service.ts"),
                 selected_task_ids=("T001",),
@@ -64,7 +64,7 @@ class FreshAuthorizationTests(unittest.TestCase):
                 root,
                 invariant="Changed canonical behavior remains stable.",
             )
-            second = authorize_implementation(
+            second = resolve_implementation_scope(
                 root,
                 self.change("src/auth/service.ts"),
                 selected_task_ids=("T001",),
@@ -105,12 +105,12 @@ class FreshAuthorizationTests(unittest.TestCase):
                 ),
             )
 
-            single = authorize_implementation(
+            single = resolve_implementation_scope(
                 root,
                 change,
                 selected_task_ids=("T012",),
             )
-            combined = authorize_implementation(
+            combined = resolve_implementation_scope(
                 root,
                 change,
                 selected_task_ids=("T012", "T009"),
@@ -129,10 +129,10 @@ class FreshAuthorizationTests(unittest.TestCase):
             root = Path(temporary)
             write_contract(root)
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "no primary owner",
             ):
-                authorize_implementation(
+                resolve_implementation_scope(
                     root,
                     self.change("docs/login.md"),
                     selected_task_ids=("T001",),
@@ -144,16 +144,16 @@ class FreshAuthorizationTests(unittest.TestCase):
             write_contract(root)
 
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "may not modify native contracts",
             ):
-                authorize_implementation(
+                resolve_implementation_scope(
                     root,
                     self.change("contracts/auth.contract.md"),
                     selected_task_ids=("T001",),
                 )
 
-            evolution = authorize_contract_evolution(
+            evolution = resolve_contract_scope(
                 root,
                 ContractEvolutionWriteSet(
                     "001-login",
@@ -166,10 +166,10 @@ class FreshAuthorizationTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(
-                AuthorizationError,
+                PreChangeError,
                 "only native contracts",
             ):
-                authorize_contract_evolution(
+                resolve_contract_scope(
                     root,
                     ContractEvolutionWriteSet(
                         "001-login",

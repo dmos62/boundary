@@ -1,86 +1,19 @@
 @filegroup
 @glob AGENTS.md
-@glob TODO.md
+@glob README.md
+@glob pyproject.toml
+@glob mise.toml
 @glob files.include
 @glob dev-scripts.include
-
-@glob docs/spec.md
-@glob docs/spec-contracts.md
-@glob docs/spec-authorization.md
-@glob docs/spec-change-adapter.md
-@glob docs/spec-lifecycle.md
-@glob docs/spec-agent-instructions.md
-@glob docs/spec-distribution.md
-@glob docs/spec-distribution-state.md
-
+@glob docs/spec*.md
+@glob docs/setup-*.md
 @glob contracts/**/*.contract.md
-
-@glob src/boundary/cli/main.py
-@glob src/boundary/cli/contracts.py
-@glob src/boundary/cli/contract_verification.py
-@glob src/boundary/outcomes.py
-
-@glob integration/speckit/runtime/boundary_host/adapter.py
-@glob integration/speckit/runtime/boundary_host/outcomes.py
-
-@glob tests/test_contract_evolution_cli.py
-@glob tests/test_contract_evolution_verification_cli.py
-@glob tests/test_installed_contract_evolution_workflow.py
-@glob tests/test_native_contract_repository.py
-@glob tests/test_mise_distribution_lock.py
-
-@glob skills/contracts/SKILL.md
-
-@# DO NOT REMOVE BELOW directive for BOUNDARY-FEEDBACK.md
-@file ../gui-auto2/BOUNDARY-FEEDBACK.md
-
-@# Downstream ownership repair inputs are canonical, read-only until authorized.
-@file ../gui-auto2/contracts/chrome-dev-session.contract.md
-@file ../gui-auto2/specs/005-dev-chrome-session/tasks.md
-
-@globexclude docs/setup-downstream.md
-@globexclude docs/setup-development.md
-@globexclude docs/spec-architecture.md
-
-@globexclude src/boundary/authorization/**
-@globexclude src/boundary/verification/**
-@globexclude src/boundary/context/**
-@globexclude src/boundary/contracts/**
-@globexclude src/boundary/repository/**
-
-@globexclude integration/speckit/runtime/boundary_host/commands.py
-@globexclude integration/speckit/runtime/boundary_host/tasks.py
-@globexclude integration/speckit/runtime/boundary_host/host_runtime.py
-@globexclude integration/speckit/runtime/boundary_host/host_install.py
-@globexclude integration/speckit/runtime/boundary_host/host_check.py
-@globexclude integration/speckit/runtime/boundary_host/assets.py
-@globexclude integration/speckit/runtime/boundary_host/generated_state.py
-@globexclude integration/speckit/runtime/boundary_host/integration.py
-
-@globexclude adapters/**
-@globexclude skills/scope/**
-@globexclude skills/implement/**
-
-@globexclude tests/test_mise_distribution_integration.py
-@globexclude tests/test_native_contract_graph.py
-@globexclude tests/test_native_contract_context.py
-@globexclude tests/test_agent_skills.py
-@globexclude tests/test_native_verification.py
-@globexclude tests/test_authorization_lifecycle.py
-@globexclude tests/test_spec_kit_authorization_cli.py
-@globexclude tests/test_agent_skill_materialization.py
-@globexclude tests/test_boundary_core_layout.py
-@globexclude tests/test_operation_persistence.py
-@globexclude tests/test_distribution_surface.py
-@globexclude tests/test_lifecycle_outcomes.py
-@globexclude tests/test_spec_kit_script_modes.py
-@globexclude tests/test_spec_kit_runtime_projection.py
-
+@glob src/boundary/**/*.py
+@glob skills/**/*.md
+@glob adapters/**/*.py
+@glob tests/test_*.py
 @globexclude .agents/**
-@globexclude .boundary/**
-@globexclude .specify/**
-@globexclude .specdd/**
+@globexclude .boundary-state/**
 @globexclude **/__pycache__/**
 @globexclude **/*.pyc
-@globexclude **/TEST_SECRET_DONT_READ
 @endfilegroup

@@ -1,3 +1,4 @@
+from boundary.cli.integration import update_managed_ignore
 import shutil
 import subprocess
 import sys
@@ -10,12 +11,12 @@ SOURCE_ROOT = REPOSITORY_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
-from boundary.authorization import (
+from boundary.pre_change import (
     OperationRecord,
     OperationTargetEvidence,
     TaskWriteSet,
     capture_git_baseline,
-    read_authorization_handoff,
+    read_operation_status,
     write_current_operation,
 )
 
@@ -34,9 +35,10 @@ def run_git(root: Path, *args: str) -> str:
 
 
 @unittest.skipUnless(shutil.which("git"), "Git is required")
-class AuthorizationHandoffTests(unittest.TestCase):
+class OperationStatusTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
         run_git(root, "init", "-q")
+        update_managed_ignore(root, True)
         run_git(root, "config", "user.email", "tests@example.invalid")
         run_git(root, "config", "user.name", "Boundary Tests")
         (root / "app.py").write_text(
@@ -59,7 +61,7 @@ class AuthorizationHandoffTests(unittest.TestCase):
                     writes=("app.py",),
                 ),
             ),
-            authorized_targets=(
+            allowed_targets=(
                 OperationTargetEvidence(
                     path="app.py",
                     owner="app",
@@ -78,7 +80,7 @@ class AuthorizationHandoffTests(unittest.TestCase):
             root = Path(temporary)
             self.initialize(root)
 
-            self.assertIsNone(read_authorization_handoff(root))
+            self.assertIsNone(read_operation_status(root))
 
     def test_projects_compact_current_authorization_state(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -86,7 +88,7 @@ class AuthorizationHandoffTests(unittest.TestCase):
             self.initialize(root)
             record = self.write_operation(root)
 
-            handoff = read_authorization_handoff(root)
+            handoff = read_operation_status(root)
 
         self.assertIsNotNone(handoff)
         assert handoff is not None
@@ -94,12 +96,12 @@ class AuthorizationHandoffTests(unittest.TestCase):
         self.assertEqual(("T001",), handoff.selected_task_ids)
         self.assertEqual(
             ("app.py",),
-            tuple(target.path for target in handoff.authorized_targets),
+            tuple(target.path for target in handoff.allowed_targets),
         )
         self.assertTrue(handoff.head_matches_baseline)
         document = handoff.to_document()
         self.assertEqual(
-            "boundary.authorization-handoff/v1",
+            "boundary.operation-status/v2",
             document["schema"],
         )
 
@@ -116,7 +118,7 @@ class AuthorizationHandoffTests(unittest.TestCase):
             run_git(root, "add", "app.py")
             run_git(root, "commit", "-q", "-m", "advance head")
 
-            handoff = read_authorization_handoff(root)
+            handoff = read_operation_status(root)
 
         self.assertIsNotNone(handoff)
         assert handoff is not None

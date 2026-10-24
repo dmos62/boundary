@@ -12,15 +12,7 @@ __pycache__/
 .idea/
 .vscode/
 
-# SpecDD machine-local override
-.specdd/bootstrap.local.md
 
 # Derived integration state
-specs/*/.specdd/boundary.json
-.specify/extensions/.cache/
-# Local/generated SpecDD and Spec Kit state
-.specdd/bootstrap.local.md
-.specify/extensions/specdd/
-.specify/extensions/.cache/
 
 *.swp

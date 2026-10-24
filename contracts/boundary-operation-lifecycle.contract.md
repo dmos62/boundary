@@ -10,21 +10,21 @@ depends_on:
   - boundary-post-change
 ---
 
-# Operation Evidence Lifecycle
+# Operation Lifecycle
 
 ## Purpose
 
-Preserve the durable relationship between authorization evidence and Git-derived verification.
+Keep pre-change, post-change, and post-abandon transitions consistent.
 
 ## Invariants
 
-- Verification consumes the exact historical operation record created by authorization.
-- A verified epoch may be replaced only through an explicit successor authorization.
-- Carry-forward accepts only exact final states recorded by a verified predecessor.
-- Operation evidence remains workflow history rather than canonical project semantics.
-- Failure while constructing or installing successor evidence leaves the previous successful record usable.
+- One writer per worktree is assumed; read-only queries may overlap that writer.
+- A pre-change baseline precedes edits, and an open operation blocks another pre-change.
+- Verified predecessor output may carry forward only when exact state and task identity match.
+- Abandonment preserves evidence of unverified closure and never implies a successful check.
+- Status and evidence are local to the current worktree.
 
 ## Prohibitions
 
-- Verification must not reconstruct authority from current planning or task state.
-- Successor authorization must not silently adopt unverified dirty target state.
+- The lifecycle must not infer permission from task state, a clean Git status, or another worktree's operation.
+- Failure to store a successor must not erase the prior valid record.

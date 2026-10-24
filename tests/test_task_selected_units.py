@@ -1,16 +1,18 @@
+from boundary.cli.integration import update_managed_ignore
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from boundary.authorization import (
+from boundary.pre_change import (
+    PreChangeError,
     ChangeWriteSet,
     TaskWriteSet,
-    authorize_implementation_operation,
+    open_implementation_operation,
     operation_archive_path,
 )
-from boundary.verification import finalize_operation_verification
+from boundary.post_change import close_verified_operation
 
 
 def run_git(root: Path, *args: str) -> None:
@@ -67,6 +69,7 @@ def change() -> ChangeWriteSet:
 class TaskSelectedUnitLifecycleTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
         run_git(root, "init", "-q")
+        update_managed_ignore(root, True)
         run_git(root, "config", "user.email", "tests@example.invalid")
         run_git(root, "config", "user.name", "Boundary Tests")
         write_contract(root, "alpha", "src/alpha/**")
@@ -88,7 +91,7 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
             root = Path(temporary)
             self.initialize(root)
 
-            first = authorize_implementation_operation(
+            first = open_implementation_operation(
                 root,
                 change(),
                 selected_task_ids=("T009",),
@@ -97,12 +100,12 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
                 "VALUE = 'first'\n",
                 encoding="utf-8",
             )
-            finalize_operation_verification(
+            close_verified_operation(
                 root,
                 operation_id=first.operation_id,
             )
 
-            second = authorize_implementation_operation(
+            second = open_implementation_operation(
                 root,
                 change(),
                 selected_task_ids=("T012",),
@@ -110,14 +113,14 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
             self.assertEqual(("T012",), second.selected_task_ids)
             self.assertEqual(
                 ("src/beta/b.py",),
-                tuple(target.path for target in second.authorized_targets),
+                tuple(target.path for target in second.allowed_targets),
             )
 
             (root / "src/beta/b.py").write_text(
                 "VALUE = 'second'\n",
                 encoding="utf-8",
             )
-            verified = finalize_operation_verification(
+            verified = close_verified_operation(
                 root,
                 operation_id=second.operation_id,
             )
@@ -129,7 +132,7 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
             root = Path(temporary)
             self.initialize(root)
 
-            first = authorize_implementation_operation(
+            first = open_implementation_operation(
                 root,
                 change(),
                 selected_task_ids=("T012",),
@@ -138,38 +141,20 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
                 "VALUE = 'selected'\n",
                 encoding="utf-8",
             )
-            finalize_operation_verification(root)
+            close_verified_operation(root)
             archive = operation_archive_path(root, first.operation_id)
 
-            successor = authorize_implementation_operation(
-                root,
-                change(),
-                selected_task_ids=("T012", "T009"),
-            )
-
-            self.assertTrue(archive.is_file())
-            self.assertEqual(
-                ("T009", "T012"),
-                successor.selected_task_ids,
-            )
-            self.assertEqual(
-                ("src/alpha/a.py", "src/beta/b.py"),
-                tuple(
-                    target.path
-                    for target in successor.authorized_targets
-                ),
-            )
-            self.assertEqual(
-                ("src/beta/b.py",),
-                tuple(item.path for item in successor.carried_forward),
-            )
+            with self.assertRaisesRegex(PreChangeError, "DIRTY_TARGET_NOT_VERIFIED"):
+                open_implementation_operation(
+                    root, change(), selected_task_ids=("T012", "T009"),
+                )
 
     def test_selected_multi_owner_unit_records_each_owner(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
 
-            record = authorize_implementation_operation(
+            record = open_implementation_operation(
                 root,
                 change(),
                 selected_task_ids=("T009", "T012"),
@@ -179,7 +164,7 @@ class TaskSelectedUnitLifecycleTests(unittest.TestCase):
             ("alpha", "beta"),
             tuple(
                 target.owner
-                for target in record.authorized_targets
+                for target in record.allowed_targets
             ),
         )
 

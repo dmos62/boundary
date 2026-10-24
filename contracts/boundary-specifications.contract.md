@@ -6,27 +6,22 @@ owns:
   - docs/spec-architecture.md
   - docs/spec-contracts.md
   - docs/spec-agent-instructions.md
-  - docs/spec-authorization.md
-  - docs/spec-change-adapter.md
+  - docs/spec-request.md
+  - docs/spec-pre-change.md
+  - docs/spec-post-change.md
   - docs/spec-lifecycle.md
   - docs/spec-distribution.md
-  - docs/spec-v0.1.md
+  - docs/spec-distribution-state.md
 ---
 
 # Boundary Specifications
 
 ## Purpose
 
-Define Boundary's product model through focused, orthogonal architecture specifications.
+Define current Boundary behavior by native contract, request, operation, and distribution responsibilities.
 
 ## Invariants
 
-- Focused specifications divide product concerns by responsibility rather than by current provider.
-- Native contracts, target context, authorization, verification, change-system integration, agent instruction delivery, and downstream reconstruction retain explicit responsibility boundaries.
-- Target architecture takes precedence over historical migration behavior.
-- Historical v0.1 material remains descriptive evidence rather than a current product contract.
-
-## Prohibitions
-
-- Focused specifications must not duplicate detailed migration checklists from `docs/TODO.md`.
-- Historical legacy provider compatibility semantics must not silently become native Boundary requirements.
+- Current specifications describe the generic CLI and worktree-local lifecycle.
+- Historical provider behavior remains historical and has no compatibility authority.
+- Focused documents own detailed semantics without duplicating a migration checklist.

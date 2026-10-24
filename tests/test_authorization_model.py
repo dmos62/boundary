@@ -1,6 +1,6 @@
 import unittest
 
-from boundary.authorization import (
+from boundary.pre_change import (
     ChangeWriteSet,
     TaskWriteSet,
     WriteSetError,

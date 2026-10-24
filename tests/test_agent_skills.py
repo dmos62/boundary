@@ -47,63 +47,19 @@ class CanonicalBoundarySkillTests(unittest.TestCase):
                 self.assertIsNone(version_pattern.search(content))
                 self.assertIsNone(hash_pattern.search(content))
 
-    def test_scope_skill_keeps_planning_separate_from_authorization(self):
+    def test_scope_skill_uses_generic_request(self):
         content = self._content("boundary-scope")
-
-        for marker in (
-            "exact repository-relative targets",
-            "durable project or workflow records",
-            "effective context",
-            "additively",
-            "structured write declaration",
-            "declared-scope readiness preflight",
-            "Path-looking prose",
-            "non-authorizing",
-            "Do not authorize implementation from this skill",
-            "Authorization remains a separate deterministic transition",
-        ):
+        for marker in ("exact repository-relative targets", "boundary inspect", "structured write declaration", "boundary pre-change --request FILE"):
             self.assertIn(marker, content)
 
-    def test_implementation_skill_uses_authorized_unit_inspection(self):
+    def test_implementation_skill_describes_all_closing_transitions(self):
         content = self._content("boundary-implement")
-
-        for marker in (
-            "boundary inspect --authorized",
-            "`kind: implementation`",
-            "`status: authorized`",
-            "Git `HEAD`",
-            "authorization baseline",
-            "selected task identities",
-            "mutable change-system task files",
-            "freshly resolved effective Boundary context",
-            "`boundary status` is a recovery, handoff, and debugging query",
-        ):
-            self.assertIn(marker, content)
-
-    def test_implementation_skill_requires_explicit_scope_expansion(self):
-        content = self._content("boundary-implement")
-
-        for marker in (
-            "authorized write set",
-            "Do not write the undeclared target",
-            "fresh implementation authorization",
-            "persistent-contract evolution",
-            "Native contract files are not implementation targets",
-            "`boundary verify`",
-        ):
+        for marker in ("boundary inspect --authorized", "boundary post-change", "boundary post-abandon", "Git `HEAD`", "same task identity"):
             self.assertIn(marker, content)
 
     def test_contract_skill_enforces_operation_separation(self):
         content = self._content("boundary-contracts")
-
-        for marker in (
-            "persistent Boundary contracts",
-            "additive applicability",
-            "Modify only native contract files",
-            "structural contract check",
-            "fresh implementation authorization",
-            "never retroactively authorizes implementation writes",
-        ):
+        for marker in ("persistent Boundary contracts", "boundary contracts pre-change", "boundary contracts check", "boundary post-change", "fresh implementation pre-change"):
             self.assertIn(marker, content)
 
 

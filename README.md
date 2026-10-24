@@ -1,178 +1,46 @@
 # Boundary
 
-Boundary is a persistent-contract and operation-authorization layer for coding agents.
+Boundary gives coding agents exact file scope under durable project contracts. An external tool supplies selected task IDs and declared writes; Boundary captures a Git baseline before edits and checks actual writes afterward.
 
-It separates durable project architecture from the systems used to plan changes and from the agent runtimes used to execute them.
+## Basic use
 
-The core relationship is:
+Install Boundary from its Git source with mise, then in the target worktree run:
 
-> A change system owns feature intent and execution state. Boundary owns persistent system contracts and operation authority. Agent adapters deliver the smallest relevant procedure and effective context needed for current work.
+```text
+boundary integration install
+boundary integration check
+```
 
-Boundary's durable concepts are:
+The install command adds Boundary's agent skills and a visible managed block to the root `.gitignore` for `.boundary-state/` and generated skills. Review and commit that project change according to your normal workflow.
 
-- persistent project contracts;
-- explicit path ownership;
-- additive scoped applicability;
-- effective target context;
-- exact implementation write scope;
-- operation authorization;
-- historical operation evidence;
-- persistent-contract evolution;
-- actual-write verification;
-- progressive agent instruction disclosure;
-- mise-managed downstream tool selection and installation.
+A task system supplies a normalized request:
 
-These concepts are independent of any one change system or agent runtime.
+```json
+{
+  "schema": "boundary.pre-change-request/v1",
+  "changeId": "feature-42",
+  "tasks": [{"id": "task-1", "writes": ["src/app.py"]}],
+  "selectedTaskIds": ["task-1"]
+}
+```
 
-## Native contracts
+Then run:
 
-Canonical project contracts live under:
+```text
+boundary pre-change --request request.json
+boundary inspect --authorized
+# edit and run project checks
+boundary post-change
+```
 
-    contracts/**/*.contract.md
+`post-change` closes only when `HEAD` is unchanged and actual writes fit the stored scope. A failed check leaves the operation open. `boundary post-abandon` closes it explicitly without verifying or altering project files. `boundary status` reports the current worktree's operation.
 
-Contract location has no semantic meaning.
+For native contracts, use `boundary contracts pre-change --change ID CONTRACT...`, edit those contracts, run `boundary contracts check`, then `boundary post-change`. Dependent implementation needs a fresh pre-change.
 
-Each contract declares explicit ownership and applicability scopes. All matching contracts apply additively. When ownership is nested, the most-specific matching owner is primary while broader matching contracts continue to contribute constraints.
+## Ownership and distribution
 
-Boundary v1 deliberately avoids:
+Boundary reads no planning-system task format. A caller translates its own structured metadata into the [generic request](docs/spec-request.md). Boundary owns [native contracts](docs/spec-contracts.md), [operation evidence](docs/spec-pre-change.md), and [actual-write checks](docs/spec-post-change.md). It does not track task progress or decide whether a feature is complete.
 
-- filesystem-dependent contract meaning;
-- nearest-contract-wins behavior;
-- implicit directory inheritance;
-- contract override or exception semantics;
-- a global catch-all project contract;
-- a second persistent compiled copy of project contracts.
+The CLI is installed through ordinary mise project configuration and `mise.lock`; it has no separate Boundary lock or copied runtime. Codex and Claude skill materializers use the same canonical procedure under `skills/`.
 
-Detailed semantics are in [docs/spec-contracts.md](docs/spec-contracts.md).
-
-## Agent instruction model
-
-Boundary uses progressive disclosure.
-
-Stable procedure lives in small canonical skills:
-
-- `boundary-scope` for planning and explicit write declaration;
-- `boundary-implement` for implementation under an active authorization;
-- `boundary-contracts` for deliberate persistent-contract evolution.
-
-Operation-specific facts are queried on demand. For a target, Boundary derives ownership, applicable contracts, relevant semantic sections, dependency interfaces, and source provenance.
-
-Project contracts are therefore loaded because they are relevant to current work rather than injected wholesale into every agent interaction.
-
-See [docs/spec-agent-instructions.md](docs/spec-agent-instructions.md).
-
-## Authorization model
-
-Implementation authority comes from exact structured write declarations, not path-looking prose.
-
-At authorization Boundary:
-
-1. reads the current explicit write set from the change-system adapter;
-2. builds the native contract graph fresh;
-3. resolves ownership and effective context;
-4. validates operation kind and Git starting state;
-5. records one atomic operation document in current-worktree Git metadata.
-
-Verification compares actual post-authorization Git changes with that historical evidence.
-
-Current planning state cannot retroactively widen an operation.
-
-See [docs/spec-authorization.md](docs/spec-authorization.md).
-
-## Lifecycle
-
-The mandatory implementation lifecycle is:
-
-    authorize → implement → verify
-
-Planning and task generation may inspect effective contract context but do not create implementation authority.
-
-If implementation discovers another required target, the current operation must be verified and closed before a fresh write set is authorized.
-
-Persistent-contract evolution is a separate operation and must be followed by fresh dependent implementation authorization.
-
-See [docs/spec-lifecycle.md](docs/spec-lifecycle.md).
-
-## Adapters
-
-Boundary currently integrates with Spec Kit as a change-system adapter.
-
-The adapter provides:
-
-- active change identity;
-- stable task identities;
-- exact structured implementation writes;
-- host-owned path classification;
-- implementation entry and exit integration.
-
-Boundary core does not depend on Spec Kit workflow terminology or feature-file structure.
-
-Codex and Claude Code are concrete agent-runtime integrations. They materialize the same canonical Boundary skills into their respective discovery locations without changing the canonical procedure.
-
-See [docs/spec-change-adapter.md](docs/spec-change-adapter.md) and [docs/spec-architecture.md](docs/spec-architecture.md).
-
-## Downstream reconstruction
-
-A downstream project commits:
-
-- its native contracts;
-- its change-system artifacts;
-- its normal mise project configuration;
-- `mise.lock`.
-
-The mise configuration identifies the Boundary Git source. `mise.lock` records the exact Boundary source identity selected for locked installation.
-
-Boundary does not define another revision lock, dependency lock, copied runtime, or project-local launcher.
-
-Generated integration state, materialized skills, caches, provenance records, and operation evidence are not canonical project semantics.
-
-A fresh clone reconstructs tooling through normal mise project state:
-
-    mise install --locked
-    boundary integration install
-    boundary integration check
-
-See [docs/spec-distribution.md](docs/spec-distribution.md) and [docs/setup-downstream.md](docs/setup-downstream.md).
-
-## Development
-
-Bootstrap the Boundary source repository with:
-
-    mise install
-    mise run bootstrap
-
-Validate native contracts with:
-
-    mise run contracts-check
-
-Run the focused distribution coverage with:
-
-    mise run test-distribution
-
-Run the complete test suite with:
-
-    mise run test
-
-Additional development and test commands are documented in [docs/setup-development.md](docs/setup-development.md).
-
-## Design documentation
-
-The current architecture is split by responsibility:
-
-- [docs/spec.md](docs/spec.md): product model and invariants.
-- [docs/spec-architecture.md](docs/spec-architecture.md): core structures and adapter boundaries.
-- [docs/spec-contracts.md](docs/spec-contracts.md): native contract format and applicability.
-- [docs/spec-agent-instructions.md](docs/spec-agent-instructions.md): progressive agent instruction delivery.
-- [docs/spec-authorization.md](docs/spec-authorization.md): operation evidence, Git baselines, and verification.
-- [docs/spec-change-adapter.md](docs/spec-change-adapter.md): provider-neutral change-system integration.
-- [docs/spec-lifecycle.md](docs/spec-lifecycle.md): authorization, implementation, verification, and contract evolution.
-- [docs/spec-distribution.md](docs/spec-distribution.md): mise-managed downstream installation and source identity.
-- [docs/spec-distribution-state.md](docs/spec-distribution-state.md): downstream state ownership and generated-state exclusions.
-- [TODO.md](TODO.md): remaining implementation and release work.
-- [docs/history/README.md](docs/history/README.md): explicitly historical migration material.
-
-## Summary invariant
-
-Boundary remains coherent while:
-
-> project contracts are canonical and independently scoped; change systems provide explicit change intent; skills provide procedure; queries provide current facts; deterministic code provides authorization and verification; and downstream Boundary tooling is selected, locked, installed, and upgraded through mise using normal project tooling state.
+See [downstream setup](docs/setup-downstream.md), [development setup](docs/setup-development.md), and the [specification](docs/spec.md).

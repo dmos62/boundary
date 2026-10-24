@@ -1,21 +1,22 @@
+from boundary.cli.integration import update_managed_ignore
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from boundary.authorization import (
+from boundary.pre_change import (
     ChangeWriteSet,
     ContractEvolutionWriteSet,
     TaskWriteSet,
-    authorize_contract_evolution_operation,
-    authorize_implementation_operation,
+    open_contract_operation,
+    open_implementation_operation,
     read_current_operation,
 )
-from boundary.verification import (
-    VerificationError,
-    finalize_operation_verification,
-    verify_operation_authorization,
+from boundary.post_change import (
+    PostChangeError,
+    close_verified_operation,
+    check_operation_writes,
 )
 
 
@@ -82,8 +83,8 @@ def implementation_change(*paths: str) -> ChangeWriteSet:
     )
 
 
-def authorize_implementation(root: Path, *paths: str):
-    return authorize_implementation_operation(
+def resolve_implementation_scope(root: Path, *paths: str):
+    return open_implementation_operation(
         root,
         implementation_change(*paths),
         selected_task_ids=("T001",),
@@ -94,6 +95,7 @@ def authorize_implementation(root: Path, *paths: str):
 class NativeVerificationTests(unittest.TestCase):
     def initialize(self, root: Path) -> None:
         run_git(root, "init", "-q")
+        update_managed_ignore(root, True)
         run_git(root, "config", "user.email", "tests@example.invalid")
         run_git(root, "config", "user.name", "Boundary Tests")
         write_source_contract(root)
@@ -108,14 +110,14 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
             (root / "src" / "a.py").write_text(
                 "VALUE = 'changed'\n",
                 encoding="utf-8",
             )
 
-            result = verify_operation_authorization(root)
-            verified = finalize_operation_verification(root)
+            result = check_operation_writes(root)
+            verified = close_verified_operation(root)
 
         self.assertEqual(("src/a.py",), result.actual_paths)
         self.assertFalse(result.blocking)
@@ -125,28 +127,28 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
             (root / "src" / "b.py").write_text(
                 "VALUE = 'undeclared'\n",
                 encoding="utf-8",
             )
 
-            with self.assertRaises(VerificationError) as raised:
-                finalize_operation_verification(root)
+            with self.assertRaises(PostChangeError) as raised:
+                close_verified_operation(root)
             current = read_current_operation(root)
 
         self.assertEqual("UNDECLARED_WRITE", raised.exception.code)
-        self.assertEqual("authorized", current.status)
+        self.assertEqual("open", current.status)
 
     def test_rejects_native_contract_change_during_implementation(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
             write_policy_contract(root)
 
-            with self.assertRaises(VerificationError) as raised:
-                finalize_operation_verification(root)
+            with self.assertRaises(PostChangeError) as raised:
+                close_verified_operation(root)
 
         self.assertEqual("OPERATION_KIND_VIOLATION", raised.exception.code)
 
@@ -154,14 +156,14 @@ class NativeVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
             (root / "src" / "a.py").write_text(
                 "VALUE = 'changed'\n",
                 encoding="utf-8",
             )
             write_policy_contract(root)
 
-            result = verify_operation_authorization(root)
+            result = check_operation_writes(root)
 
         codes = {item.code for item in result.diagnostics}
         self.assertIn("OPERATION_KIND_VIOLATION", codes)
@@ -174,39 +176,30 @@ class NativeVerificationTests(unittest.TestCase):
             note = root / "docs" / "note.md"
             note.parent.mkdir()
             note.write_text("preexisting\n", encoding="utf-8")
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
 
-            result = verify_operation_authorization(root)
+            result = check_operation_writes(root)
 
         self.assertEqual((), result.actual_paths)
         self.assertFalse(result.blocking)
 
-    def test_adapter_owned_generated_state_can_be_excluded(self):
+    def test_generated_write_is_checked_as_ordinary(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_implementation(root, "src/a.py")
+            resolve_implementation_scope(root, "src/a.py")
             generated = root / ".adapter" / "generated.json"
             generated.parent.mkdir()
             generated.write_text("{}\n", encoding="utf-8")
-
-            result = verify_operation_authorization(
-                root,
-                classify_path=lambda path: (
-                    "generated"
-                    if path.startswith(".adapter/")
-                    else "ordinary"
-                ),
-            )
-
-        self.assertEqual((".adapter/generated.json",), result.excluded_paths)
-        self.assertFalse(result.blocking)
+            result = check_operation_writes(root)
+        self.assertTrue(result.blocking)
+        self.assertIn("UNDECLARED_WRITE", {item.code for item in result.diagnostics})
 
     def test_contract_evolution_rejects_ordinary_project_write(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             self.initialize(root)
-            authorize_contract_evolution_operation(
+            open_contract_operation(
                 root,
                 ContractEvolutionWriteSet(
                     "001-change",
@@ -218,8 +211,8 @@ class NativeVerificationTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with self.assertRaises(VerificationError) as raised:
-                finalize_operation_verification(root)
+            with self.assertRaises(PostChangeError) as raised:
+                close_verified_operation(root)
 
         self.assertEqual("OPERATION_KIND_VIOLATION", raised.exception.code)
 

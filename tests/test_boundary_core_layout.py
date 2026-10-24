@@ -7,8 +7,8 @@ SOURCE_ROOT = REPOSITORY_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
-import boundary.authorization as authorization
-import boundary.verification as verification
+import boundary.pre_change as authorization
+import boundary.post_change as verification
 from boundary.cli import build_parser
 from boundary.contracts import Contract, ContractGraph, ContractSections
 from boundary.context import TargetContext
@@ -31,8 +31,8 @@ class BoundaryCoreLayoutTests(unittest.TestCase):
 
         self.assertEqual("auth", graph.contracts[0].contract_id)
         self.assertEqual("auth", context.owner_id)
-        self.assertEqual("boundary.authorization", authorization.__name__)
-        self.assertEqual("boundary.verification", verification.__name__)
+        self.assertEqual("boundary.pre_change", authorization.__name__)
+        self.assertEqual("boundary.post_change", verification.__name__)
 
     def test_repository_paths_are_normalized_without_filesystem_access(self):
         self.assertEqual(
@@ -52,7 +52,7 @@ class BoundaryCoreLayoutTests(unittest.TestCase):
         self.assertEqual("boundary", parser.prog)
 
     def test_core_source_does_not_name_integration_providers(self):
-        forbidden = ("specdd", "speckit", "codex")
+        forbidden = ("specdd", "speckit")
         for source_path in sorted((SOURCE_ROOT / "boundary").rglob("*.py")):
             source = source_path.read_text(encoding="utf-8").lower()
             for provider in forbidden:

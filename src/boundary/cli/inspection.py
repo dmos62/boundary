@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TextIO
 
-from boundary.authorization import read_authorization_handoff
+from boundary.operation.handoff import read_operation_status
 from boundary.contracts import ContractGraph, load_contract_graph
 from boundary.context import (
     ProvenancedText,
@@ -36,7 +36,7 @@ def run_inspect_authorized(
 ) -> int:
     """Render the current authorized unit with freshly resolved contexts."""
 
-    handoff = read_authorization_handoff(repository_root)
+    handoff = read_operation_status(repository_root)
     if handoff is None:
         return _authorized_error(
             errors,
@@ -47,7 +47,7 @@ def run_inspect_authorized(
             errors,
             "current Boundary operation is not an implementation operation",
         )
-    if handoff.status != "authorized":
+    if handoff.status != "open":
         return _authorized_error(
             errors,
             "current Boundary implementation operation is not authorized",
@@ -55,13 +55,13 @@ def run_inspect_authorized(
     if not handoff.head_matches_baseline:
         return _authorized_error(
             errors,
-            "current Git HEAD does not match the authorization baseline",
+            "current Git HEAD does not match the pre-change baseline",
         )
 
     graph = load_contract_graph(repository_root)
     targets = tuple(
         target.path
-        for target in handoff.authorized_targets
+        for target in handoff.allowed_targets
     )
     contexts = tuple(
         resolve_target_context(graph, target)
