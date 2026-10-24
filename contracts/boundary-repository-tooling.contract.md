@@ -3,6 +3,16 @@ schema: boundary.contract/v1
 id: boundary-repository-tooling
 owns:
   - scripts/**
+  - pyproject.toml
+  - mise.toml
+  - .gitignore
+  - AGENTS.md
+  - files.include
+  - dev-scripts.include
+  - README.sdd
+  - files.sdd
+  - speckit-specdd.sdd
+  - TODO.md
 ---
 
 # Repository Tooling

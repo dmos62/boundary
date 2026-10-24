@@ -3,6 +3,7 @@ schema: boundary.contract/v1
 id: boundary-request
 owns:
   - src/boundary/request/**
+  - integration/**
 ---
 
 # Change-System Adapter Source
