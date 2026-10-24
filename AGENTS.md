@@ -12,6 +12,6 @@ For implementation work:
 - keep persistent-contract evolution separate from implementation and require fresh implementation authorization afterward;
 - treat deterministic Boundary authorization and verification as authoritative.
 
-Do not use generated `.agents/` material as canonical source. Canonical procedure lives under `skills/`, agent integrations under `adapters/`, and persistent project semantics under `contracts/`.
+Do not use generated skill material as canonical source. Canonical procedure lives under `skills/`; persistent project semantics live under `contracts/`. Skill delivery requires an explicit destination chosen by the caller.
 
 Historical migration material does not define current Boundary behavior.

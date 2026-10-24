@@ -26,4 +26,3 @@ packages = [
 
 [tool.hatch.build.targets.wheel.force-include]
 "skills" = "boundary_assets/skills"
-"adapters" = "boundary_assets/adapters"

@@ -22,7 +22,6 @@ class RepositoryNativeContractTests(unittest.TestCase):
             "src/boundary/pre_change/service.py": "boundary-pre-change",
             "src/boundary/post_change/service.py": "boundary-post-change",
             "src/boundary/cli/main.py": "boundary-cli",
-            "adapters/codex/materialize.py": "boundary-agent-adapters",
             "skills/implement/SKILL.md": "boundary-agent-procedure",
             "scripts/bootstrap.sh": "boundary-repository-tooling",
             "README.md": "boundary-documentation",

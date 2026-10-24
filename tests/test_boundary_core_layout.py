@@ -52,7 +52,7 @@ class BoundaryCoreLayoutTests(unittest.TestCase):
         self.assertEqual("boundary", parser.prog)
 
     def test_core_source_does_not_name_integration_providers(self):
-        forbidden = ("specdd", "speckit")
+        forbidden = ("specdd", "speckit", "codex", "claude")
         for source_path in sorted((SOURCE_ROOT / "boundary").rglob("*.py")):
             source = source_path.read_text(encoding="utf-8").lower()
             for provider in forbidden:

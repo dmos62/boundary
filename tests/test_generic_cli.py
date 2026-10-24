@@ -45,7 +45,7 @@ class GenericCliTests(unittest.TestCase):
         )
         git(self.root, "add", ".")
         git(self.root, "commit", "-qm", "baseline")
-        self.call("integration", "install")
+        self.call("setup", "install")
 
     def call(self, *args: str, root: Path | None = None, body: dict | None = None):
         out, err = io.StringIO(), io.StringIO()
@@ -128,20 +128,20 @@ class GenericCliTests(unittest.TestCase):
         path = self.root / ".gitignore"
         path.write_text("user-rule\n" + path.read_text(), encoding="utf-8")
         before = path.read_text()
-        self.assertEqual(0, self.call("integration", "install")[0])
+        self.assertEqual(0, self.call("setup", "install")[0])
         self.assertEqual(before, path.read_text())
         self.open()
-        self.assertEqual(2, self.call("integration", "remove")[0])
+        self.assertEqual(2, self.call("setup", "remove")[0])
         self.call("post-abandon")
-        self.assertEqual(0, self.call("integration", "remove")[0])
+        self.assertEqual(0, self.call("setup", "remove")[0])
         self.assertEqual("user-rule\n", path.read_text())
         path.write_text("# BEGIN Boundary generated state\n", encoding="utf-8")
-        self.assertEqual(2, self.call("integration", "install")[0])
+        self.assertEqual(2, self.call("setup", "install")[0])
 
     def test_independent_worktrees_and_legacy_refusal(self):
         other = Path(self.temporary.name) / "other"
         git(self.root, "worktree", "add", "-qb", "other", str(other))
-        self.call("integration", "install", root=other)
+        self.call("setup", "install", root=other)
         self.open()
         self.assertIsNone(self.call("status", root=other)[1])
         self.assertNotEqual(current_operation_path(self.root), current_operation_path(other))

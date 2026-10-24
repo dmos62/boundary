@@ -6,6 +6,6 @@ The `request` package validates a versioned generic task projection. `pre_change
 
 A caller translates its own task metadata into `boundary.pre-change-request/v1` JSON. Boundary has no provider plugin registry, planning-system parser, or host-specific path classifier. The request transport is a thin boundary over the same native services used by the CLI.
 
-Codex and Claude skill materializers are concrete agent integrations. Their generated files are disposable; the canonical procedure remains under `skills/`. Mise selects and installs the CLI. Boundary integration install manages only Boundary-owned skills and its root ignore block.
+Canonical procedure remains under `skills/`. Optional skill delivery accepts a repository-relative destination supplied by the caller; Boundary has no agent-runtime adapters or discovery-path defaults. Mise selects and installs the CLI. `boundary setup install` manages only the local-evidence ignore rule.
 
 Separate worktrees have independent operation records. Boundary assumes one writer per worktree and allows read-only queries alongside it. It does not coordinate shared external systems or integration of branches.

@@ -1,6 +1,6 @@
 # Boundary Development Setup
 
-The source checkout uses mise for Python and uv. Run `mise install`, then `mise run bootstrap` to install the checkout into the development environment and materialize Boundary agent skills. There is no planning-system prerequisite.
+The source checkout uses mise for Python and uv. Run `mise install`, then `mise run bootstrap` to install the checkout into the development environment and prepare worktree evidence storage. Optional skill delivery uses `boundary skills install --directory PATH` with a caller-selected directory. There is no planning-system or agent-runtime prerequisite.
 
 Use `mise run contracts-check`, `mise run test-distribution`, and `mise run test` for validation. The installed `boundary` executable is the same public CLI consumed by downstream repositories.
 

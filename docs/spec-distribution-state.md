@@ -4,6 +4,6 @@ Native contracts and the caller's planning artifacts are ordinary project source
 
 Boundary stores the current or most recently closed operation under the current worktree root in `.boundary-state/current.json`. It retains predecessor records only while current verified carry-forward evidence needs them. Evidence may disappear when the worktree is deleted. Boundary does not write records, probes, archives, or exclusions under `.git/**`.
 
-`boundary integration install` materializes Boundary's agent skills and manages one delimited block in the root `.gitignore`. The block ignores `.boundary-state/` and Boundary-generated skill paths. The `.gitignore` edit is visible project state. Install, check, and remove validate the block and preserve unrelated rules. Install and remove refuse an open operation.
+`boundary setup install` manages one delimited block in the root `.gitignore`. The block ignores only `.boundary-state/`. The `.gitignore` edit is visible project state. Setup install, check, and remove validate the block and preserve unrelated rules. Install and remove refuse an open operation.
 
-Generated skills are recreatable from the installed Boundary package. Boundary does not classify or hide an external planning system's files. Other changed paths remain visible to Git and subject to the current operation's exact scope.
+Optional skills are recreatable from the installed Boundary package at a caller-selected repository-relative directory. Boundary does not ignore generated skills or classify or hide an external planning system's files. Other changed paths remain visible to Git and subject to the current operation's exact scope.

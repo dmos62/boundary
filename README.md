@@ -7,11 +7,11 @@ Boundary gives coding agents exact file scope under durable project contracts. A
 Install Boundary from its Git source with mise, then in the target worktree run:
 
 ```text
-boundary integration install
-boundary integration check
+boundary setup install
+boundary setup check
 ```
 
-The install command adds Boundary's agent skills and a visible managed block to the root `.gitignore` for `.boundary-state/` and generated skills. Review and commit that project change according to your normal workflow.
+Setup adds a visible managed block to the root `.gitignore` for `.boundary-state/`. Review and commit that project change according to your normal workflow. Optional Boundary skills can be delivered with `boundary skills install --directory PATH`, where the caller chooses a repository-relative directory. Check or remove them with the matching `boundary skills` commands; Boundary does not choose an agent or ignore these files.
 
 A task system supplies a normalized request:
 
@@ -41,6 +41,6 @@ For native contracts, use `boundary contracts pre-change --change ID CONTRACT...
 
 Boundary reads no planning-system task format. A caller translates its own structured metadata into the [generic request](docs/spec-request.md). Boundary owns [native contracts](docs/spec-contracts.md), [operation evidence](docs/spec-pre-change.md), and [actual-write checks](docs/spec-post-change.md). It does not track task progress or decide whether a feature is complete.
 
-The CLI is installed through ordinary mise project configuration and `mise.lock`; it has no separate Boundary lock or copied runtime. Codex and Claude skill materializers use the same canonical procedure under `skills/`.
+The CLI is installed through ordinary mise project configuration and `mise.lock`; it has no separate Boundary lock or copied runtime. Canonical, runtime-neutral procedure lives under `skills/`.
 
 See [downstream setup](docs/setup-downstream.md), [development setup](docs/setup-development.md), and the [specification](docs/spec.md).

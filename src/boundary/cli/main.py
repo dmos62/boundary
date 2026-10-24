@@ -13,7 +13,8 @@ from boundary.repository import RepositoryPathError
 from .inspection import run_inspect, run_inspect_authorized
 from .status import run_status
 from .lifecycle import run_pre_change, run_contract_pre_change, run_post_change, run_post_abandon
-from .integration import run_integration
+from .integration import run_setup
+from .skills import run_skills
 from boundary.contracts import load_contract_graph
 
 
@@ -35,10 +36,14 @@ def build_parser() -> argparse.ArgumentParser:
     contract_pre = contract_commands.add_parser("pre-change", help="Open exact contract evolution.")
     contract_pre.add_argument("--change", required=True, dest="change_id")
     contract_pre.add_argument("targets", nargs="+", metavar="CONTRACT")
-    integration = commands.add_parser("integration", help="Manage Boundary agent skills and state exclusion.")
-    integration_commands = integration.add_subparsers(dest="integration_command", required=True)
+    integration = commands.add_parser("setup", help="Manage the worktree-local evidence ignore rule.")
+    integration_commands = integration.add_subparsers(dest="setup_command", required=True)
     for action in ("install", "check", "remove"):
         integration_commands.add_parser(action)
+    skills = commands.add_parser("skills", help="Deliver optional Boundary skills to an explicit directory.")
+    skill_commands = skills.add_subparsers(dest="skills_command", required=True)
+    for action in ("install", "check", "remove"):
+        skill_commands.add_parser(action).add_argument("--directory", required=True, metavar="PATH")
     return parser
 
 
@@ -72,8 +77,10 @@ def main(argv: Sequence[str] | None = None, *, repository_root: str | Path | Non
             graph = load_contract_graph(root)
             print(f"contracts: ok ({len(graph.contracts)} contracts)", file=output)
             return 0
-        if args.command == "integration":
-            return run_integration(root, args.integration_command, output)
+        if args.command == "setup":
+            return run_setup(root, args.setup_command, output)
+        if args.command == "skills":
+            return run_skills(root, args.skills_command, args.directory, output)
     except (PreChangeError, ContractGraphError, ContractParseError, RepositoryPathError, OSError, ValueError) as exc:
         print(f"boundary: error: {exc}", file=errors)
         return 2

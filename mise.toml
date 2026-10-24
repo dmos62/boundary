@@ -12,11 +12,11 @@ description = "Install Boundary from this checkout into the mise-managed develop
 run = "uv pip install --editable ."
 
 [tasks.bootstrap]
-description = "Install Boundary locally and materialize the repository integration."
+description = "Install Boundary locally and prepare worktree evidence storage."
 depends = ["dev-install"]
 run = [
-  "boundary integration install",
-  "boundary integration check",
+  "boundary setup install",
+  "boundary setup check",
 ]
 
 [tasks.contracts-check]

@@ -8,4 +8,4 @@ One worktree has at most one writer. Read-only status and inspection may run alo
 
 A dirty target may be carried forward only when its exact index and worktree state equals verified output of the immediately preceding operation with the same change ID, kind, and selected task IDs. An abandoned target, changed predecessor output, or output belonging to another task must be restored or committed before reuse. Unrelated dirty paths are recorded in the baseline and do not grant authority.
 
-Pre-change requires `.boundary-state/` to be untracked and covered by Boundary's managed root `.gitignore` block. It never edits `.gitignore` while opening an operation. Run `boundary integration install` and review the visible `.gitignore` change before beginning work.
+Pre-change requires `.boundary-state/` to be untracked and covered by Boundary's managed root `.gitignore` block. It never edits `.gitignore` while opening an operation. Run `boundary setup install` and review the visible `.gitignore` change before beginning work.

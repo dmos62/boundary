@@ -16,7 +16,7 @@ Operation evidence lives under `.boundary-state/` in the current worktree. One w
 
 Boundary owns contracts, target context, request validation, pre-change permission, operation records, Git baselines, post-change checks, and agent procedure. A planning system owns its task metadata, selection workflow, progress, and acceptance. It translates those records into the [generic request](spec-request.md) without adding a provider-specific module to Boundary.
 
-Boundary distributes as an installed Python CLI selected by mise. Its integration commands manage only Boundary agent skills and a root `.gitignore` block for local evidence and generated skills.
+Boundary distributes as an installed Python CLI selected by mise. `boundary setup` manages the root `.gitignore` block for local evidence. Optional skill delivery uses an explicit caller-selected directory and has no runtime-specific default.
 
 ## Focused specifications
 
