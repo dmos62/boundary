@@ -5,7 +5,7 @@
 @cli! bash -lic 'mise exec -- boundary contracts pre-change --help'
 @cli! bash -lic 'mise exec -- boundary contracts check'
 @cli! bash -lic 'mise exec -- boundary status'
-@cli! bash -lic 'mise exec -- boundary integration check'
+@cli! bash -lic 'mise exec -- boundary setup check'
 @cli! bash -lic 'mise exec -- python -m unittest discover -s tests'
 @cli! bash -lic 'git diff --check && git diff --cached --check'
 @cli! bash -lic 'git status --short'

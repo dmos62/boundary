@@ -18,12 +18,6 @@ BEGIN = "# BEGIN Boundary generated state"
 END = "# END Boundary generated state"
 RULES = (
     "/.boundary-state/",
-    "/.agents/skills/boundary-scope/",
-    "/.agents/skills/boundary-implement/",
-    "/.agents/skills/boundary-contracts/",
-    "/.claude/skills/boundary-scope/",
-    "/.claude/skills/boundary-implement/",
-    "/.claude/skills/boundary-contracts/",
 )
 
 
@@ -44,7 +38,7 @@ def require_managed_ignore(root: Path) -> None:
         raise PreChangeError(f"Boundary .gitignore block is unavailable: {exc}", code="INTEGRATION_STATE_INVALID") from exc
     span = _span(lines)
     if span is None or tuple(lines[span[0]+1:span[1]]) != RULES:
-        raise PreChangeError("Boundary .gitignore block is missing or stale; run boundary integration install", code="INTEGRATION_STATE_INVALID")
+        raise PreChangeError("Boundary .gitignore block is missing or stale; run boundary setup install", code="INTEGRATION_STATE_INVALID")
 
 
 def update_managed_ignore(root: Path, enabled: bool) -> None:
@@ -111,7 +105,7 @@ def require_state_ready(repository_root: str | Path) -> None:
         cwd=root, capture_output=True, text=True, check=False,
     )
     if result.returncode != 0:
-        raise PreChangeError(".boundary-state is not ignored; run boundary integration install", code=OPERATION_EVIDENCE_UNAVAILABLE)
+        raise PreChangeError(".boundary-state is not ignored; run boundary setup install", code=OPERATION_EVIDENCE_UNAVAILABLE)
 
 
 def check_operation_evidence_persistence(repository_root: str | Path) -> Path:

@@ -10,7 +10,6 @@
 @glob contracts/**/*.contract.md
 @glob src/boundary/**/*.py
 @glob skills/**/*.md
-@glob adapters/**/*.py
 @glob tests/test_*.py
 @globexclude .agents/**
 @globexclude .boundary-state/**

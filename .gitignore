@@ -19,10 +19,4 @@ __pycache__/
 
 # BEGIN Boundary generated state
 /.boundary-state/
-/.agents/skills/boundary-scope/
-/.agents/skills/boundary-implement/
-/.agents/skills/boundary-contracts/
-/.claude/skills/boundary-scope/
-/.claude/skills/boundary-implement/
-/.claude/skills/boundary-contracts/
 # END Boundary generated state
