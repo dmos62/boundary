@@ -1,4 +1,4 @@
-from boundary.cli.integration import update_managed_ignore
+from boundary.cli.setup import update_managed_ignore
 import io
 import json
 import os

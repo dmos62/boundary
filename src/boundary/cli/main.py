@@ -13,7 +13,7 @@ from boundary.repository import RepositoryPathError
 from .inspection import run_inspect, run_inspect_authorized
 from .status import run_status
 from .lifecycle import run_pre_change, run_contract_pre_change, run_post_change, run_post_abandon
-from .integration import run_setup
+from .setup import run_setup
 from .skills import run_skills
 from boundary.contracts import load_contract_graph
 
