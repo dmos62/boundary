@@ -1,8 +1,8 @@
 ---
 schema: boundary.contract/v1
-id: boundary-change-adapter
+id: boundary-request
 owns:
-  - integration/**
+  - src/boundary/request/**
 ---
 
 # Change-System Adapter Source
@@ -14,7 +14,7 @@ Contain concrete change-system integration around native Boundary authorization 
 ## Invariants
 
 - Change-system integration remains an adapter around provider-neutral Boundary authorization and verification.
-- Explicit structured task writes are the only implementation-scope input supplied by the Spec Kit adapter.
+- Explicit structured task writes are the only implementation-scope input supplied by the external change system adapter.
 - Host-generated state remains separate from canonical Boundary source.
 - Planning context is queried on demand rather than persisted as authorization state.
 - Implementation entry and exit are the adapter's only blocking Boundary lifecycle transitions.
@@ -29,6 +29,6 @@ Contain concrete change-system integration around native Boundary authorization 
 
 ## Interfaces
 
-- The Spec Kit adapter projects active feature identity and structured task writes into native authorization.
-- The Spec Kit adapter classifies its own bookkeeping paths during Git-derived verification.
-- The Spec Kit adapter may expose the provider-neutral compact authorization handoff together with its relationship to the active feature.
+- The external change system adapter projects active feature identity and structured task writes into native authorization.
+- The external change system adapter classifies its own bookkeeping paths during Git-derived verification.
+- The external change system adapter may expose the provider-neutral compact authorization handoff together with its relationship to the active feature.

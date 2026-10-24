@@ -2,11 +2,12 @@
 schema: boundary.contract/v1
 id: boundary-operation-lifecycle
 applies_to:
-  - src/boundary/authorization/**
-  - src/boundary/verification/**
+  - src/boundary/operation/**
+  - src/boundary/pre_change/**
+  - src/boundary/post_change/**
 depends_on:
-  - boundary-authorization
-  - boundary-verification
+  - boundary-pre-change
+  - boundary-post-change
 ---
 
 # Operation Evidence Lifecycle

@@ -29,4 +29,4 @@ Define Boundary's product model through focused, orthogonal architecture specifi
 ## Prohibitions
 
 - Focused specifications must not duplicate detailed migration checklists from `docs/TODO.md`.
-- Historical SpecDD compatibility semantics must not silently become native Boundary requirements.
+- Historical legacy provider compatibility semantics must not silently become native Boundary requirements.

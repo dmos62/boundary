@@ -19,7 +19,7 @@ Provide provider-neutral Boundary mechanics and product concepts.
 
 ## Prohibitions
 
-- Core semantics must not depend on Spec Kit command names, SpecDD concepts, or agent-runtime discovery paths.
+- Core semantics must not depend on external change system command names, legacy provider concepts, or agent-runtime discovery paths.
 - Agent prompt compliance must not become the authorization or correctness boundary.
 
 ## Interfaces

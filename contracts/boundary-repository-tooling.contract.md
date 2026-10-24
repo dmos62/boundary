@@ -23,12 +23,12 @@ Provide reproducible Boundary development tooling and downstream integration aro
 - Boundary-specific integration materialization is separate from mise-owned tool installation and version selection.
 - Generated Boundary integration state remains recreatable from the installed Boundary CLI and is excluded locally rather than becoming canonical Boundary source.
 - Host-owned persistent configuration and shareable generated state remain visible to Git rather than being hidden as Boundary-owned generated state.
-- Pinned Spec Kit project-state ownership follows Spec Kit's managed `.specify/.gitignore`; Boundary does not patch or broaden that policy.
-- The Spec Kit script mode selected by `.specify/init-options.json` is authoritative for execution.
-- Inactive Spec Kit script variants retained by supported mode transitions are non-authoritative host-generated residue and are not deleted by Boundary.
+- Pinned external change system project-state ownership follows external change system's managed `.specify/.gitignore`; Boundary does not patch or broaden that policy.
+- The external change system script mode selected by `.specify/init-options.json` is authoritative for execution.
+- Inactive external change system script variants retained by supported mode transitions are non-authoritative host-generated residue and are not deleted by Boundary.
 - Installation and removal of host integration use supported host lifecycle mechanisms rather than patching generated state directly.
 - Boundary source development uses repository mise tooling and remains distinct from downstream locked installation.
-- Development bootstrap does not install or require the removed SpecDD migration provider.
+- Development bootstrap does not install or require the removed legacy provider migration provider.
 - Integration failures identify missing prerequisites before relying on partially initialized generated state.
 
 ## Prohibitions
@@ -41,7 +41,7 @@ Provide reproducible Boundary development tooling and downstream integration aro
 - Generated integration state must not become canonical Boundary source.
 - Boundary must not generate a project-local launcher solely to locate a copied Boundary runtime.
 - Boundary must not broadly ignore `.specify/` or core `speckit-*` skills to suppress host-owned project-state changes.
-- Boundary must not directly delete inactive Spec Kit script variants retained by the host lifecycle.
+- Boundary must not directly delete inactive external change system script variants retained by the host lifecycle.
 - Legacy `.specdd/` state must not be created as part of Boundary installation.
 
 ## Interfaces

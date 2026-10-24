@@ -23,7 +23,7 @@ Discover, parse, validate, and construct the canonical Boundary contract graph.
 
 ## Prohibitions
 
-- The native engine must not implement SpecDD bootstrap, `Can modify`, nearest-file inheritance, or arbitrary glob semantics.
+- The native engine must not implement legacy provider bootstrap, `Can modify`, nearest-file inheritance, or arbitrary glob semantics.
 - The native engine must not persist a second compiled copy of canonical contract prose.
 
 ## Interfaces

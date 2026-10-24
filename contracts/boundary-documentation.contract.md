@@ -14,7 +14,7 @@ Document the current Boundary architecture, development state, and migration wit
 
 ## Invariants
 
-- Current architecture documentation distinguishes durable Boundary concepts from Spec Kit, SpecDD, and agent-runtime integrations.
+- Current architecture documentation distinguishes durable Boundary concepts from external change system, legacy provider, and agent-runtime integrations.
 - Migration work remains separated from target architecture statements.
 - Documentation stays focused and delegates detailed semantics to the focused specification that owns them.
 - Historical material is clearly distinguishable from current target behavior.

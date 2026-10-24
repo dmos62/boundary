@@ -23,7 +23,7 @@ Expose product-level Boundary commands without coupling the core CLI to a host w
 
 ## Prohibitions
 
-- Product CLI behavior must not depend on Spec Kit stages, SpecDD commands, or agent-runtime discovery paths.
+- Product CLI behavior must not depend on external change system stages, legacy provider commands, or agent-runtime discovery paths.
 
 ## Interfaces
 

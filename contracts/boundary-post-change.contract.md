@@ -1,10 +1,10 @@
 ---
 schema: boundary.contract/v1
-id: boundary-verification
+id: boundary-post-change
 owns:
-  - src/boundary/verification/**
+  - src/boundary/post_change/**
 depends_on:
-  - boundary-authorization
+  - boundary-pre-change
   - boundary-context
   - boundary-native-contracts
 ---

@@ -1,8 +1,9 @@
 ---
 schema: boundary.contract/v1
-id: boundary-authorization
+id: boundary-pre-change
 owns:
-  - src/boundary/authorization/**
+  - src/boundary/operation/**
+  - src/boundary/pre_change/**
 depends_on:
   - boundary-context
   - boundary-native-contracts

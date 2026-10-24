@@ -14,7 +14,7 @@ Protect native Boundary behavior and concrete supported integrations with focuse
 ## Invariants
 
 - Tests exercise public behavior and deterministic boundaries without duplicating production implementations.
-- Native tests keep provider-neutral core behavior independent of Spec Kit and historical providers.
+- Native tests keep provider-neutral core behavior independent of external change system and historical providers.
 - Concrete adapter tests verify projection and lifecycle behavior without redefining core authorization semantics.
 - Repository contract coverage verifies representative ownership and additive applicability of canonical native contracts.
 - Historical migration assertions do not define current Boundary semantics.
