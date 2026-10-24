@@ -13,17 +13,19 @@ depends_on:
 
 ## Purpose
 
-Expose the generic operation lifecycle, contract queries, status, and Boundary-owned agent integration.
+Expose the generic operation lifecycle, contract queries, status, worktree-state setup, and optional skill delivery.
 
 ## Invariants
 
 - `pre-change` accepts only the versioned normalized request; `post-change` and `post-abandon` use stored evidence.
 - Contract evolution uses `contracts pre-change` and the same closing commands.
 - Lifecycle results have stable versioned stage, status, and diagnostic fields.
-- Status, inspection, contract checking, and integration checking are read-only.
-- Integration install and remove manage only Boundary skills and a root ignore block, and refuse open operations.
+- Status, inspection, contract checking, state checking, and skill checking are read-only.
+- State setup manages only Boundary's local-evidence ignore rule and refuses an open operation.
+- Optional skill delivery requires an explicit caller-selected directory and has no agent-specific default.
 
 ## Prohibitions
 
 - No command reads or depends on a particular planning system's files.
+- No command selects an agent runtime or writes into a runtime-specific directory by default.
 - Old lifecycle command aliases are absent.

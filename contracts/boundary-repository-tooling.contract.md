@@ -21,7 +21,7 @@ Build, install, and validate the generic Boundary CLI through conventional proje
 
 - Mise selects and locks the Boundary Git source; Boundary maintains no second source or dependency lock.
 - The installed `boundary` executable is the downstream command surface.
-- Package assets include canonical Boundary agent skills but no planning-system runtime.
+- Package assets include canonical, runtime-neutral Boundary skills but no planning-system or agent-runtime adapter.
 - Root ignore management changes only the delimited Boundary block and keeps unrelated rules visible.
 
 ## Prohibitions
