@@ -6,7 +6,7 @@ import shutil
 import subprocess
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_TREES = ("src", "integration", "adapters", "skills")
+PACKAGE_TREES = ("src", "adapters", "skills")
 
 
 def command_available(name: str) -> bool:
