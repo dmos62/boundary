@@ -162,7 +162,7 @@ class AuthorizationLifecycleTests(unittest.TestCase):
 
             with self.assertRaisesRegex(
                 PreChangeError,
-                "DIRTY_TARGET_NOT_VERIFIED",
+                "Restore that exact verified output",
             ):
                 authorize(root, "src/a.py")
 

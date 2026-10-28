@@ -160,7 +160,9 @@ def _carry_forward(
         if verified.get(path) != current_state:
             raise PreChangeError(
                 "DIRTY_TARGET_NOT_VERIFIED: intended dirty target does not "
-                f"match verified predecessor output: {path}",
+                f"match verified predecessor output: {path}. Restore that "
+                "exact verified output before requesting a new operation; "
+                "do not commit unverified edits as a workaround",
                 code="DIRTY_TARGET_NOT_VERIFIED",
             )
         carried.append(
